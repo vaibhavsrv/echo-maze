@@ -749,6 +749,13 @@
     // 1-Block Movement & Timings
     STEP_DURATION: 0.11, // seconds for 1-block hop animation
     TIME_LIMITS: [32, 45, 52, 62, 75, 85], // countdown clock limits per level
+
+    // Suspense Blackout Thriller Timings (Path blinks & blacks out periodically)
+    BLACKOUT_MIN_VISIBLE: 4.0, // seconds path remains visible
+    BLACKOUT_MAX_VISIBLE: 7.5,
+    BLACKOUT_MIN_DARK: 2.2, // seconds of total darkness blackout
+    BLACKOUT_MAX_DARK: 4.2,
+    BLACKOUT_WARNING_TIME: 0.85, // seconds of electric flickering before cut-off
     
     // Physics & Timing
     WALL_FADE_DURATION: 3.5, // walls revealed by sonar fade over 3.5s
@@ -1193,6 +1200,40 @@
       osc.stop(now + 0.28);
     }
 
+    playPowerCut() {
+      if (!this.ctx || this.isMuted) return;
+      this.ensureContext();
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(32, now + 0.35);
+      gain.gain.setValueAtTime(0.24, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(now);
+      osc.stop(now + 0.40);
+    }
+
+    playPowerSurge() {
+      if (!this.ctx || this.isMuted) return;
+      this.ensureContext();
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(80, now);
+      osc.frequency.exponentialRampToValueAtTime(620, now + 0.22);
+      gain.gain.setValueAtTime(0.26, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(now);
+      osc.stop(now + 0.28);
+    }
+
     playGrowl(pitch = 100) {
       if (!this.ctx || this.isMuted) return;
       this.ensureContext();
@@ -1483,6 +1524,11 @@
       this.levelTimeRemaining = 35;
       this.lastTickSecond = 35;
 
+      // Suspense Blackout Thriller State
+      this.blackoutState = 'VISIBLE'; // 'VISIBLE' | 'WARNING' | 'BLACKOUT'
+      this.blackoutTimer = 6.0;
+      this.blackoutIntensity = 1.0;
+
       // Screen Shake
       this.shakeAmount = 0;
 
@@ -1767,6 +1813,11 @@
       this.levelTimeLimit = levelCfg.timeLimit || 40;
       this.levelTimeRemaining = this.levelTimeLimit;
       this.lastTickSecond = Math.ceil(this.levelTimeRemaining);
+
+      // Suspense Blackout Thriller State (Randomized initial visible duration)
+      this.blackoutState = 'VISIBLE';
+      this.blackoutTimer = CONFIG.BLACKOUT_MIN_VISIBLE + Math.random() * (CONFIG.BLACKOUT_MAX_VISIBLE - CONFIG.BLACKOUT_MIN_VISIBLE);
+      this.blackoutIntensity = 1.0;
 
       this.sonarRings = [];
       this.monsterPulses = [];
@@ -2071,6 +2122,49 @@
         this.levelTimeRemaining = 0;
         this.triggerTimeout();
         return;
+      }
+
+      // 1B. Dynamic Suspense Blackout Thriller Cycle (Blinks and blacks out periodically)
+      this.blackoutTimer -= dt;
+      if (this.blackoutState === 'VISIBLE') {
+        this.blackoutIntensity = 1.0;
+        if (this.blackoutTimer <= CONFIG.BLACKOUT_WARNING_TIME) {
+          this.blackoutState = 'WARNING';
+        }
+      } else if (this.blackoutState === 'WARNING') {
+        // High-tension rapid electric flicker before power cut
+        this.blackoutIntensity = (Math.sin(now * 38) > 0) ? 0.75 : 0.08;
+        if (this.blackoutTimer <= 0) {
+          this.blackoutState = 'BLACKOUT';
+          // Randomized blackout duration (e.g. 2.2s to 4.2s)
+          this.blackoutTimer = CONFIG.BLACKOUT_MIN_DARK + Math.random() * (CONFIG.BLACKOUT_MAX_DARK - CONFIG.BLACKOUT_MIN_DARK);
+          this.blackoutIntensity = 0.0;
+          this.audio.playPowerCut();
+          this.shakeAmount = 4;
+          const hint = document.getElementById('hint-box');
+          if (hint) {
+            hint.textContent = '⚡ BLACKOUT! RELY ON YOUR COMPASS & SONAR PING!';
+            hint.style.opacity = '1';
+            hint.style.color = '#ff3355';
+          }
+        }
+      } else if (this.blackoutState === 'BLACKOUT') {
+        this.blackoutIntensity = 0.0;
+        if (this.blackoutTimer <= 0) {
+          this.blackoutState = 'VISIBLE';
+          // Randomized visible duration (e.g. 4.0s to 7.5s)
+          this.blackoutTimer = CONFIG.BLACKOUT_MIN_VISIBLE + Math.random() * (CONFIG.BLACKOUT_MAX_VISIBLE - CONFIG.BLACKOUT_MIN_VISIBLE);
+          this.blackoutIntensity = 1.0;
+          this.audio.playPowerSurge();
+          this.shakeAmount = 3;
+          const hint = document.getElementById('hint-box');
+          if (hint) {
+            hint.textContent = '⚡ POWER RESTORED — PATHS ILLUMINATED!';
+            hint.style.opacity = '1';
+            hint.style.color = 'var(--radar-cyan)';
+            setTimeout(() => { if (hint && this.blackoutState === 'VISIBLE') hint.style.opacity = '0'; }, 2000);
+          }
+        }
       }
 
       // 2. Energy Regeneration
@@ -2461,34 +2555,45 @@
       if (!this.maze || !this.player) return;
 
       const tileSize = CONFIG.TILE_SIZE;
-      const cameraX = w / 2 - this.player.x * tileSize;
-      const cameraY = h / 2 - this.player.y * tileSize;
+      let cameraX = w / 2 - this.player.x * tileSize;
+      let cameraY = h / 2 - this.player.y * tileSize;
+
+      if (this.shakeAmount > 0) {
+        cameraX += (Math.random() - 0.5) * this.shakeAmount * 2;
+        cameraY += (Math.random() - 0.5) * this.shakeAmount * 2;
+        this.shakeAmount = Math.max(0, this.shakeAmount - (1 / 60) * 12);
+      }
 
       ctx.save();
       ctx.translate(cameraX, cameraY);
 
-      // 1. Tactical Radar Grid Lines
+      // 1. Tactical Radar Grid Lines (shrouded during blackout)
       const gridMinX = Math.floor(this.player.x - 13);
       const gridMaxX = Math.ceil(this.player.x + 13);
       const gridMinY = Math.floor(this.player.y - 13);
       const gridMaxY = Math.ceil(this.player.y + 13);
 
-      ctx.strokeStyle = 'rgba(0, 243, 255, 0.035)';
-      ctx.lineWidth = 1;
-      for (let gx = gridMinX; gx <= gridMaxX; gx++) {
-        ctx.beginPath();
-        ctx.moveTo(gx * tileSize, gridMinY * tileSize);
-        ctx.lineTo(gx * tileSize, gridMaxY * tileSize);
-        ctx.stroke();
-      }
-      for (let gy = gridMinY; gy <= gridMaxY; gy++) {
-        ctx.beginPath();
-        ctx.moveTo(gridMinX * tileSize, gy * tileSize);
-        ctx.lineTo(gridMaxX * tileSize, gy * tileSize);
-        ctx.stroke();
+      if (this.blackoutIntensity > 0.05) {
+        ctx.save();
+        ctx.globalAlpha = this.blackoutIntensity;
+        ctx.strokeStyle = 'rgba(0, 243, 255, 0.035)';
+        ctx.lineWidth = 1;
+        for (let gx = gridMinX; gx <= gridMaxX; gx++) {
+          ctx.beginPath();
+          ctx.moveTo(gx * tileSize, gridMinY * tileSize);
+          ctx.lineTo(gx * tileSize, gridMaxY * tileSize);
+          ctx.stroke();
+        }
+        for (let gy = gridMinY; gy <= gridMaxY; gy++) {
+          ctx.beginPath();
+          ctx.moveTo(gridMinX * tileSize, gy * tileSize);
+          ctx.lineTo(gridMaxX * tileSize, gy * tileSize);
+          ctx.stroke();
+        }
+        ctx.restore();
       }
 
-      // 1. TOTALLY VISIBLE WALKABLE PATHWAYS & PITCH BLACK VOID TRAIL
+      // 1. TOTALLY VISIBLE WALKABLE PATHWAYS (WITH SUSPENSE BLACKOUT) & PITCH BLACK VOID TRAIL
       for (let gy = 0; gy < this.maze.H; gy++) {
         for (let gx = 0; gx < this.maze.W; gx++) {
           const pxTile = gx * tileSize;
@@ -2496,26 +2601,33 @@
 
           if (this.maze.grid[gy][gx] === 0) {
             if (!this.voidTrail[gy][gx]) {
-              // TOTALLY VISIBLE UNVISITED PATHWAY (Illuminated Cyber Floor Panels)
-              const floorGrad = ctx.createLinearGradient(pxTile, pyTile, pxTile + tileSize, pyTile + tileSize);
-              floorGrad.addColorStop(0, '#0c1b2f');
-              floorGrad.addColorStop(1, '#071220');
-              ctx.fillStyle = floorGrad;
-              ctx.fillRect(pxTile, pyTile, tileSize, tileSize);
+              // During blackout (blackoutIntensity = 0), unvisited paths are shrouded in pitch black!
+              if (this.blackoutIntensity > 0.02) {
+                ctx.save();
+                ctx.globalAlpha = this.blackoutIntensity;
 
-              // Luminous cyber contour border for crystal-clear path visibility
-              ctx.strokeStyle = 'rgba(0, 243, 255, 0.20)';
-              ctx.lineWidth = 1;
-              ctx.strokeRect(pxTile + 0.5, pyTile + 0.5, tileSize - 1, tileSize - 1);
+                const floorGrad = ctx.createLinearGradient(pxTile, pyTile, pxTile + tileSize, pyTile + tileSize);
+                floorGrad.addColorStop(0, '#0c1b2f');
+                floorGrad.addColorStop(1, '#071220');
+                ctx.fillStyle = floorGrad;
+                ctx.fillRect(pxTile, pyTile, tileSize, tileSize);
 
-              // Tactical glowing floor coordinate crosshair
-              const fcx = (gx + 0.5) * tileSize;
-              const fcy = (gy + 0.5) * tileSize;
-              ctx.fillStyle = 'rgba(0, 243, 255, 0.35)';
-              ctx.fillRect(fcx - 3, fcy - 0.5, 6, 1);
-              ctx.fillRect(fcx - 0.5, fcy - 3, 1, 6);
+                // Luminous cyber contour border for crystal-clear path visibility
+                ctx.strokeStyle = 'rgba(0, 243, 255, 0.20)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(pxTile + 0.5, pyTile + 0.5, tileSize - 1, tileSize - 1);
+
+                // Tactical glowing floor coordinate crosshair
+                const fcx = (gx + 0.5) * tileSize;
+                const fcy = (gy + 0.5) * tileSize;
+                ctx.fillStyle = 'rgba(0, 243, 255, 0.35)';
+                ctx.fillRect(fcx - 3, fcy - 0.5, 6, 1);
+                ctx.fillRect(fcx - 0.5, fcy - 3, 1, 6);
+
+                ctx.restore();
+              }
             } else {
-              // WHEREVER STARTED MOVING, THE PATH IS PITCH BLACK!
+              // WHEREVER STARTED MOVING, THE PATH IS PERMANENTLY PITCH BLACK!
               ctx.fillStyle = '#000000'; // Pure pitch blackness!
               ctx.fillRect(pxTile, pyTile, tileSize, tileSize);
               // Singularity edge border
@@ -2547,12 +2659,17 @@
             const pxTile = x * tileSize;
             const pyTile = y * tileSize;
 
-            // Baseline visible labyrinth wall structure
-            ctx.fillStyle = '#04070d';
-            ctx.fillRect(pxTile, pyTile, tileSize, tileSize);
-            ctx.strokeStyle = 'rgba(20, 36, 58, 0.75)';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(pxTile + 0.5, pyTile + 0.5, tileSize - 1, tileSize - 1);
+            // Baseline visible labyrinth wall structure (shrouded during blackout!)
+            if (this.blackoutIntensity > 0.05) {
+              ctx.save();
+              ctx.globalAlpha = this.blackoutIntensity;
+              ctx.fillStyle = '#04070d';
+              ctx.fillRect(pxTile, pyTile, tileSize, tileSize);
+              ctx.strokeStyle = 'rgba(20, 36, 58, 0.75)';
+              ctx.lineWidth = 1;
+              ctx.strokeRect(pxTile + 0.5, pyTile + 0.5, tileSize - 1, tileSize - 1);
+              ctx.restore();
+            }
 
             // Active Sonar Pulse Flare
             if (age < CONFIG.WALL_FADE_DURATION) {
