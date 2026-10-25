@@ -662,6 +662,27 @@
         <button class="menu-btn" id="btn-start-game">ENTER THE MAZE</button>
         
         <div class="settings-row">
+          <span>MISSION LEVEL</span>
+          <select id="sel-level-select" style="background: #0f172a; color: var(--radar-cyan); border: 1.5px solid var(--radar-cyan); border-radius: 6px; padding: 5px 8px; font-family: var(--font-mono); font-size: 11px; cursor: pointer; max-width: 190px;">
+            <option value="1">L1: Rookie Patrol (1 Cop)</option>
+            <option value="2">L2: Dormant Ear (1 Cop)</option>
+            <option value="3">L3: Wandering Shadow (1 Cop)</option>
+            <option value="4">L4: Resonant Decoy (1 Cop + Bell)</option>
+            <option value="5">L5: Twin Enforcement (2 Cops)</option>
+            <option value="6">L6: Blackout Surge (2 Cops)</option>
+            <option value="7">L7: Crossfire Sector (2 Cops + Bell)</option>
+            <option value="8">L8: Triple Threat (3 Cops)</option>
+            <option value="9">L9: Radar Pulse Ambush (3 Cops)</option>
+            <option value="10">L10: Gauntlet Run (3 Fast Cops)</option>
+            <option value="11">L11: Quadrant Lockdown (4 Cops)</option>
+            <option value="12">L12: Acoustic Reaper (4 Cops)</option>
+            <option value="13">L13: Eclipse Protocol (4 Cops)</option>
+            <option value="14">L14: Apex Swarm (5 Cops)</option>
+            <option value="15">L15: Final Lockdown (5 Apex Cops)</option>
+          </select>
+        </div>
+        
+        <div class="settings-row">
           <span>ASSIST MODE</span>
           <input type="checkbox" id="chk-assist">
         </div>
@@ -725,7 +746,7 @@
     <div class="modal-overlay modal-hidden" id="victory-modal">
       <div class="victory-title">RESONANCE REACHED</div>
       <div class="stats-card">
-        <div class="stat-line"><span>LEVEL:</span><span class="stat-val" id="stat-level">1 / 6</span></div>
+        <div class="stat-line"><span>LEVEL:</span><span class="stat-val" id="stat-level">1 / 15</span></div>
         <div class="stat-line"><span>TIME LEFT:</span><span class="stat-val" id="stat-time">0:00</span></div>
         <div class="stat-line"><span>SONAR PINGS:</span><span class="stat-val" id="stat-pings">0</span></div>
       </div>
@@ -793,15 +814,15 @@
     LEVELS: [
       {
         id: 1,
-        title: "LEVEL 1 — THE CORNER PATROL",
-        objective: "Corner Cop active. Step 1 block to reach the gate before time expires.",
+        title: "LEVEL 1 — THE ROOKIE PATROL",
+        objective: "1 Cop active. Step 1 block to reach the gate before time expires.",
         width: 11,
         height: 11,
         unlimitedEnergy: true,
         footstepsHeard: false,
-        timeLimit: 34,
+        timeLimit: 35,
         monsters: [
-          { id: 'cop1', name: 'Corner Cop', initialState: 'WANDER', speed: 2.8, footstepRadius: 0, pingRadius: 10.0, growlPitch: 100 }
+          { id: 'cop1', name: 'Patrol 01', initialState: 'WANDER', speed: 2.8, footstepRadius: 0, pingRadius: 10.0, growlPitch: 100 }
         ]
       },
       {
@@ -812,63 +833,212 @@
         height: 13,
         unlimitedEnergy: false,
         footstepsHeard: false,
-        timeLimit: 45,
+        timeLimit: 42,
         monsters: [
-          { id: 'm1', initialState: 'ASLEEP', speed: 3.3, footstepRadius: 0, pingRadius: 10.0, growlPitch: 100 }
+          { id: 'cop1', name: 'Sleeper Unit', initialState: 'ASLEEP', speed: 3.2, footstepRadius: 0, pingRadius: 10.0, growlPitch: 95 }
         ]
       },
       {
         id: 3,
         title: "LEVEL 3 — WANDERING SHADOW",
-        objective: "Patrol hunts from the corner. Shift to creep silently.",
-        width: 17,
-        height: 17,
+        objective: "Corner Cop hears footsteps! Hold Shift to creep silently.",
+        width: 15,
+        height: 15,
         unlimitedEnergy: false,
         footstepsHeard: true,
-        timeLimit: 52,
+        timeLimit: 48,
         monsters: [
-          { id: 'm1', initialState: 'WANDER', speed: 3.4, footstepRadius: 2.5, pingRadius: 10.0, growlPitch: 110 }
+          { id: 'cop1', name: 'Hound Cop', initialState: 'WANDER', speed: 3.3, footstepRadius: 2.5, pingRadius: 10.0, growlPitch: 110 }
         ]
       },
       {
         id: 4,
         title: "LEVEL 4 — RESONANT DECOY",
         objective: "Ring the brass bell (E) to misdirect the Corner Patrol.",
-        width: 19,
-        height: 19,
+        width: 17,
+        height: 17,
         unlimitedEnergy: false,
         footstepsHeard: true,
-        timeLimit: 62,
+        timeLimit: 55,
         hasBell: true,
         monsters: [
-          { id: 'm1', initialState: 'WANDER', speed: 3.5, footstepRadius: 2.5, pingRadius: 11.0, growlPitch: 105 }
+          { id: 'cop1', name: 'Heavy Patrol', initialState: 'WANDER', speed: 3.4, footstepRadius: 2.5, pingRadius: 11.0, growlPitch: 105 }
         ]
       },
       {
         id: 5,
-        title: "LEVEL 5 — TWIN PATROL",
-        objective: "Two corner hunters patrol with distinct sirens and hearing.",
-        width: 23,
-        height: 23,
+        title: "LEVEL 5 — TWIN ENFORCEMENT",
+        objective: "2 Cops deployed in opposite corners! Staggered sirens patrol the halls.",
+        width: 19,
+        height: 19,
         unlimitedEnergy: false,
         footstepsHeard: true,
-        timeLimit: 75,
+        timeLimit: 65,
         monsters: [
-          { id: 'A', name: 'Patrol Alpha', initialState: 'WANDER', speed: 3.3, footstepRadius: 2.0, pingRadius: 10.0, growlPitch: 80 },
-          { id: 'B', name: 'Patrol Beta', initialState: 'WANDER', speed: 3.5, footstepRadius: 3.5, pingRadius: 7.0, growlPitch: 155 }
+          { id: 'copA', name: 'Patrol Alpha', initialState: 'WANDER', speed: 3.3, footstepRadius: 2.0, pingRadius: 10.0, growlPitch: 85 },
+          { id: 'copB', name: 'Patrol Beta', initialState: 'WANDER', speed: 3.5, footstepRadius: 3.0, pingRadius: 8.0, growlPitch: 140 }
         ]
       },
       {
         id: 6,
-        title: "LEVEL 6 — THE APEX FINALE",
-        objective: "Apex Cop sweeps counter-sonar pulses. The compass guides you.",
+        title: "LEVEL 6 — THE BLACKOUT SURGE",
+        objective: "2 Cops + rapid blackout surges. Use the golden compass in the dark.",
+        width: 21,
+        height: 21,
+        unlimitedEnergy: false,
+        footstepsHeard: true,
+        timeLimit: 70,
+        monsters: [
+          { id: 'copA', name: 'Cruiser 01', initialState: 'WANDER', speed: 3.3, footstepRadius: 2.5, pingRadius: 10.0, growlPitch: 90 },
+          { id: 'copB', name: 'Interceptor', initialState: 'WANDER', speed: 3.6, footstepRadius: 2.5, pingRadius: 10.0, growlPitch: 130 }
+        ]
+      },
+      {
+        id: 7,
+        title: "LEVEL 7 — CROSSFIRE SECTOR",
+        objective: "2 Fast Interceptors. 1 Decoy Bell. Beware converging pincer traps.",
+        width: 21,
+        height: 21,
+        unlimitedEnergy: false,
+        footstepsHeard: true,
+        timeLimit: 72,
+        hasBell: true,
+        monsters: [
+          { id: 'copA', name: 'Interceptor A', initialState: 'WANDER', speed: 3.6, footstepRadius: 2.8, pingRadius: 11.0, growlPitch: 100 },
+          { id: 'copB', name: 'Interceptor B', initialState: 'WANDER', speed: 3.6, footstepRadius: 2.8, pingRadius: 11.0, growlPitch: 150 }
+        ]
+      },
+      {
+        id: 8,
+        title: "LEVEL 8 — TRIPLE THREAT",
+        objective: "3 Cops deployed in 3 corners! Three rotating siren searchlights.",
+        width: 23,
+        height: 23,
+        unlimitedEnergy: false,
+        footstepsHeard: true,
+        timeLimit: 78,
+        monsters: [
+          { id: 'cop1', name: 'Unit Red', initialState: 'WANDER', speed: 3.3, footstepRadius: 2.5, pingRadius: 10.0, growlPitch: 80 },
+          { id: 'cop2', name: 'Unit Blue', initialState: 'WANDER', speed: 3.4, footstepRadius: 2.5, pingRadius: 10.0, growlPitch: 115 },
+          { id: 'cop3', name: 'Unit Gold', initialState: 'WANDER', speed: 3.5, footstepRadius: 3.0, pingRadius: 9.0, growlPitch: 160 }
+        ]
+      },
+      {
+        id: 9,
+        title: "LEVEL 9 — RADAR PULSE AMBUSH",
+        objective: "3 Cops: Scanner Drone sweeps counter-sonar pulses! Decoy Bell available.",
+        width: 23,
+        height: 23,
+        unlimitedEnergy: false,
+        footstepsHeard: true,
+        timeLimit: 82,
+        hasBell: true,
+        monsters: [
+          { id: 'cop1', name: 'Scanner Drone', initialState: 'WANDER', speed: 3.4, footstepRadius: 2.5, pingRadius: 10.0, growlPitch: 88, hasPulseOnSearch: true },
+          { id: 'cop2', name: 'Patrol 02', initialState: 'WANDER', speed: 3.5, footstepRadius: 2.5, pingRadius: 10.0, growlPitch: 125 },
+          { id: 'cop3', name: 'Patrol 03', initialState: 'WANDER', speed: 3.4, footstepRadius: 3.0, pingRadius: 9.0, growlPitch: 155 }
+        ]
+      },
+      {
+        id: 10,
+        title: "LEVEL 10 — THE GAUNTLET RUN",
+        objective: "3 High-Speed Interceptors (Speed 3.8!). Time is short. Don't stop hopping.",
         width: 25,
         height: 25,
         unlimitedEnergy: false,
         footstepsHeard: true,
         timeLimit: 85,
         monsters: [
-          { id: 'apex', name: 'Apex Hunter', initialState: 'WANDER', speed: 3.5, footstepRadius: 3.0, pingRadius: 10.0, growlPitch: 90, hasPulseOnSearch: true }
+          { id: 'fast1', name: 'Viper 01', initialState: 'WANDER', speed: 3.8, footstepRadius: 2.5, pingRadius: 10.0, growlPitch: 95 },
+          { id: 'fast2', name: 'Viper 02', initialState: 'WANDER', speed: 3.8, footstepRadius: 2.5, pingRadius: 10.0, growlPitch: 135 },
+          { id: 'fast3', name: 'Viper 03', initialState: 'WANDER', speed: 3.7, footstepRadius: 3.0, pingRadius: 9.0, growlPitch: 170 }
+        ]
+      },
+      {
+        id: 11,
+        title: "LEVEL 11 — QUADRANT LOCKDOWN",
+        objective: "4 Cops deployed in ALL 4 corners! The entire perimeter is sealed.",
+        width: 27,
+        height: 27,
+        unlimitedEnergy: false,
+        footstepsHeard: true,
+        timeLimit: 95,
+        hasBell: true,
+        monsters: [
+          { id: 'q1', name: 'North Patrol', initialState: 'WANDER', speed: 3.4, footstepRadius: 2.5, pingRadius: 10.0, growlPitch: 85 },
+          { id: 'q2', name: 'East Patrol', initialState: 'WANDER', speed: 3.4, footstepRadius: 2.5, pingRadius: 10.0, growlPitch: 110 },
+          { id: 'q3', name: 'South Patrol', initialState: 'WANDER', speed: 3.5, footstepRadius: 2.8, pingRadius: 10.0, growlPitch: 145 },
+          { id: 'q4', name: 'West Patrol', initialState: 'WANDER', speed: 3.5, footstepRadius: 2.8, pingRadius: 10.0, growlPitch: 175 }
+        ]
+      },
+      {
+        id: 12,
+        title: "LEVEL 12 — ACOUSTIC REAPER",
+        objective: "4 Cops with extreme hearing (Radius 3.8 tiles!). Every uncrept step is fatal.",
+        width: 27,
+        height: 27,
+        unlimitedEnergy: false,
+        footstepsHeard: true,
+        timeLimit: 98,
+        hasBell: true,
+        monsters: [
+          { id: 'r1', name: 'Reaper Alpha', initialState: 'WANDER', speed: 3.5, footstepRadius: 3.8, pingRadius: 12.0, growlPitch: 80 },
+          { id: 'r2', name: 'Reaper Beta', initialState: 'WANDER', speed: 3.5, footstepRadius: 3.8, pingRadius: 12.0, growlPitch: 120 },
+          { id: 'r3', name: 'Reaper Gamma', initialState: 'WANDER', speed: 3.6, footstepRadius: 3.5, pingRadius: 11.0, growlPitch: 150 },
+          { id: 'r4', name: 'Reaper Delta', initialState: 'WANDER', speed: 3.6, footstepRadius: 3.5, pingRadius: 11.0, growlPitch: 185 }
+        ]
+      },
+      {
+        id: 13,
+        title: "LEVEL 13 — ECLIPSE PROTOCOL",
+        objective: "4 Cops + 2 Pulse Scanners! Extended blackouts. Pure sensory navigation.",
+        width: 29,
+        height: 29,
+        unlimitedEnergy: false,
+        footstepsHeard: true,
+        timeLimit: 105,
+        hasBell: true,
+        monsters: [
+          { id: 'e1', name: 'Pulse Apex 1', initialState: 'WANDER', speed: 3.5, footstepRadius: 3.0, pingRadius: 11.0, growlPitch: 85, hasPulseOnSearch: true },
+          { id: 'e2', name: 'Pulse Apex 2', initialState: 'WANDER', speed: 3.5, footstepRadius: 3.0, pingRadius: 11.0, growlPitch: 130, hasPulseOnSearch: true },
+          { id: 'e3', name: 'Enforcer 01', initialState: 'WANDER', speed: 3.6, footstepRadius: 2.8, pingRadius: 10.0, growlPitch: 160 },
+          { id: 'e4', name: 'Enforcer 02', initialState: 'WANDER', speed: 3.6, footstepRadius: 2.8, pingRadius: 10.0, growlPitch: 195 }
+        ]
+      },
+      {
+        id: 14,
+        title: "LEVEL 14 — APEX SWARM",
+        objective: "5 Cops swarming the mega-labyrinth! 4 corners + 1 center stalker.",
+        width: 31,
+        height: 31,
+        unlimitedEnergy: false,
+        footstepsHeard: true,
+        timeLimit: 118,
+        hasBell: true,
+        monsters: [
+          { id: 's1', name: 'Swarm Leader', initialState: 'WANDER', speed: 3.7, footstepRadius: 3.2, pingRadius: 11.0, growlPitch: 75, hasPulseOnSearch: true },
+          { id: 's2', name: 'Swarm 02', initialState: 'WANDER', speed: 3.6, footstepRadius: 2.8, pingRadius: 10.0, growlPitch: 105 },
+          { id: 's3', name: 'Swarm 03', initialState: 'WANDER', speed: 3.6, footstepRadius: 2.8, pingRadius: 10.0, growlPitch: 135 },
+          { id: 's4', name: 'Swarm 04', initialState: 'WANDER', speed: 3.5, footstepRadius: 3.0, pingRadius: 10.0, growlPitch: 165 },
+          { id: 's5', name: 'Swarm 05', initialState: 'WANDER', speed: 3.5, footstepRadius: 3.0, pingRadius: 9.0, growlPitch: 200 }
+        ]
+      },
+      {
+        id: 15,
+        title: "LEVEL 15 — GRAND ESCAPE: THE FINAL LOCKDOWN",
+        objective: "5 Maximum-Speed Apex Hunters. The ultimate test of acoustic stealth. Reach the Stargate!",
+        width: 33,
+        height: 33,
+        unlimitedEnergy: false,
+        footstepsHeard: true,
+        timeLimit: 130,
+        hasBell: true,
+        monsters: [
+          { id: 'boss1', name: 'Apex Prime', initialState: 'WANDER', speed: 3.9, footstepRadius: 3.5, pingRadius: 12.0, growlPitch: 70, hasPulseOnSearch: true },
+          { id: 'boss2', name: 'Apex Dread', initialState: 'WANDER', speed: 3.8, footstepRadius: 3.2, pingRadius: 11.0, growlPitch: 100, hasPulseOnSearch: true },
+          { id: 'boss3', name: 'Hunter 01', initialState: 'WANDER', speed: 3.8, footstepRadius: 3.0, pingRadius: 10.0, growlPitch: 135 },
+          { id: 'boss4', name: 'Hunter 02', initialState: 'WANDER', speed: 3.7, footstepRadius: 3.0, pingRadius: 10.0, growlPitch: 170 },
+          { id: 'boss5', name: 'Hunter 03', initialState: 'WANDER', speed: 3.7, footstepRadius: 2.8, pingRadius: 9.0, growlPitch: 205 }
         ]
       }
     ]
@@ -1556,6 +1726,11 @@
       this.audio.volume = this.settings.volume / 100;
       this.audio.isMuted = this.settings.isMuted;
       this.updateMuteButtonText();
+
+      const selLevel = document.getElementById('sel-level-select');
+      if (selLevel) {
+        selLevel.value = (this.levelIndex + 1).toString();
+      }
     }
 
     updateMuteButtonText() {
@@ -1587,6 +1762,16 @@
         this.keys[e.key.toLowerCase()] = false;
         this.keys[e.code] = false;
       });
+
+      const selLevel = document.getElementById('sel-level-select');
+      if (selLevel) {
+        selLevel.addEventListener('change', (e) => {
+          const chosen = parseInt(e.target.value, 10) - 1;
+          if (chosen >= 0 && chosen < CONFIG.LEVELS.length) {
+            this.levelIndex = chosen;
+          }
+        });
+      }
 
       document.getElementById('btn-start-game').addEventListener('click', () => {
         this.audio.ensureContext();
@@ -1764,6 +1949,9 @@
       this.levelIndex = index;
       const levelCfg = CONFIG.LEVELS[this.levelIndex];
 
+      const selLevel = document.getElementById('sel-level-select');
+      if (selLevel) selLevel.value = (this.levelIndex + 1).toString();
+
       document.getElementById('title-modal').classList.add('modal-hidden');
       document.getElementById('pause-modal').classList.add('modal-hidden');
       document.getElementById('captured-modal').classList.add('modal-hidden');
@@ -1814,9 +2002,12 @@
       this.levelTimeRemaining = this.levelTimeLimit;
       this.lastTickSecond = Math.ceil(this.levelTimeRemaining);
 
-      // Suspense Blackout Thriller State (Randomized initial visible duration)
+      // Suspense Blackout Thriller State (Scales with level: higher levels have shorter initial light)
       this.blackoutState = 'VISIBLE';
-      this.blackoutTimer = CONFIG.BLACKOUT_MIN_VISIBLE + Math.random() * (CONFIG.BLACKOUT_MAX_VISIBLE - CONFIG.BLACKOUT_MIN_VISIBLE);
+      const levelProgress = Math.min(1.0, this.levelIndex / 14);
+      const minVisible = CONFIG.BLACKOUT_MIN_VISIBLE * (1.0 - 0.45 * levelProgress);
+      const maxVisible = CONFIG.BLACKOUT_MAX_VISIBLE * (1.0 - 0.40 * levelProgress);
+      this.blackoutTimer = minVisible + Math.random() * (maxVisible - minVisible);
       this.blackoutIntensity = 1.0;
 
       this.sonarRings = [];
@@ -1841,7 +2032,7 @@
         };
       }
 
-      // Corner Monster / Cop Setup (Starts from any corner: Top-Left, Top-Right, Bottom-Left, Bottom-Right)
+      // Corner Monster / Cop Setup (Scales from 1 to 5 cops across corners & corridors)
       this.monsters = [];
       const allCorners = [
         { x: 1, y: 1, name: 'Top-Left' },
@@ -1853,43 +2044,48 @@
         c.x >= 0 && c.x < this.maze.W && c.y >= 0 && c.y < this.maze.H &&
         this.maze.grid[c.y][c.x] === 0 && !(c.x === this.player.gridX && c.y === this.player.gridY)
       );
-      const corner = validCorners[Math.floor(Math.random() * validCorners.length)] || { x: this.maze.W - 2, y: this.maze.H - 2, name: 'Bottom-Right' };
+
+      // Randomize / distribute corners across cops
+      const shuffledCorners = [...validCorners].sort(() => Math.random() - 0.5);
 
       const objElem = document.getElementById('hud-objective');
-      if (objElem) objElem.textContent = `${levelCfg.objective} [COP DEPLOYED: ${corner.name.toUpperCase()}]`;
+      const numCops = levelCfg.monsters ? levelCfg.monsters.length : 0;
+      if (objElem) {
+        objElem.textContent = `${levelCfg.objective} [${numCops} COP${numCops > 1 ? 'S' : ''} ACTIVE]`;
+      }
 
       if (levelCfg.monsters && levelCfg.monsters.length > 0) {
         levelCfg.monsters.forEach((mCfg, idx) => {
           let spawnCell;
-          if (idx === 0) {
-            // First monster starts at corner (The Cop/Patrol)
-            spawnCell = corner;
+          if (idx < shuffledCorners.length) {
+            spawnCell = shuffledCorners[idx];
           } else {
-            // Other monster starts at another distant corner/cell
-            const otherCorners = potentialCorners.filter(c => c.x !== corner.x || c.y !== corner.y);
-            spawnCell = otherCorners[0] || this.maze.floorCells[this.maze.floorCells.length - 1];
+            // For 5th cop or overflow, pick furthest available floor cell
+            const sortedFloor = [...this.maze.floorCells].sort((a, b) => b.dist - a.dist);
+            spawnCell = sortedFloor[Math.min(idx * 3, sortedFloor.length - 1)];
           }
 
           this.monsters.push({
-            id: mCfg.id,
-            name: mCfg.name || `Patrol ${idx + 1}`,
+            id: mCfg.id || `cop${idx + 1}`,
+            name: mCfg.name || `Unit 0${idx + 1}`,
             x: spawnCell.x + 0.5,
             y: spawnCell.y + 0.5,
-            state: mCfg.initialState,
+            state: mCfg.initialState || 'WANDER',
             target: null,
             path: [],
             searchTimer: 0,
             wanderPauseTimer: 0,
-            speed: (this.settings.assistMode ? mCfg.speed * 0.8 : mCfg.speed) || CONFIG.MONSTER_DEFAULT_SPEED,
-            footstepRadius: (this.settings.assistMode ? mCfg.footstepRadius * 0.5 : mCfg.footstepRadius) || 2.5,
+            speed: (this.settings.assistMode ? (mCfg.speed || CONFIG.MONSTER_DEFAULT_SPEED) * 0.8 : (mCfg.speed || CONFIG.MONSTER_DEFAULT_SPEED)),
+            footstepRadius: (this.settings.assistMode ? (mCfg.footstepRadius || 2.5) * 0.5 : (mCfg.footstepRadius || 2.5)),
             pingRadius: mCfg.pingRadius || CONFIG.PING_NOISE_RADIUS,
-            growlPitch: mCfg.growlPitch || 100,
+            growlPitch: mCfg.growlPitch || (80 + idx * 25),
             hasPulseOnSearch: Boolean(mCfg.hasPulseOnSearch),
             lastPulseTime: -999,
             // Police Siren Lights & Animations
             isCop: true,
-            sirenAngle: Math.random() * Math.PI * 2,
-            copChirpTimer: 4.0
+            sirenAngle: (idx * (Math.PI / 2.5)) % (Math.PI * 2),
+            sirenSpeed: 5.5 + (idx % 3) * 1.5,
+            copChirpTimer: 3.0 + idx * 1.5
           });
         });
       }
@@ -1903,6 +2099,8 @@
     showTitleScreen() {
       this.state = 'TITLE';
       this.audio.cleanupAll();
+      const selLevel = document.getElementById('sel-level-select');
+      if (selLevel) selLevel.value = (this.levelIndex + 1).toString();
       document.getElementById('title-modal').classList.remove('modal-hidden');
       document.getElementById('pause-modal').classList.add('modal-hidden');
       document.getElementById('captured-modal').classList.add('modal-hidden');
@@ -2125,6 +2323,13 @@
       }
 
       // 1B. Dynamic Suspense Blackout Thriller Cycle (Blinks and blacks out periodically)
+      // Thriller & difficulty scale with higher levels: blackouts become more frequent and longer!
+      const levelProgress = Math.min(1.0, this.levelIndex / 14); // 0.0 at Level 1, 1.0 at Level 15
+      const minVisible = CONFIG.BLACKOUT_MIN_VISIBLE * (1.0 - 0.45 * levelProgress); // 4.0s down to 2.2s
+      const maxVisible = CONFIG.BLACKOUT_MAX_VISIBLE * (1.0 - 0.40 * levelProgress); // 7.5s down to 4.5s
+      const minDark = CONFIG.BLACKOUT_MIN_DARK * (1.0 + 0.85 * levelProgress);       // 2.2s up to 4.07s
+      const maxDark = CONFIG.BLACKOUT_MAX_DARK * (1.0 + 0.85 * levelProgress);       // 4.2s up to 7.77s
+
       this.blackoutTimer -= dt;
       if (this.blackoutState === 'VISIBLE') {
         this.blackoutIntensity = 1.0;
@@ -2136,14 +2341,14 @@
         this.blackoutIntensity = (Math.sin(now * 38) > 0) ? 0.75 : 0.08;
         if (this.blackoutTimer <= 0) {
           this.blackoutState = 'BLACKOUT';
-          // Randomized blackout duration (e.g. 2.2s to 4.2s)
-          this.blackoutTimer = CONFIG.BLACKOUT_MIN_DARK + Math.random() * (CONFIG.BLACKOUT_MAX_DARK - CONFIG.BLACKOUT_MIN_DARK);
+          // Randomized blackout duration scaling with level difficulty
+          this.blackoutTimer = minDark + Math.random() * (maxDark - minDark);
           this.blackoutIntensity = 0.0;
           this.audio.playPowerCut();
-          this.shakeAmount = 4;
+          this.shakeAmount = 4 + Math.round(levelProgress * 3);
           const hint = document.getElementById('hint-box');
           if (hint) {
-            hint.textContent = '⚡ BLACKOUT! RELY ON YOUR COMPASS & SONAR PING!';
+            hint.textContent = `⚡ BLACKOUT! (${this.monsters.length} COP${this.monsters.length > 1 ? 'S' : ''} IN THE DARK — USE COMPASS & SONAR!)`;
             hint.style.opacity = '1';
             hint.style.color = '#ff3355';
           }
@@ -2152,8 +2357,8 @@
         this.blackoutIntensity = 0.0;
         if (this.blackoutTimer <= 0) {
           this.blackoutState = 'VISIBLE';
-          // Randomized visible duration (e.g. 4.0s to 7.5s)
-          this.blackoutTimer = CONFIG.BLACKOUT_MIN_VISIBLE + Math.random() * (CONFIG.BLACKOUT_MAX_VISIBLE - CONFIG.BLACKOUT_MIN_VISIBLE);
+          // Randomized visible duration scaling with level difficulty
+          this.blackoutTimer = minVisible + Math.random() * (maxVisible - minVisible);
           this.blackoutIntensity = 1.0;
           this.audio.playPowerSurge();
           this.shakeAmount = 3;
