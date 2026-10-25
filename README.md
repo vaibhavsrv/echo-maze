@@ -3,7 +3,8 @@
 
 A tactical acoustic-stealth maze thriller built for the **ODS Weekly Dev Jam**.
 
-🎮 **Play Live Online:** [https://vaibhavsrv.github.io/echo-maze/](https://vaibhavsrv.github.io/echo-maze/)
+🎮 **Play Live Online:** [https://vaibhavsrv.github.io/echo-maze/](https://vaibhavsrv.github.io/echo-maze/)  
+📜 **Prompt Evolution Log (43 Steps):** [PROMPTS.md](PROMPTS.md)
 
 ---
 
