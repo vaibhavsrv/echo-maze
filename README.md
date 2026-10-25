@@ -14,8 +14,9 @@ A tactical acoustic-stealth maze thriller built for the **ODS Weekly Dev Jam**.
 - **Dynamic Suspense Blackout Cycle**: High-voltage electrical power cuts plunge the labyrinth into total darkness with warning flickers and acoustic surges. Blackout duration and frequency escalate in higher levels.
 - **Anti-Clockwise Countdown Dial**: A cyber radial dial sweeps counter-clockwise with mechanical audio ticking and emergency lockdown upon hitting 0.
 - **Acoustic Gate Clues**: Dynamic golden compass needle rotating on the player's perimeter ring pointing directly to the gate, accompanied by drifting golden echo wisps.
-- **Synthesized Web Audio**: 100% procedurally synthesized audio (sonar pings, footsteps, power cuts, power surges, cop siren chirps, clock ticks, dynamic proximity heartbeat, and resonant portal hums). Zero external assets.
-- **Mission Level Selector**: Jump straight to any of the 15 levels directly from the Title Screen.
+- **Sequential Campaign (1 &rarr; 15)**: Levels must be cleared in strict linear sequence ($1 \to 2 \to 3 \to 4 \dots \to 15$).
+- **Permadeath Failure Reset**: High stakes! If you are caught by a cop or run out of time at *any* stage (e.g., Level 4), the run fails and you must restart from **Level 1**!
+- **Mission Level Selector (Practice)**: Jump directly to any of the 15 levels from the Title Screen to inspect or practice specific sectors.
 - **Cross-Device Ready**: Full support for desktop keyboard (WASD / Arrows), touch D-Pad, and swipe gestures on mobile devices (iOS, Android, Tablets).
 
 ---

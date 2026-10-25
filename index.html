@@ -659,10 +659,10 @@
       <div class="title-logo">ECHO MAZE</div>
       <div class="tagline">Light costs noise. The clock is ticking.</div>
       <div class="menu-box">
-        <button class="menu-btn" id="btn-start-game">ENTER THE MAZE</button>
+        <button class="menu-btn" id="btn-start-game">START CAMPAIGN (LEVEL 1)</button>
         
         <div class="settings-row">
-          <span>MISSION LEVEL</span>
+          <span>PRACTICE / JUMP LEVEL</span>
           <select id="sel-level-select" style="background: #0f172a; color: var(--radar-cyan); border: 1.5px solid var(--radar-cyan); border-radius: 6px; padding: 5px 8px; font-family: var(--font-mono); font-size: 11px; cursor: pointer; max-width: 190px;">
             <option value="1">L1: Rookie Patrol (1 Cop)</option>
             <option value="2">L2: Dormant Ear (1 Cop)</option>
@@ -697,11 +697,12 @@
       </div>
 
       <div class="controls-guide">
-        WASD / ARROWS : 1-Block Grid Step (Path turns black!)<br>
+        WASD / ARROWS : 1-Block Grid Step (Path turns black behind you!)<br>
         SHIFT : Creep (Silent Step)<br>
         SPACE : Sonar Pulse (Reveals Walls &amp; Attracts Patrol)<br>
         GOLDEN ARROW : Compass Clue pointing toward Exit Gate<br>
-        ESC : Pause &nbsp;|&nbsp; R : Quick Restart
+        ESC : Pause &nbsp;|&nbsp; R : Restart Run<br>
+        <span style="color: #ff3355; font-weight: 700; letter-spacing: 0.5px;">🔥 SEQUENTIAL CAMPAIGN: Levels 1 &rarr; 15. If you fail at any level, you restart from Level 1!</span>
       </div>
     </div>
 
@@ -710,7 +711,7 @@
       <div class="title-logo" style="font-size: 38px; margin-bottom: 14px;">PAUSED</div>
       <div class="menu-box">
         <button class="menu-btn" id="btn-resume">RESUME</button>
-        <button class="menu-btn" id="btn-restart">RESTART LEVEL (R)</button>
+        <button class="menu-btn btn-danger" id="btn-restart">RESTART RUN FROM LEVEL 1 (R)</button>
         <button class="menu-btn" id="btn-main-menu">MAIN MENU</button>
 
         <div class="settings-row" style="margin-top: 8px;">
@@ -727,32 +728,34 @@
     <!-- Captured / HEARD Screen Modal -->
     <div class="modal-overlay modal-hidden" id="captured-modal">
       <div class="heard-title">HEARD.</div>
-      <div class="heard-sub">The patrol cornered you in the dark.</div>
+      <div class="heard-sub" id="captured-sub">The patrol cornered you. Campaign failed — restart from Level 1!</div>
       <div class="menu-box">
-        <button class="menu-btn btn-danger" id="btn-retry">RETRY LEVEL</button>
+        <button class="menu-btn btn-danger" id="btn-retry">RESTART FROM LEVEL 1 (R)</button>
+        <button class="menu-btn" id="btn-captured-menu">MAIN MENU</button>
       </div>
     </div>
 
     <!-- Lockdown / Time Expired Modal -->
     <div class="modal-overlay modal-hidden" id="timeout-modal">
       <div class="heard-title" style="color: #ff3355; font-size: 52px;">LOCKDOWN.</div>
-      <div class="heard-sub">Time expired. The gate sealed shut in the dark.</div>
+      <div class="heard-sub" id="timeout-sub">Time expired. Gate sealed shut. Campaign failed — restart from Level 1!</div>
       <div class="menu-box">
-        <button class="menu-btn btn-danger" id="btn-timeout-retry">RETRY LEVEL (R)</button>
+        <button class="menu-btn btn-danger" id="btn-timeout-retry">RESTART FROM LEVEL 1 (R)</button>
+        <button class="menu-btn" id="btn-timeout-menu">MAIN MENU</button>
       </div>
     </div>
 
     <!-- Victory Screen Modal -->
     <div class="modal-overlay modal-hidden" id="victory-modal">
-      <div class="victory-title">RESONANCE REACHED</div>
+      <div class="victory-title" id="victory-title">RESONANCE REACHED</div>
       <div class="stats-card">
-        <div class="stat-line"><span>LEVEL:</span><span class="stat-val" id="stat-level">1 / 15</span></div>
-        <div class="stat-line"><span>TIME LEFT:</span><span class="stat-val" id="stat-time">0:00</span></div>
+        <div class="stat-line"><span>LEVEL COMPLETED:</span><span class="stat-val" id="stat-level">1 / 15</span></div>
+        <div class="stat-line"><span>TIME TAKEN:</span><span class="stat-val" id="stat-time">0:00</span></div>
         <div class="stat-line"><span>SONAR PINGS:</span><span class="stat-val" id="stat-pings">0</span></div>
       </div>
       <div class="menu-box">
-        <button class="menu-btn" id="btn-next-level">NEXT LEVEL</button>
-        <button class="menu-btn" id="btn-replay">REPLAY LEVEL</button>
+        <button class="menu-btn" id="btn-next-level">PROCEED TO NEXT LEVEL ▶</button>
+        <button class="menu-btn" id="btn-victory-menu">MAIN MENU</button>
       </div>
     </div>
   </div>
@@ -1795,7 +1798,7 @@
       });
 
       document.getElementById('btn-restart').addEventListener('click', () => {
-        this.restartLevel();
+        this.restartCampaign();
       });
 
       document.getElementById('btn-main-menu').addEventListener('click', () => {
@@ -1803,23 +1806,45 @@
       });
 
       document.getElementById('btn-retry').addEventListener('click', () => {
-        this.restartLevel();
+        this.restartCampaign();
       });
 
       const btnTimeout = document.getElementById('btn-timeout-retry');
       if (btnTimeout) {
         btnTimeout.addEventListener('click', () => {
-          this.restartLevel();
+          this.restartCampaign();
+        });
+      }
+
+      const btnCapMenu = document.getElementById('btn-captured-menu');
+      if (btnCapMenu) {
+        btnCapMenu.addEventListener('click', () => {
+          this.showTitleScreen();
+        });
+      }
+
+      const btnTimeMenu = document.getElementById('btn-timeout-menu');
+      if (btnTimeMenu) {
+        btnTimeMenu.addEventListener('click', () => {
+          this.showTitleScreen();
+        });
+      }
+
+      const btnVicMenu = document.getElementById('btn-victory-menu');
+      if (btnVicMenu) {
+        btnVicMenu.addEventListener('click', () => {
+          this.showTitleScreen();
         });
       }
 
       document.getElementById('btn-next-level').addEventListener('click', () => {
-        this.levelIndex = (this.levelIndex + 1) % CONFIG.LEVELS.length;
-        this.startLevel(this.levelIndex);
-      });
-
-      document.getElementById('btn-replay').addEventListener('click', () => {
-        this.restartLevel();
+        if (this.levelIndex < CONFIG.LEVELS.length - 1) {
+          this.levelIndex++;
+          this.startLevel(this.levelIndex);
+        } else {
+          // Completed all 15 levels! Restart full campaign from Level 1
+          this.restartCampaign();
+        }
       });
 
       const handleAssistChange = (e) => {
@@ -2014,8 +2039,17 @@
       this.monsterPulses = [];
       this.noiseEvents = [];
       this.totalPingsUsed = 0;
-      this.levelStartTime = performance.now();
-      this.firstRunHintTimer = 5.0;
+      this.firstRunHintTimer = 4.5;
+      const initialHint = document.getElementById('hint-box');
+      if (initialHint) {
+        if (this.levelIndex === 0) {
+          initialHint.textContent = '🔥 SEQUENTIAL CAMPAIGN: Clear 15 levels! If you fail, you restart from Level 1!';
+        } else {
+          initialHint.textContent = `LEVEL ${this.levelIndex + 1} / 15: Reach the beacon! If you get caught, you restart from Level 1!`;
+        }
+        initialHint.style.opacity = '1';
+        initialHint.style.color = 'var(--radar-cyan)';
+      }
 
       // Setup Bell Decoy (Stage 5A)
       this.bell = null;
@@ -2119,8 +2153,14 @@
       }
     }
 
+    restartCampaign() {
+      this.levelIndex = 0;
+      this.startLevel(0);
+    }
+
     restartLevel() {
-      this.startLevel(this.levelIndex);
+      // Sequential campaign rule: failing or restarting resets back to Level 1
+      this.restartCampaign();
     }
 
     triggerSonarPing() {
@@ -2235,8 +2275,19 @@
 
     triggerCapture() {
       if (this.state !== 'PLAYING') return;
+      const failedLevel = this.levelIndex + 1;
       this.state = 'CAPTURED';
       this.audio.playCapture();
+
+      const capSub = document.getElementById('captured-sub');
+      if (capSub) {
+        capSub.textContent = `The patrol caught you at Level ${failedLevel}. Sequential campaign failed — restart from Level 1!`;
+      }
+
+      // Per rule: failing resets campaign progress back to Level 1
+      this.levelIndex = 0;
+      const selLevel = document.getElementById('sel-level-select');
+      if (selLevel) selLevel.value = "1";
 
       const flash = document.getElementById('screen-flash');
       flash.style.opacity = '0.7';
@@ -2249,8 +2300,19 @@
 
     triggerTimeout() {
       if (this.state !== 'PLAYING') return;
+      const failedLevel = this.levelIndex + 1;
       this.state = 'TIMEOUT';
       this.audio.playCapture();
+
+      const timeSub = document.getElementById('timeout-sub');
+      if (timeSub) {
+        timeSub.textContent = `Time expired at Level ${failedLevel}. The gate sealed shut — restart from Level 1!`;
+      }
+
+      // Per rule: failing resets campaign progress back to Level 1
+      this.levelIndex = 0;
+      const selLevel = document.getElementById('sel-level-select');
+      if (selLevel) selLevel.value = "1";
 
       const flash = document.getElementById('screen-flash');
       flash.style.opacity = '0.8';
@@ -2270,6 +2332,18 @@
       const elapsedSec = (performance.now() - this.levelStartTime) / 1000;
       const mins = Math.floor(elapsedSec / 60);
       const secs = Math.floor(elapsedSec % 60).toString().padStart(2, '0');
+
+      const isFinalLevel = (this.levelIndex === CONFIG.LEVELS.length - 1);
+      const titleElem = document.getElementById('victory-title');
+      const nextBtn = document.getElementById('btn-next-level');
+
+      if (isFinalLevel) {
+        if (titleElem) titleElem.textContent = '🏆 CAMPAIGN CONQUERED! 🏆';
+        if (nextBtn) nextBtn.textContent = 'RESTART CAMPAIGN FROM LEVEL 1';
+      } else {
+        if (titleElem) titleElem.textContent = 'RESONANCE REACHED';
+        if (nextBtn) nextBtn.textContent = `PROCEED TO LEVEL ${this.levelIndex + 2} ▶`;
+      }
 
       document.getElementById('stat-level').textContent = `${this.levelIndex + 1} / ${CONFIG.LEVELS.length}`;
       document.getElementById('stat-time').textContent = `${mins}:${secs}`;
