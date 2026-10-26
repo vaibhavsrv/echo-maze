@@ -614,7 +614,7 @@
         </div>
       </div>
 
-      <div id="hint-box">Step by 1 block (WASD / Arrows). Path turns black behind you!</div>
+      <div id="hint-box">Tactical Movement: W (Up) | S (Down) | A (Left) | D (Right). Path collapses to black!</div>
     </div>
 
     <!-- Mobile On-Screen Touch Controls (Visible on Touch Devices & Mobile) -->
@@ -697,7 +697,7 @@
       </div>
 
       <div class="controls-guide">
-        WASD / ARROWS : 1-Block Grid Step (Path turns black behind you!)<br>
+        MOVEMENT: W (Up) | S (Down) | A (Left) | D (Right) or Arrow Keys<br>
         SHIFT : Creep (Silent Step)<br>
         SPACE : Sonar Pulse (Reveals Walls &amp; Attracts Patrol)<br>
         GOLDEN ARROW : Compass Clue pointing toward Exit Gate<br>
@@ -1669,6 +1669,8 @@
       this.userPinged = false;
 
       this.keys = {};
+      this.activeMovementKeys = [];
+      this.bufferedMove = null;
 
       this.maze = null;
       this.player = null;
@@ -1742,28 +1744,69 @@
     }
 
     initEvents() {
+      const MOVEMENT_MAP = {
+        'w': { dx: 0, dy: -1 },
+        'KeyW': { dx: 0, dy: -1 },
+        'arrowup': { dx: 0, dy: -1 },
+        'ArrowUp': { dx: 0, dy: -1 },
+
+        's': { dx: 0, dy: 1 },
+        'KeyS': { dx: 0, dy: 1 },
+        'arrowdown': { dx: 0, dy: 1 },
+        'ArrowDown': { dx: 0, dy: 1 },
+
+        'a': { dx: -1, dy: 0 },
+        'KeyA': { dx: -1, dy: 0 },
+        'arrowleft': { dx: -1, dy: 0 },
+        'ArrowLeft': { dx: -1, dy: 0 },
+
+        'd': { dx: 1, dy: 0 },
+        'KeyD': { dx: 1, dy: 0 },
+        'arrowright': { dx: 1, dy: 0 },
+        'ArrowRight': { dx: 1, dy: 0 }
+      };
+      this.movementMap = MOVEMENT_MAP;
+
       window.addEventListener('keydown', (e) => {
         this.audio.ensureContext();
-        this.keys[e.key.toLowerCase()] = true;
-        this.keys[e.code] = true;
+        const keyLower = e.key.toLowerCase();
+        const code = e.code;
+        this.keys[keyLower] = true;
+        this.keys[code] = true;
+
+        // Dedicated W (upside), S (downward), A (left), D (right) and Arrow input handling
+        if (MOVEMENT_MAP[code] || MOVEMENT_MAP[keyLower]) {
+          e.preventDefault();
+          const move = MOVEMENT_MAP[code] || MOVEMENT_MAP[keyLower];
+          this.bufferedMove = { dx: move.dx, dy: move.dy, time: performance.now() };
+          const id = code || keyLower;
+          if (!this.activeMovementKeys.includes(id)) {
+            this.activeMovementKeys.push(id);
+          }
+        }
 
         if (e.key === 'Escape') {
           this.togglePause();
-        } else if (e.key.toLowerCase() === 'r') {
+        } else if (keyLower === 'r') {
           if (this.state === 'PLAYING' || this.state === 'PAUSED' || this.state === 'CAPTURED' || this.state === 'TIMEOUT') {
             this.restartLevel();
           }
         } else if (e.code === 'Space') {
           e.preventDefault();
           this.triggerSonarPing();
-        } else if (e.key.toLowerCase() === 'e') {
+        } else if (keyLower === 'e') {
           this.triggerBellInteract();
         }
       });
 
       window.addEventListener('keyup', (e) => {
-        this.keys[e.key.toLowerCase()] = false;
-        this.keys[e.code] = false;
+        const keyLower = e.key.toLowerCase();
+        const code = e.code;
+        this.keys[keyLower] = false;
+        this.keys[code] = false;
+
+        const id = code || keyLower;
+        this.activeMovementKeys = this.activeMovementKeys.filter(k => k !== id && k !== code && k !== keyLower);
       });
 
       const selLevel = document.getElementById('sel-level-select');
@@ -1882,12 +1925,18 @@
           ev.preventDefault();
           this.audio.ensureContext();
           this.keys[keyName] = true;
+          if (!this.activeMovementKeys.includes(keyName)) {
+            this.activeMovementKeys.push(keyName);
+          }
+          const m = this.movementMap && this.movementMap[keyName];
+          if (m) this.bufferedMove = { dx: m.dx, dy: m.dy, time: performance.now() };
           el.classList.add('active');
           if (navigator.vibrate) navigator.vibrate(12);
         };
         const release = (ev) => {
           ev.preventDefault();
           this.keys[keyName] = false;
+          this.activeMovementKeys = this.activeMovementKeys.filter(k => k !== keyName);
           el.classList.remove('active');
         };
         el.addEventListener('touchstart', press, { passive: false });
@@ -2452,8 +2501,11 @@
       }
 
       // 3. 1-Block Discrete Grid Movement with Smooth Tween & Squash
+      const isCreeping = this.keys['shift'] || this.keys['ShiftLeft'] || this.keys['ShiftRight'];
+      const stepDuration = isCreeping ? (CONFIG.STEP_DURATION * 1.5) : CONFIG.STEP_DURATION;
+
       if (this.player.moveProgress < 1.0) {
-        this.player.moveProgress = Math.min(1.0, this.player.moveProgress + dt / CONFIG.STEP_DURATION);
+        this.player.moveProgress = Math.min(1.0, this.player.moveProgress + dt / stepDuration);
         const t = 1 - Math.pow(1 - this.player.moveProgress, 3);
         this.player.x = this.player.fromX + (this.player.targetX - this.player.fromX) * t;
         this.player.y = this.player.fromY + (this.player.targetY - this.player.fromY) * t;
@@ -2466,56 +2518,94 @@
         this.player.squashX += (1.0 - this.player.squashX) * 12 * dt;
         this.player.squashY += (1.0 - this.player.squashY) * 12 * dt;
 
-        // Check arrow / WASD inputs for next 1-block step
-        let dx = 0, dy = 0;
-        if (this.keys['arrowup'] || this.keys['w'] || this.keys['KeyW']) dy = -1;
-        else if (this.keys['arrowdown'] || this.keys['s'] || this.keys['KeyS']) dy = 1;
-        else if (this.keys['arrowleft'] || this.keys['a'] || this.keys['KeyA']) dx = -1;
-        else if (this.keys['arrowright'] || this.keys['d'] || this.keys['KeyD']) dx = 1;
+        // Dedicated directional resolution:
+        // w -> upside movement (dy = -1)
+        // s -> downward movement (dy = 1)
+        // a -> left movement (dx = -1)
+        // d -> right movement (dx = 1)
+        let chosenDx = 0, chosenDy = 0;
 
-        if (dx !== 0 || dy !== 0) {
-          const nextGX = this.player.gridX + dx;
-          const nextGY = this.player.gridY + dy;
+        const canMove = (dx, dy) => {
+          const ngx = this.player.gridX + dx;
+          const ngy = this.player.gridY + dy;
+          return (ngx >= 0 && ngx < this.maze.W && ngy >= 0 && ngy < this.maze.H && this.maze.grid[ngy][ngx] === 0);
+        };
 
-          if (nextGX >= 0 && nextGX < this.maze.W && nextGY >= 0 && nextGY < this.maze.H && this.maze.grid[nextGY][nextGX] === 0) {
-            this.userMoved = true;
-            // WHEREVER STARTED MOVING, PATH TURNS PITCH BLACK!
-            this.voidTrail[this.player.gridY][this.player.gridX] = true;
-            this.addVoidCrumble(this.player.gridX, this.player.gridY);
+        // Priority 1: Check buffered move from quick key taps during animation
+        if (this.bufferedMove && (performance.now() - this.bufferedMove.time) < 320) {
+          if (canMove(this.bufferedMove.dx, this.bufferedMove.dy)) {
+            chosenDx = this.bufferedMove.dx;
+            chosenDy = this.bufferedMove.dy;
+          }
+        }
+        this.bufferedMove = null;
 
-            // Initiate 1-block step
-            this.player.fromX = this.player.x;
-            this.player.fromY = this.player.y;
-            this.player.gridX = nextGX;
-            this.player.gridY = nextGY;
-            this.player.targetX = nextGX + 0.5;
-            this.player.targetY = nextGY + 0.5;
-            this.player.moveProgress = 0.0;
-
-            // Crazy squash and stretch animation
-            if (dx !== 0) {
-              this.player.squashX = 1.35;
-              this.player.squashY = 0.72;
-            } else {
-              this.player.squashX = 0.72;
-              this.player.squashY = 1.35;
+        // Priority 2: Check currently held keys in order of latest keypress
+        if (chosenDx === 0 && chosenDy === 0 && this.activeMovementKeys.length > 0) {
+          for (let i = this.activeMovementKeys.length - 1; i >= 0; i--) {
+            const k = this.activeMovementKeys[i];
+            const m = this.movementMap && this.movementMap[k];
+            if (m && canMove(m.dx, m.dy)) {
+              chosenDx = m.dx;
+              chosenDy = m.dy;
+              break;
             }
+          }
+        }
 
-            this.audio.playStepHop();
+        // Priority 3: Direct key state fallback
+        if (chosenDx === 0 && chosenDy === 0) {
+          if ((this.keys['w'] || this.keys['KeyW'] || this.keys['arrowup']) && canMove(0, -1)) {
+            chosenDy = -1; // w: upside movement
+          } else if ((this.keys['s'] || this.keys['KeyS'] || this.keys['arrowdown']) && canMove(0, 1)) {
+            chosenDy = 1;  // s: downward movement
+          } else if ((this.keys['a'] || this.keys['KeyA'] || this.keys['arrowleft']) && canMove(-1, 0)) {
+            chosenDx = -1; // a: left movement
+          } else if ((this.keys['d'] || this.keys['KeyD'] || this.keys['arrowright']) && canMove(1, 0)) {
+            chosenDx = 1;  // d: right movement
+          }
+        }
 
-            const isCreeping = this.keys['shift'] || this.keys['ShiftLeft'] || this.keys['ShiftRight'];
-            if (!isCreeping) {
-              this.player.footstepDistAccum += 1.0;
-              if (this.player.footstepDistAccum >= CONFIG.FOOTSTEP_DISTANCE_INTERVAL) {
-                this.player.footstepDistAccum = 0;
-                if (levelCfg.footstepsHeard) {
-                  this.emitNoiseEvent({
-                    type: 'footstep',
-                    x: this.player.targetX,
-                    y: this.player.targetY,
-                    radius: 2.5
-                  });
-                }
+        if (chosenDx !== 0 || chosenDy !== 0) {
+          const nextGX = this.player.gridX + chosenDx;
+          const nextGY = this.player.gridY + chosenDy;
+
+          this.userMoved = true;
+          // WHEREVER STARTED MOVING, PATH TURNS PITCH BLACK!
+          this.voidTrail[this.player.gridY][this.player.gridX] = true;
+          this.addVoidCrumble(this.player.gridX, this.player.gridY);
+
+          // Initiate 1-block step
+          this.player.fromX = this.player.x;
+          this.player.fromY = this.player.y;
+          this.player.gridX = nextGX;
+          this.player.gridY = nextGY;
+          this.player.targetX = nextGX + 0.5;
+          this.player.targetY = nextGY + 0.5;
+          this.player.moveProgress = 0.0;
+
+          // Squash and stretch bounce animation
+          if (chosenDx !== 0) {
+            this.player.squashX = 1.35;
+            this.player.squashY = 0.72;
+          } else {
+            this.player.squashX = 0.72;
+            this.player.squashY = 1.35;
+          }
+
+          this.audio.playStepHop();
+
+          if (!isCreeping) {
+            this.player.footstepDistAccum += 1.0;
+            if (this.player.footstepDistAccum >= CONFIG.FOOTSTEP_DISTANCE_INTERVAL) {
+              this.player.footstepDistAccum = 0;
+              if (levelCfg.footstepsHeard) {
+                this.emitNoiseEvent({
+                  type: 'footstep',
+                  x: this.player.targetX,
+                  y: this.player.targetY,
+                  radius: 2.5
+                });
               }
             }
           }

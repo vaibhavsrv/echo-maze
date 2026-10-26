@@ -281,6 +281,21 @@ the level should be cross at the sequence like 1->2->3->4 if someone fails at 4 
 - **Permadeath Level Reset:** Capture or countdown timeout at any level immediately resets campaign progress to Stage 1 (`this.levelIndex = 0`).
 - **Terminal State Messaging:** Updated fail dialogs to reflect exact failure stage and prompt immediate restart from Level 1.
 
+### Prompt 44: Dedicated Directional WASD Controls
+```text
+w - upside movement, s - downward movement, a- left movement and d - right movement this should be the movement
+```
+**Technical Implementation:**
+- **Explicit Directional Key Mapping:**
+  - `W` / `KeyW`: Upside movement (`dy = -1, dx = 0`).
+  - `S` / `KeyS`: Downward movement (`dy = 1, dx = 0`).
+  - `A` / `KeyA`: Left movement (`dx = -1, dy = 0`).
+  - `D` / `KeyD`: Right movement (`dx = 1, dy = 0`).
+- **Input Buffering and Multi-Key Queue:** Added an input buffer queue and arrival-order key tracking (`activeMovementKeys`) so directional taps during hop transitions are never swallowed.
+- **Corner Sliding and Preemption:** If an active directional key encounters a wall boundary, secondary held movement keys immediately take priority without halting player momentum.
+- **Browser Event Optimization:** Called `preventDefault()` on all movement keys (`W`, `A`, `S`, `D`, and Arrow keys) to eliminate window scrolling artifacts and browser shortcut contention.
+- **Interface Guidance:** Updated title screen guide and in-game tutorial hint box with explicit WASD directional mappings.
+
 ---
 
 ## 7. Compliance and Verification Summary
