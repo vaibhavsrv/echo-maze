@@ -691,6 +691,10 @@
           <input type="range" id="rng-volume" min="0" max="100" value="80">
         </div>
         <div class="settings-row">
+          <span>REDUCED EFFECTS</span>
+          <input type="checkbox" id="chk-reduced-effects">
+        </div>
+        <div class="settings-row">
           <span>MUTE AUDIO</span>
           <input type="checkbox" id="chk-mute">
         </div>
@@ -717,6 +721,10 @@
         <div class="settings-row" style="margin-top: 8px;">
           <span>ASSIST MODE</span>
           <input type="checkbox" id="chk-pause-assist">
+        </div>
+        <div class="settings-row">
+          <span>REDUCED EFFECTS</span>
+          <input type="checkbox" id="chk-pause-reduced-effects">
         </div>
         <div class="settings-row">
           <span>VOLUME</span>
@@ -781,6 +789,16 @@
     BLACKOUT_MAX_DARK: 4.2,
     BLACKOUT_WARNING_TIME: 0.85, // seconds of electric flickering before cut-off
     
+    // V1.1 Budgets & Performance
+    MAX_PARTICLES: 150,
+    DUST_PARTICLES_COUNT: 45,
+    PARTICLE_FADE_SPEED: 0.9,
+    WISP_PROGRESS_SPEED: 0.8,
+    MAX_FLASHES_PER_SEC: 2,
+    MAX_FLASH_BRIGHTNESS: 0.48, // strictly below 50% brightness change
+    FLASH_DURATION_MS: 200,
+    TARGET_FRAME_TIME_MS: 8.0,
+
     // Physics & Timing
     WALL_FADE_DURATION: 3.5, // walls revealed by sonar fade over 3.5s
     SONAR_SPEED: 14.0, // tiles per second
@@ -1619,7 +1637,7 @@
     static STORAGE_KEY = 'echo_maze_settings_v1';
 
     static load() {
-      const defaults = { assistMode: false, volume: 80, isMuted: false };
+      const defaults = { assistMode: false, volume: 80, isMuted: false, reducedEffects: false };
       try {
         const raw = localStorage.getItem(this.STORAGE_KEY);
         if (!raw) return defaults;
@@ -1627,7 +1645,8 @@
         return {
           assistMode: typeof parsed.assistMode === 'boolean' ? parsed.assistMode : defaults.assistMode,
           volume: typeof parsed.volume === 'number' ? clamp(parsed.volume, 0, 100) : defaults.volume,
-          isMuted: typeof parsed.isMuted === 'boolean' ? parsed.isMuted : defaults.isMuted
+          isMuted: typeof parsed.isMuted === 'boolean' ? parsed.isMuted : defaults.isMuted,
+          reducedEffects: typeof parsed.reducedEffects === 'boolean' ? parsed.reducedEffects : defaults.reducedEffects
         };
       } catch (err) {
         return defaults;
@@ -1681,18 +1700,35 @@
       this.noiseEvents = [];
       this.bell = null;
 
-      // Void Trail & Crazy Particle Systems
+      // Void Trail & V1.1 Pre-allocated Static Particle Pool (Strict max 150 live particles, zero per-frame allocation)
       this.voidTrail = []; // grid of tiles stepped on (rendered pure pitch black!)
-      this.voidParticles = []; // dark embers from consumed tiles
-      this.wispParticles = []; // golden guide wisps drifting to exit
-      this.dustParticles = Array.from({ length: 45 }, () => ({
-        x: (Math.random() - 0.5) * 22,
-        y: (Math.random() - 0.5) * 22,
-        vx: (Math.random() - 0.5) * 0.2,
-        vy: (Math.random() - 0.5) * 0.2,
-        size: Math.random() * 1.5 + 0.8,
-        alpha: Math.random() * 0.4 + 0.2
+      this.particlePool = Array.from({ length: CONFIG.MAX_PARTICLES }, () => ({
+        active: false,
+        type: 'dust',
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        targetX: 0,
+        targetY: 0,
+        progress: 0,
+        size: 1.0,
+        alpha: 0
       }));
+      // Pre-allocate ambient dust particles in pool
+      for (let i = 0; i < CONFIG.DUST_PARTICLES_COUNT; i++) {
+        const p = this.particlePool[i];
+        p.active = true;
+        p.type = 'dust';
+        p.x = (Math.random() - 0.5) * 22;
+        p.y = (Math.random() - 0.5) * 22;
+        p.vx = (Math.random() - 0.5) * 0.2;
+        p.vy = (Math.random() - 0.5) * 0.2;
+        p.size = Math.random() * 1.5 + 0.8;
+        p.alpha = Math.random() * 0.4 + 0.2;
+      }
+      this.flashTimestamps = [];
+      this.flashTimeoutId = null;
 
       // Countdown Timer State
       this.levelTimeLimit = 35;
@@ -1722,9 +1758,97 @@
       requestAnimationFrame(this.loop.bind(this));
     }
 
+    isReducedEffects() {
+      if (this.settings && this.settings.reducedEffects) return true;
+      if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return true;
+      }
+      return false;
+    }
+
+    getActiveParticleCount() {
+      if (this.isReducedEffects()) return 0;
+      let count = 0;
+      for (let i = 0; i < this.particlePool.length; i++) {
+        if (this.particlePool[i].active) count++;
+      }
+      return count;
+    }
+
+    spawnParticle(type, initFn) {
+      if (this.isReducedEffects()) return null;
+      // Re-use first inactive slot in pool (zero per-frame allocation)
+      for (let i = 0; i < this.particlePool.length; i++) {
+        const p = this.particlePool[i];
+        if (!p.active) {
+          p.active = true;
+          p.type = type;
+          initFn(p);
+          return p;
+        }
+      }
+      // If pool is fully saturated at 150 particles, re-use oldest dynamic slot
+      for (let i = CONFIG.DUST_PARTICLES_COUNT; i < this.particlePool.length; i++) {
+        const p = this.particlePool[i];
+        p.active = true;
+        p.type = type;
+        initFn(p);
+        return p;
+      }
+      return null;
+    }
+
+    resetParticles() {
+      if (!this.particlePool) return;
+      for (let i = 0; i < this.particlePool.length; i++) {
+        const p = this.particlePool[i];
+        if (i < CONFIG.DUST_PARTICLES_COUNT) {
+          p.active = true;
+          p.type = 'dust';
+          p.x = (Math.random() - 0.5) * 22;
+          p.y = (Math.random() - 0.5) * 22;
+          p.vx = (Math.random() - 0.5) * 0.2;
+          p.vy = (Math.random() - 0.5) * 0.2;
+          p.size = Math.random() * 1.5 + 0.8;
+          p.alpha = Math.random() * 0.4 + 0.2;
+        } else {
+          p.active = false;
+          p.alpha = 0;
+          p.progress = 0;
+        }
+      }
+    }
+
+    triggerScreenFlash(color = '#ff1e3c', intensity = 0.48) {
+      if (this.isReducedEffects()) return;
+      const now = performance.now();
+      if (!this.flashTimestamps) this.flashTimestamps = [];
+      this.flashTimestamps = this.flashTimestamps.filter(t => now - t < 1000);
+      if (this.flashTimestamps.length >= CONFIG.MAX_FLASHES_PER_SEC) {
+        return; // Exceeded budget of 2 flashes per second
+      }
+      this.flashTimestamps.push(now);
+
+      const flash = document.getElementById('screen-flash');
+      if (!flash) return;
+      const clampedOpacity = Math.min(intensity, CONFIG.MAX_FLASH_BRIGHTNESS);
+      flash.style.background = color;
+      flash.style.opacity = clampedOpacity.toString();
+
+      if (this.flashTimeoutId) clearTimeout(this.flashTimeoutId);
+      this.flashTimeoutId = setTimeout(() => {
+        flash.style.opacity = '0';
+        flash.style.background = 'red';
+      }, CONFIG.FLASH_DURATION_MS);
+    }
+
     initDom() {
       document.getElementById('chk-assist').checked = this.settings.assistMode;
       document.getElementById('chk-pause-assist').checked = this.settings.assistMode;
+      const chkRed = document.getElementById('chk-reduced-effects');
+      if (chkRed) chkRed.checked = this.settings.reducedEffects;
+      const chkPauseRed = document.getElementById('chk-pause-reduced-effects');
+      if (chkPauseRed) chkPauseRed.checked = this.settings.reducedEffects;
       document.getElementById('rng-volume').value = this.settings.volume;
       document.getElementById('rng-pause-volume').value = this.settings.volume;
       document.getElementById('chk-mute').checked = this.settings.isMuted;
@@ -1899,6 +2023,19 @@
       document.getElementById('chk-assist').addEventListener('change', handleAssistChange);
       document.getElementById('chk-pause-assist').addEventListener('change', handleAssistChange);
 
+      const handleReducedEffectsChange = (e) => {
+        this.settings.reducedEffects = e.target.checked;
+        const c1 = document.getElementById('chk-reduced-effects');
+        const c2 = document.getElementById('chk-pause-reduced-effects');
+        if (c1) c1.checked = this.settings.reducedEffects;
+        if (c2) c2.checked = this.settings.reducedEffects;
+        SettingsManager.save(this.settings);
+      };
+      const cRed1 = document.getElementById('chk-reduced-effects');
+      if (cRed1) cRed1.addEventListener('change', handleReducedEffectsChange);
+      const cRed2 = document.getElementById('chk-pause-reduced-effects');
+      if (cRed2) cRed2.addEventListener('change', handleReducedEffectsChange);
+
       const handleVolChange = (e) => {
         const val = parseInt(e.target.value, 10);
         this.settings.volume = val;
@@ -2050,8 +2187,7 @@
       this.voidTrail = Array.from({ length: this.maze.H }, () => 
         Array.from({ length: this.maze.W }, () => false)
       );
-      this.voidParticles = [];
-      this.wispParticles = [];
+      this.resetParticles();
 
       // 1-Block Grid Step Player
       this.player = {
@@ -2338,9 +2474,7 @@
       const selLevel = document.getElementById('sel-level-select');
       if (selLevel) selLevel.value = "1";
 
-      const flash = document.getElementById('screen-flash');
-      flash.style.opacity = '0.7';
-      setTimeout(() => { flash.style.opacity = '0'; }, 300);
+      this.triggerScreenFlash('#ff1e3c', CONFIG.MAX_FLASH_BRIGHTNESS);
 
       setTimeout(() => {
         document.getElementById('captured-modal').classList.remove('modal-hidden');
@@ -2363,9 +2497,7 @@
       const selLevel = document.getElementById('sel-level-select');
       if (selLevel) selLevel.value = "1";
 
-      const flash = document.getElementById('screen-flash');
-      flash.style.opacity = '0.8';
-      setTimeout(() => { flash.style.opacity = '0'; }, 350);
+      this.triggerScreenFlash('#ff1e3c', CONFIG.MAX_FLASH_BRIGHTNESS);
 
       setTimeout(() => {
         const tm = document.getElementById('timeout-modal');
@@ -2398,10 +2530,7 @@
       document.getElementById('stat-time').textContent = `${mins}:${secs}`;
       document.getElementById('stat-pings').textContent = this.totalPingsUsed;
 
-      const flash = document.getElementById('screen-flash');
-      flash.style.background = '#34d399';
-      flash.style.opacity = '0.5';
-      setTimeout(() => { flash.style.opacity = '0'; flash.style.background = 'red'; }, 250);
+      this.triggerScreenFlash('#34d399', 0.45);
 
       setTimeout(() => {
         document.getElementById('victory-modal').classList.remove('modal-hidden');
@@ -2731,40 +2860,42 @@
       });
       this.audio.updateHeartbeat(minMonsterDist, this.state !== 'PLAYING');
 
-      // 9. Particles Updates
-      for (let i = this.voidParticles.length - 1; i >= 0; i--) {
-        const vp = this.voidParticles[i];
-        vp.y -= vp.vy * dt;
-        vp.alpha -= dt * 0.9;
-        if (vp.alpha <= 0) this.voidParticles.splice(i, 1);
-      }
+      // 9. Particles Updates (Strict max 150 live particles, zero per-frame allocation)
+      if (!this.isReducedEffects()) {
+        for (let i = 0; i < this.particlePool.length; i++) {
+          const p = this.particlePool[i];
+          if (!p.active) continue;
 
-      // Golden echo wisps floating towards exit
-      if (Math.random() < 0.25) {
-        this.wispParticles.push({
-          x: this.player.x,
-          y: this.player.y,
-          targetX: exitCenterX,
-          targetY: exitCenterY,
-          progress: 0,
-          alpha: 0.8
-        });
-      }
-      for (let i = this.wispParticles.length - 1; i >= 0; i--) {
-        const wp = this.wispParticles[i];
-        wp.progress += dt * 0.8;
-        wp.alpha = Math.max(0, 0.8 * (1.0 - wp.progress));
-        if (wp.progress >= 1.0) this.wispParticles.splice(i, 1);
-      }
+          if (p.type === 'void') {
+            p.y -= p.vy * dt;
+            p.alpha -= dt * CONFIG.PARTICLE_FADE_SPEED;
+            if (p.alpha <= 0) p.active = false;
+          } else if (p.type === 'wisp') {
+            p.progress += dt * CONFIG.WISP_PROGRESS_SPEED;
+            p.alpha = Math.max(0, 0.8 * (1.0 - p.progress));
+            if (p.progress >= 1.0) p.active = false;
+          } else if (p.type === 'dust') {
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            if (p.x < -14) p.x += 28;
+            if (p.x > 14) p.x -= 28;
+            if (p.y < -14) p.y += 28;
+            if (p.y > 14) p.y -= 28;
+          }
+        }
 
-      this.dustParticles.forEach(p => {
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
-        if (p.x < -14) p.x += 28;
-        if (p.x > 14) p.x -= 28;
-        if (p.y < -14) p.y += 28;
-        if (p.y > 14) p.y -= 28;
-      });
+        // Golden echo wisps floating towards exit (pooled)
+        if (Math.random() < 0.25) {
+          this.spawnParticle('wisp', wp => {
+            wp.x = this.player.x;
+            wp.y = this.player.y;
+            wp.targetX = exitCenterX;
+            wp.targetY = exitCenterY;
+            wp.progress = 0;
+            wp.alpha = 0.8;
+          });
+        }
+      }
 
       this.noiseEvents = this.noiseEvents.filter(e => now - e.time < CONFIG.EVENT_LIFETIME);
 
@@ -2778,13 +2909,14 @@
     }
 
     addVoidCrumble(gx, gy) {
+      if (this.isReducedEffects()) return;
       for (let i = 0; i < 6; i++) {
-        this.voidParticles.push({
-          x: gx + 0.5 + (Math.random() - 0.5) * 0.7,
-          y: gy + 0.5 + (Math.random() - 0.5) * 0.7,
-          vy: 0.6 + Math.random() * 0.8,
-          size: 1.5 + Math.random() * 2,
-          alpha: 0.85
+        this.spawnParticle('void', vp => {
+          vp.x = gx + 0.5 + (Math.random() - 0.5) * 0.7;
+          vp.y = gy + 0.5 + (Math.random() - 0.5) * 0.7;
+          vp.vy = 0.6 + Math.random() * 0.8;
+          vp.size = 1.5 + Math.random() * 2;
+          vp.alpha = 0.85;
         });
       }
     }
@@ -2871,15 +3003,12 @@
       const startAngle = -Math.PI / 2;
       const endAngle = startAngle - frac * Math.PI * 2;
 
-      c.strokeStyle = isUrgent ? '#ff2244' : 'var(--radar-cyan)';
+      c.strokeStyle = isUrgent ? '#ff2244' : '#00f3ff';
       c.lineWidth = 3.5;
       c.lineCap = 'round';
-      c.shadowColor = isUrgent ? 'rgba(255, 34, 68, 0.8)' : 'rgba(0, 243, 255, 0.6)';
-      c.shadowBlur = 6;
       c.beginPath();
       c.arc(cx, cy, r, startAngle, endAngle, true); // true = counter-clockwise!
       c.stroke();
-      c.shadowBlur = 0;
 
       // Sweeping Second Hand (ticks anti-clockwise)
       const handX = cx + Math.cos(endAngle) * (r - 4);
@@ -2928,8 +3057,10 @@
       let cameraY = h / 2 - this.player.y * tileSize;
 
       if (this.shakeAmount > 0) {
-        cameraX += (Math.random() - 0.5) * this.shakeAmount * 2;
-        cameraY += (Math.random() - 0.5) * this.shakeAmount * 2;
+        if (!this.isReducedEffects()) {
+          cameraX += (Math.random() - 0.5) * this.shakeAmount * 2;
+          cameraY += (Math.random() - 0.5) * this.shakeAmount * 2;
+        }
         this.shakeAmount = Math.max(0, this.shakeAmount - (1 / 60) * 12);
       }
 
@@ -3008,15 +3139,20 @@
         }
       }
 
-      // Void Crumble Particles
-      ctx.fillStyle = 'rgba(147, 51, 234, 0.85)';
-      this.voidParticles.forEach(vp => {
-        ctx.globalAlpha = vp.alpha;
-        ctx.beginPath();
-        ctx.arc(vp.x * tileSize, vp.y * tileSize, vp.size, 0, Math.PI * 2);
-        ctx.fill();
+      // Void Crumble Particles (Pooled)
+      if (!this.isReducedEffects()) {
+        ctx.fillStyle = 'rgba(147, 51, 234, 0.85)';
+        for (let i = 0; i < this.particlePool.length; i++) {
+          const p = this.particlePool[i];
+          if (p.active && p.type === 'void') {
+            ctx.globalAlpha = p.alpha;
+            ctx.beginPath();
+            ctx.arc(p.x * tileSize, p.y * tileSize, p.size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
         ctx.globalAlpha = 1.0;
-      });
+      }
 
       // 2. MAZE WALLS (Solid Dark Labyrinth Structures with Neon Contour Bevels)
       for (let y = 0; y < this.maze.H; y++) {
@@ -3079,15 +3215,20 @@
       ctx.arc(px, py, tileSize * 2.2, 0, Math.PI * 2);
       ctx.fill();
 
-      // 5. Floating Dust Particles
-      ctx.fillStyle = 'rgba(0, 243, 255, 0.4)';
-      this.dustParticles.forEach(p => {
-        const dpx = (this.player.x + p.x) * tileSize;
-        const dpy = (this.player.y + p.y) * tileSize;
-        ctx.beginPath();
-        ctx.arc(dpx, dpy, p.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
+      // 5. Floating Dust Particles (Pooled)
+      if (!this.isReducedEffects()) {
+        ctx.fillStyle = 'rgba(0, 243, 255, 0.4)';
+        for (let i = 0; i < this.particlePool.length; i++) {
+          const p = this.particlePool[i];
+          if (p.active && p.type === 'dust') {
+            const dpx = (this.player.x + p.x) * tileSize;
+            const dpy = (this.player.y + p.y) * tileSize;
+            ctx.beginPath();
+            ctx.arc(dpx, dpy, p.size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
 
       // 6. SWIRLING EMERALD PORTAL VORTEX (The Exit Gate)
       const exitPx = (this.maze.exit.x + 0.5) * tileSize;
@@ -3108,27 +3249,34 @@
         ctx.restore();
       }
 
-      // Portal Glowing Core
+      // Portal Glowing Core (crisp concentric glow, zero shadowBlur)
+      ctx.fillStyle = 'rgba(52, 211, 153, 0.35)';
+      ctx.beginPath();
+      ctx.arc(exitPx, exitPy, 9, 0, Math.PI * 2);
+      ctx.fill();
       ctx.fillStyle = '#a7f3d0';
-      ctx.shadowColor = 'rgba(52, 211, 153, 0.9)';
-      ctx.shadowBlur = 12;
       ctx.beginPath();
       ctx.arc(exitPx, exitPy, 5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.shadowBlur = 0;
 
-      // 7. GOLDEN ECHO WISPS (Small clue drifting along corridor towards gate)
-      this.wispParticles.forEach(wp => {
-        const curX = wp.x + (wp.targetX - wp.x) * wp.progress;
-        const curY = wp.y + (wp.targetY - wp.y) * wp.progress;
-        ctx.fillStyle = `rgba(255, 183, 3, ${wp.alpha})`;
-        ctx.shadowColor = 'rgba(255, 183, 3, 0.8)';
-        ctx.shadowBlur = 8;
-        ctx.beginPath();
-        ctx.arc(curX * tileSize, curY * tileSize, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      });
+      // 7. GOLDEN ECHO WISPS (Pooled, zero shadowBlur)
+      if (!this.isReducedEffects()) {
+        for (let i = 0; i < this.particlePool.length; i++) {
+          const wp = this.particlePool[i];
+          if (wp.active && wp.type === 'wisp') {
+            const curX = wp.x + (wp.targetX - wp.x) * wp.progress;
+            const curY = wp.y + (wp.targetY - wp.y) * wp.progress;
+            ctx.fillStyle = `rgba(255, 183, 3, ${wp.alpha * 0.35})`;
+            ctx.beginPath();
+            ctx.arc(curX * tileSize, curY * tileSize, 5.0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = `rgba(255, 183, 3, ${wp.alpha})`;
+            ctx.beginPath();
+            ctx.arc(curX * tileSize, curY * tileSize, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
 
       // 8. Decoy Bell (Stage 5A)
       if (this.bell) {
@@ -3262,14 +3410,15 @@
         ctx.fill();
         ctx.stroke();
 
-        // Center Warning Core
-        ctx.fillStyle = monster.state === 'INVESTIGATE' || monster.state === 'SEARCH' ? '#ff003c' : (monster.id === 'B' ? '#f59e0b' : '#38bdf8');
-        ctx.shadowColor = ctx.fillStyle;
-        ctx.shadowBlur = 8;
+        // Center Warning Core (crisp concentric draw, zero shadowBlur)
+        const coreColor = monster.state === 'INVESTIGATE' || monster.state === 'SEARCH' ? '#ff003c' : (monster.id === 'B' ? '#f59e0b' : '#38bdf8');
+        ctx.fillStyle = coreColor;
         ctx.beginPath();
         ctx.arc(0, 0, tileSize * 0.12, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0;
+        ctx.strokeStyle = coreColor;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
 
         // Dual Police LED Lightbar on Top
         ctx.fillStyle = leftStrobe;
@@ -3311,14 +3460,15 @@
       ctx.translate(px, py);
       ctx.scale(this.player.squashX, this.player.squashY);
 
-      // Player Core
+      // Player Core (crisp halo ring, zero shadowBlur)
+      ctx.fillStyle = 'rgba(0, 243, 255, 0.25)';
+      ctx.beginPath();
+      ctx.arc(0, 0, tileSize * 0.30, 0, Math.PI * 2);
+      ctx.fill();
       ctx.fillStyle = '#ffffff';
-      ctx.shadowColor = 'rgba(0, 243, 255, 0.85)';
-      ctx.shadowBlur = 12;
       ctx.beginPath();
       ctx.arc(0, 0, tileSize * 0.22, 0, Math.PI * 2);
       ctx.fill();
-      ctx.shadowBlur = 0;
 
       // Energy Ring around player
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
@@ -3347,18 +3497,18 @@
       const arrowRightX = px + Math.cos(angleToExit + 0.35) * compassDist;
       const arrowRightY = py + Math.sin(angleToExit + 0.35) * compassDist;
 
-      // Pulsing golden directional arrowhead pointing to the gate
+      // Pulsing golden directional arrowhead pointing to the gate (crisp stroke, zero shadowBlur)
       const arrowPulse = 0.65 + Math.sin(now * 5) * 0.35;
       ctx.fillStyle = `rgba(255, 183, 3, ${arrowPulse})`;
-      ctx.shadowColor = 'rgba(255, 183, 3, 0.8)';
-      ctx.shadowBlur = 6;
+      ctx.strokeStyle = `rgba(255, 220, 100, ${arrowPulse * 0.9})`;
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
       ctx.moveTo(arrowTipX, arrowTipY);
       ctx.lineTo(arrowLeftX, arrowLeftY);
       ctx.lineTo(arrowRightX, arrowRightY);
       ctx.closePath();
       ctx.fill();
-      ctx.shadowBlur = 0;
+      ctx.stroke();
 
       ctx.restore();
     }
@@ -3366,7 +3516,8 @@
     updateDebugOverlay() {
       if (!this.debugMode) return;
       document.getElementById('dbg-seed').textContent = `Seed: ${this.currentSeed || '-'}`;
-      document.getElementById('dbg-fps').textContent = `Frame: ${this.frameTimeMs.toFixed(1)}ms (${this.fps} FPS)`;
+      const particleStr = `Particles: ${this.getActiveParticleCount()}/${CONFIG.MAX_PARTICLES}`;
+      document.getElementById('dbg-fps').textContent = `Frame: ${this.frameTimeMs.toFixed(1)}ms (${this.fps} FPS) | ${particleStr}`;
       if (this.player) {
         document.getElementById('dbg-pos').textContent = `Player: [${this.player.gridX}, ${this.player.gridY}]`;
         document.getElementById('dbg-energy').textContent = `Energy: ${Math.round(this.player.energy)}%`;
