@@ -3,22 +3,26 @@
 
 A tactical acoustic-stealth maze thriller built for the **ODS Weekly Dev Jam**.
 
-🎮 **Play Live Online:** [https://vaibhavsrv.github.io/echo-maze/](https://vaibhavsrv.github.io/echo-maze/)  
-📜 **Prompt Evolution Log (43 Steps):** [PROMPTS.md](PROMPTS.md)
+- 🎮 **Play Live Online (Main Game):** [https://vaibhavsrv.github.io/echo-maze/](https://vaibhavsrv.github.io/echo-maze/)  
+- 🌲 **Play Echo Grove Prototype (Pass 4 Variant):** [https://vaibhavsrv.github.io/echo-maze/grove.html](https://vaibhavsrv.github.io/echo-maze/grove.html)
+- 📜 **Prompt Evolution Log (49 Stages):** [PROMPTS.md](PROMPTS.md)
 
 ---
 
-## ⚡ 15 Unique Levels & Thriller Mechanics
+## ⚡ 15 Unique Levels & Thriller Mechanics (V1.1)
 - **1-Block Tactical Movement**: Discrete grid hopping with ease-out tweening and responsive squash-and-stretch physics.
 - **The Pitch-Black Void Trail**: Everywhere you move, the path behind you collapses into an abyssal pitch-black void.
 - **Scaling Cop Patrols (1 to 5 Cops)**: Cops multiply as you advance! Corner drones spawn with 360° sweeping volumetric red & blue siren searchlights, pulse scanners, and emergency lightbars.
-- **Dynamic Suspense Blackout Cycle**: High-voltage electrical power cuts plunge the labyrinth into total darkness with warning flickers and acoustic surges. Blackout duration and frequency escalate in higher levels.
+- **Dynamic Suspense Blackout Cycle**: High-voltage electrical power cuts plunge the labyrinth into total darkness with warning flickers and acoustic surges.
 - **Anti-Clockwise Countdown Dial**: A cyber radial dial sweeps counter-clockwise with mechanical audio ticking and emergency lockdown upon hitting 0.
-- **Acoustic Gate Clues**: Dynamic golden compass needle rotating on the player's perimeter ring pointing directly to the gate, accompanied by drifting golden echo wisps.
+- **Progressive Acoustic Hints**: 3-tier escalation pipeline (exit hum volume boost, perimeter arc, illuminated safe path avoiding enemies by $\ge 4$ tiles). Mode selectable via `SettingsManager` (`OFF`, `SUBTLE`, `GUIDED`).
+- **Tactical Decoys**:
+  - **Brass Decoy Bell (`E`)**: Reusable 2 times per level with an enforced 6-second cooldown.
+  - **Acoustic Pebble Raycast (`F`)**: Casts up to 5 walkable tiles ahead to create a targeted acoustic distraction (2 pebbles per level).
+- **Subtle Alert Levels (`●○○○` to `●●●●`)**: Real-time facility threat level indicators tracking patrolling, investigation, and pursuit states.
+- **Deterministic Stealth Ratings (S/A/B/C)**: Derived strictly from recorded player events in the event log (investigations triggered, sonar pings vs par, hints used).
 - **Sequential Campaign (1 &rarr; 15)**: Levels must be cleared in strict linear sequence ($1 \to 2 \to 3 \to 4 \dots \to 15$).
-- **Permadeath Failure Reset**: High stakes! If you are caught by a cop or run out of time at *any* stage (e.g., Level 4), the run fails and you must restart from **Level 1**!
-- **Mission Level Selector (Practice)**: Jump directly to any of the 15 levels from the Title Screen to inspect or practice specific sectors.
-- **Cross-Device Ready**: Full support for desktop keyboard (WASD / Arrows), touch D-Pad, and swipe gestures on mobile devices (iOS, Android, Tablets).
+- **Cross-Device Ready**: Full support for desktop keyboard (WASD / Arrows), touch D-Pad, and touch action buttons on mobile devices.
 
 ---
 
@@ -49,20 +53,23 @@ A tactical acoustic-stealth maze thriller built for the **ODS Weekly Dev Jam**.
 | :--- | :--- | :--- |
 | **Move 1 Block** | `W`, `A`, `S`, `D` or `Arrow Keys` | On-Screen D-Pad or Swipe on Canvas |
 | **Sonar Ping** | `Spacebar` | `📡 PING` Button or Tap Canvas |
-| **Decoy Bell** | `E` | `🔔 BELL` Button |
+| **Decoy Bell** | `E` | `🔔 BELL` Button (2 uses, 6s cooldown) |
+| **Pebble Decoy** | `F` | `🪨 PEBBLE` Button (2 uses, 5-tile raycast) |
 | **Creep (Silent)** | `Shift` | Built-in assist mode |
-| **Pause** | `Escape` | `⏸ PAUSE` in Header |
+| **Pause** | `P` or `Escape` | `⏸ PAUSE` in Header |
 | **Restart Level** | `R` | Menu button |
 
 ---
 
 ## 🧪 Automated Verification
-Includes 19 automated self-tests verifying:
+Includes **35 automated self-tests** in `index.html` and **16 automated self-tests** in `grove.html` verifying:
 - BFS maze connectivity across 200 random seeds
 - Optimal exit distance thresholds ($\ge 60\%$ max BFS depth)
-- PRNG deterministic reproducibility
-- Monster FSM hearing radii and collision avoidance
-- Audio node lifecycle and cleanup
-- Bell interaction single-use contracts
+- PRNG deterministic reproducibility (Mulberry32)
+- Monster FSM hearing radii and BFS corridor acoustic bounds
+- Sonar line-of-sight raycasting and shell expansion immunity
+- 150-particle pooled ceiling and telemetry budgets (< 8.0 ms average frame time)
+- High score and deterministic stealth rating calculations (S/A/B/C)
+- Closed secret wall reachability and audio lifecycle safety
 
-Run self-tests in browser console or telemetry HUD by appending `?debug=1` to the URL.
+Run self-tests in the browser console or telemetry HUD by appending `?debug=1` to the URL.

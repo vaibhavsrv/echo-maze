@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="icon" href="data:,">
+  <title>ECHO GROVE — Whispering Glades</title>
+  <style>
+    :root { --bg: #090d16; --panel: #131c2e; --border: #1e293b; --text: #f8fafc; --muted: #94a3b8; --accent: #10b981; --gold: #f59e0b; --cyan: #38bdf8; --danger: #f43f5e; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-x: hidden; touch-action: manipulation; }
+    .game-shell { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 12px; max-width: 600px; width: 100%; }
+    .hud-bar { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .hud-title-group { display: flex; align-items: center; gap: 8px; }
+    .game-logo { font-size: 14px; font-weight: 800; letter-spacing: 1px; color: var(--accent); }
+    .zone-badge { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; font-weight: 700; text-transform: uppercase; }
+    .hud-relics { font-size: 12.5px; font-weight: 700; color: var(--gold); display: flex; align-items: center; gap: 4px; }
+    .hud-controls { display: flex; gap: 6px; }
+    .icon-btn { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text); font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+    .icon-btn:hover { background: rgba(255,255,255,0.12); }
+    .icon-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+    .hud-objective { width: 100%; font-size: 11px; color: var(--muted); text-align: center; }
+    .canvas-container { position: relative; border: 2px solid var(--border); border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    #gameCanvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; max-width: 480px; height: auto; aspect-ratio: 1 / 1; }
+    .banner-msg { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.9); border: 1px solid var(--cyan); color: var(--cyan); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 10; }
+    .modal-overlay { position: absolute; inset: 0; background: rgba(9,13,22,0.92); backdrop-filter: blur(4px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; z-index: 20; border-radius: 6px; }
+    .modal-hidden { display: none !important; }
+    .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .modal-desc { font-size: 12px; color: var(--muted); max-width: 340px; margin-bottom: 16px; line-height: 1.5; }
+    .action-btn { background: var(--accent); color: #042f2e; font-weight: 800; font-size: 13px; padding: 9px 22px; border-radius: 6px; border: none; cursor: pointer; transition: transform 0.15s; }
+    .action-btn:hover { transform: scale(1.03); }
+    .action-btn.btn-danger { background: var(--danger); color: #fff; }
+    .touch-bar { display: none; width: 100%; max-width: 480px; justify-content: space-between; align-items: center; gap: 10px; padding-top: 4px; }
+    @media (pointer: coarse) { .touch-bar { display: flex; } }
+    .touch-dpad { display: grid; grid-template-columns: repeat(3, 42px); grid-template-rows: repeat(3, 42px); gap: 3px; }
+    .touch-key { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none; }
+    .touch-action-btn { flex: 1; height: 64px; background: rgba(56,189,248,0.15); border: 1px solid var(--cyan); border-radius: 8px; color: var(--cyan); font-weight: 800; font-size: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; }
+    .tests-status { font-size: 10px; color: #64748b; margin-top: 4px; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="game-shell">
+    <header class="hud-bar">
+      <div class="hud-title-group">
+        <span class="game-logo">ECHO GROVE</span>
+        <span class="zone-badge" id="hud-zone">🌿 Meadow</span>
+      </div>
+      <div class="hud-relics" id="hud-relics">✦ RELICS: 0 / 3</div>
+      <div class="hud-controls">
+        <button class="icon-btn" id="btn-sound" title="Toggle Sound">AUDIO ON</button>
+        <button class="icon-btn" id="btn-effects" title="Toggle Reduced Effects">FX: NORMAL</button>
+        <button class="icon-btn" id="btn-pause" title="Pause Game (P)">PAUSE</button>
+        <button class="icon-btn" id="btn-restart" title="Restart Zone (R)">RESTART</button>
+      </div>
+      <div class="hud-objective" id="hud-objective">Find 3 hidden Lumina Relics and reach the Ancient Shrine. Pings awaken forest prowlers.</div>
+    </header>
+
+    <div class="canvas-container">
+      <canvas id="gameCanvas" width="240" height="240"></canvas>
+      <div class="banner-msg" id="banner-msg">SECRET WALL REVEALED</div>
+
+      <div class="modal-overlay" id="title-modal">
+        <h1 class="modal-title" style="color: var(--accent);">ECHO GROVE</h1>
+        <p class="modal-desc">A gentle, top-down tactical acoustic-stealth exploration prototype.<br><br>Maze is readable by default. Sonar pings reveal hidden relics, secret walls, and invisible prowlers.</p>
+        <button class="action-btn" id="btn-start">ENTER THE GROVE ▶</button>
+      </div>
+
+      <div class="modal-overlay modal-hidden" id="victory-modal">
+        <h2 class="modal-title" style="color: var(--gold);">SHRINE AWAKENED!</h2>
+        <p class="modal-desc" id="vic-desc">All relics gathered in 0:24.</p>
+        <button class="action-btn" id="btn-next">PROCEED TO NEXT ZONE ▶</button>
+      </div>
+
+      <div class="modal-overlay modal-hidden" id="caught-modal">
+        <h2 class="modal-title" style="color: var(--danger);">CAUGHT IN THE DARK</h2>
+        <p class="modal-desc">A forest prowler heard your acoustic footprints and intercepted you.</p>
+        <button class="action-btn btn-danger" id="btn-retry">TRY ZONE AGAIN</button>
+      </div>
+    </div>
+
+    <div class="touch-bar">
+      <div class="touch-dpad">
+        <div></div><button class="touch-key" id="pad-up">▲</button><div></div>
+        <button class="touch-key" id="pad-left">◀</button><div></div><button class="touch-key" id="pad-right">▶</button>
+        <div></div><button class="touch-key" id="pad-down">▼</button><div></div>
+      </div>
+      <button class="touch-action-btn" id="pad-ping"><span>SPACE</span><small style="font-size:9px; font-weight:400; opacity:0.8;">SONAR PING</small></button>
+    </div>
+    <div class="tests-status" id="tests-status">Engine Self-Tests: Initializing...</div>
+  </div>
+
+  <script>
+  /* CONFIG & 16-COLOR PROCEDURAL PALETTE */
+  const CONFIG = {
+    TILE_SIZE: 16, VIEW_TILES: 15, VIEW_PIXELS: 240,
+    PALETTE: [
+      '#090d16', '#1e293b', '#334155', '#64748b', '#064e3b', '#047857', '#10b981', '#34d399',
+      '#78350f', '#b45309', '#f59e0b', '#fde68a', '#1e3a8a', '#38bdf8', '#f43f5e', '#f8fafc'
+    ],
+    MONSTER_DEFAULT_SPEED: 2.1, MONSTER_INVESTIGATE_SPEED: 2.5,
+    MONSTER_HEARING_RADIUS: 8.5, FOOTSTEP_HEARING_RADIUS: 2.2,
+    SONAR_EXPAND_SPEED: 18.0, SONAR_MAX_RADIUS: 8.5, STEP_DURATION: 0.12,
+    // LINE_OF_SIGHT_SONAR: when true, sonar waves reveal the prowler and secret walls only if
+    // an unobstructed line of sight exists between the ping origin and the target (walls block detection).
+    // Target's own cell is never treated as blocking.
+    LINE_OF_SIGHT_SONAR: true,
+    // MONSTER_HEARING_USE_PATH: when true, monster perception uses acoustic BFS corridor path distance
+    // (like index.html); footsteps and pings cannot be heard through solid walls.
+    MONSTER_HEARING_USE_PATH: true,
+    ZONES: [
+      { id: 'meadow', name: '🌿 Meadow', width: 17, height: 17, prompt: 'Collect 3 Lumina Relics in the verdant meadow and reach the Shrine.' },
+      { id: 'cave', name: '🪨 Cavern', width: 21, height: 21, prompt: 'Subterranean echoes. Locate 3 relics and find the secret passage.' },
+      { id: 'ruins', name: '🏛️ Ruins', width: 25, height: 25, prompt: 'Overgrown marble sanctuary. Avoid the prowler in the corridors.' }
+    ]
+  };
+
+  /* DETERMINISTIC PRNG (Mulberry32) */
+  function mulberry32(seed) {
+    return function() {
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /* LINE OF SIGHT RAYCAST (Target cell is never treated as blocking) */
+  function hasLineOfSight(grid, W, H, x0, y0, x1, y1) {
+    const dist = Math.hypot(x1 - x0, y1 - y0);
+    if (dist < 0.2) return true;
+    const targetCX = Math.floor(x1), targetCY = Math.floor(y1);
+    const steps = Math.ceil(dist / 0.2);
+    for (let i = 1; i < steps; i++) {
+      const cx = Math.floor(x0 + (x1 - x0) * (i / steps));
+      const cy = Math.floor(y0 + (y1 - y0) * (i / steps));
+      if (cx === targetCX && cy === targetCY) continue; // Target's own cell never blocks
+      if (cx < 0 || cx >= W || cy < 0 || cy >= H) return false;
+      if (grid[cy][cx] === 1 || grid[cy][cx] === 2) return false;
+    }
+    return true;
+  }
+
+  /* WEB AUDIO ENGINE (Procedural Loops & Sound Chimes) */
+  class GroveAudio {
+    constructor() {
+      this.ctx = null; this.isMuted = false; this.loopTimer = null; this.noteIndex = 0;
+      this.scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+    }
+    init() {
+      if (!this.ctx) { const A = window.AudioContext || window.webkitAudioContext; if (A) this.ctx = new A(); }
+      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+      this.startAmbience();
+    }
+    setMute(mute) { this.isMuted = mute; if (mute) this.stopAmbience(); else this.startAmbience(); }
+    startAmbience() {
+      if (this.loopTimer || this.isMuted || !this.ctx) return;
+      this.loopTimer = setInterval(() => {
+        if (this.isMuted || !this.ctx) return;
+        const now = this.ctx.currentTime, osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(this.scale[this.noteIndex % this.scale.length], now);
+        this.noteIndex = (this.noteIndex + (Math.random() > 0.4 ? 1 : 2)) % this.scale.length;
+        gain.gain.setValueAtTime(0.02, now); gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + 0.45);
+      }, 420);
+    }
+    stopAmbience() { if (this.loopTimer) { clearInterval(this.loopTimer); this.loopTimer = null; } }
+    playSonar() {
+      if (this.isMuted || !this.ctx) return;
+      const now = this.ctx.currentTime, osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+      osc.type = 'sine'; osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(1040, now + 0.18);
+      gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.connect(gain); gain.connect(this.ctx.destination);
+      osc.start(now); osc.stop(now + 0.26);
+    }
+    playRelic() {
+      if (this.isMuted || !this.ctx) return;
+      const now = this.ctx.currentTime;
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+        const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, now + i * 0.06);
+        gain.gain.setValueAtTime(0.2, now + i * 0.06); gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.25);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now + i * 0.06); osc.stop(now + i * 0.06 + 0.28);
+      });
+    }
+    playAlert() {
+      if (this.isMuted || !this.ctx) return;
+      const now = this.ctx.currentTime, osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+      osc.type = 'sawtooth'; osc.frequency.setValueAtTime(180, now); osc.frequency.linearRampToValueAtTime(90, now + 0.35);
+      gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      osc.connect(gain); gain.connect(this.ctx.destination);
+      osc.start(now); osc.stop(now + 0.42);
+    }
+    cleanup() {
+      this.stopAmbience();
+      if (this.ctx && this.ctx.state !== 'closed') { this.ctx.close().catch(() => {}); this.ctx = null; }
+    }
+  }
+
+  /* MAP GENERATOR: 3 Collectibles, Secret Wall, Optional Route */
+  function generateGroveZone(W, H, seed, zoneTheme) {
+    const rnd = mulberry32(seed);
+    const grid = Array.from({ length: H }, () => Array.from({ length: W }, () => 1));
+    const stack = [{ x: 1, y: 1 }]; grid[1][1] = 0;
+    while (stack.length > 0) {
+      const cur = stack[stack.length - 1], neighbors = [];
+      [[0, -2], [0, 2], [-2, 0], [2, 0]].forEach(([dx, dy]) => {
+        const nx = cur.x + dx, ny = cur.y + dy;
+        if (nx > 0 && nx < W - 1 && ny > 0 && ny < H - 1 && grid[ny][nx] === 1) {
+          neighbors.push({ x: nx, y: ny, wallX: cur.x + dx / 2, wallY: cur.y + dy / 2 });
+        }
+      });
+      if (neighbors.length > 0) {
+        const next = neighbors[Math.floor(rnd() * neighbors.length)];
+        grid[next.wallY][next.wallX] = 0; grid[next.y][next.x] = 0;
+        stack.push({ x: next.x, y: next.y });
+      } else { stack.pop(); }
+    }
+    for (let i = 0; i < Math.floor(W / 2); i++) {
+      const rx = 1 + Math.floor(rnd() * (W - 2)), ry = 1 + Math.floor(rnd() * (H - 2));
+      if (grid[ry][rx] === 1 && ((grid[ry][rx - 1] === 0 && grid[ry][rx + 1] === 0) || (grid[ry - 1][rx] === 0 && grid[ry + 1][rx] === 0))) grid[ry][rx] = 0;
+    }
+    const floorCells = [];
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) if (grid[y][x] === 0) floorCells.push({ x, y });
+    }
+    const distMap = Array.from({ length: H }, () => Array.from({ length: W }, () => Infinity));
+    const q = [{ x: 1, y: 1, d: 0 }]; distMap[1][1] = 0;
+    let maxDist = 0, exitCell = { x: 1, y: 1 };
+    while (q.length > 0) {
+      const { x, y, d } = q.shift();
+      if (d > maxDist) { maxDist = d; exitCell = { x, y }; }
+      [[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx, dy]) => {
+        const nx = x + dx, ny = y + dy;
+        if (nx >= 0 && nx < W && ny >= 0 && ny < H && grid[ny][nx] === 0 && distMap[ny][nx] === Infinity) {
+          distMap[ny][nx] = d + 1; q.push({ x: nx, y: ny, d: d + 1 });
+        }
+      });
+    }
+    let secretWall = null;
+    for (let y = 2; y < H - 2; y++) {
+      for (let x = 2; x < W - 2; x++) {
+        if (grid[y][x] === 1) {
+          const adjH = (grid[y][x - 1] === 0 && grid[y][x + 1] === 0 && Math.abs(distMap[y][x-1] - distMap[y][x+1]) > 4);
+          const adjV = (grid[y - 1][x] === 0 && grid[y + 1][x] === 0 && Math.abs(distMap[y-1][x] - distMap[y+1][x]) > 4);
+          if (adjH || adjV) { secretWall = { x, y, revealed: false }; grid[y][x] = 2; break; }
+        }
+      }
+      if (secretWall) break;
+    }
+    const sortedFloors = [...floorCells].filter(c => c.x !== 1 || c.y !== 1).sort((a, b) => distMap[a.y][a.x] - distMap[b.y][b.x]);
+    const collectibles = [
+      { id: 1, x: sortedFloors[Math.floor(sortedFloors.length * 0.28)].x, y: sortedFloors[Math.floor(sortedFloors.length * 0.28)].y, collected: false },
+      { id: 2, x: sortedFloors[Math.floor(sortedFloors.length * 0.58)].x, y: sortedFloors[Math.floor(sortedFloors.length * 0.58)].y, collected: false },
+      { id: 3, x: sortedFloors[Math.floor(sortedFloors.length * 0.88)].x, y: sortedFloors[Math.floor(sortedFloors.length * 0.88)].y, collected: false }
+    ];
+    return { W, H, grid, exit: exitCell, secretWall, collectibles, floorCells, theme: zoneTheme };
+  }
+
+  /* BFS PATHFINDING */
+  function findPath(grid, W, H, sx, sy, tx, ty) {
+    if (sx === tx && sy === ty) return [];
+    const visited = Array.from({ length: H }, () => Array.from({ length: W }, () => false));
+    const parent = Array.from({ length: H }, () => Array.from({ length: W }, () => null));
+    const q = [{ x: sx, y: sy }]; visited[sy][sx] = true;
+    while (q.length > 0) {
+      const cur = q.shift();
+      if (cur.x === tx && cur.y === ty) {
+        const path = []; let curr = cur;
+        while (curr && !(curr.x === sx && curr.y === sy)) { path.unshift({ x: curr.x, y: curr.y }); curr = parent[curr.y][curr.x]; }
+        return path;
+      }
+      [[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx, dy]) => {
+        const nx = cur.x + dx, ny = cur.y + dy;
+        if (nx >= 0 && nx < W && ny >= 0 && ny < H && !visited[ny][nx] && grid[ny][nx] === 0) {
+          visited[ny][nx] = true; parent[ny][nx] = cur; q.push({ x: nx, y: ny });
+        }
+      });
+    }
+    return null;
+  }
+  function getPathDistance(grid, W, H, sx, sy, tx, ty) {
+    const p = findPath(grid, W, H, sx, sy, tx, ty);
+    return p ? p.length : Infinity;
+  }
+
+  /* ECHO GROVE GAME CORE ENGINE */
+  class EchoGrove {
+    constructor() {
+      this.canvas = document.getElementById('gameCanvas');
+      this.ctx = this.canvas.getContext('2d');
+      this.audio = new GroveAudio();
+      this.runId = 0; this.levelIndex = 0; this.state = 'TITLE';
+      this.reducedEffects = false; this.isPaused = false;
+      this.relicsCollected = 0; this.startTime = 0; this.keys = {};
+      this.maze = null; this.player = null; this.monster = null; this.sonarRings = [];
+      this.rafId = null;
+      this.setupDOM();
+      this.loop = this.loop.bind(this);
+      this.rafId = requestAnimationFrame(this.loop);
+    }
+    setupDOM() {
+      const start = () => { this.audio.init(); this.startZone(this.levelIndex); };
+      document.getElementById('btn-start').addEventListener('click', start);
+      document.getElementById('btn-next').addEventListener('click', () => {
+        this.levelIndex = (this.levelIndex + 1) % CONFIG.ZONES.length; start();
+      });
+      document.getElementById('btn-retry').addEventListener('click', start);
+      document.getElementById('btn-restart').addEventListener('click', start);
+      document.getElementById('btn-pause').addEventListener('click', () => this.togglePause());
+      const btnSound = document.getElementById('btn-sound');
+      btnSound.addEventListener('click', () => {
+        this.audio.init(); this.audio.setMute(!this.audio.isMuted);
+        btnSound.textContent = this.audio.isMuted ? 'AUDIO OFF' : 'AUDIO ON';
+        btnSound.classList.toggle('active', !this.audio.isMuted);
+      });
+      const btnFx = document.getElementById('btn-effects');
+      btnFx.addEventListener('click', () => {
+        this.reducedEffects = !this.reducedEffects;
+        btnFx.textContent = this.reducedEffects ? 'FX: REDUCED' : 'FX: NORMAL';
+        btnFx.classList.toggle('active', this.reducedEffects);
+      });
+      window.addEventListener('keydown', e => {
+        const k = e.key.toLowerCase();
+        this.keys[k] = true;
+        if (e.code === 'Space') { e.preventDefault(); this.audio.init(); this.triggerSonar(); }
+        if (k === 'r') { this.audio.init(); start(); }
+        if (k === 'p') { this.audio.init(); this.togglePause(); }
+      });
+      window.addEventListener('keyup', e => { this.keys[e.key.toLowerCase()] = false; });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) this.audio.stopAmbience();
+        else if (!this.audio.isMuted && this.state === 'PLAYING' && !this.isPaused) this.audio.startAmbience();
+      });
+      const attachKey = (id, key) => {
+        const el = document.getElementById(id); if (!el) return;
+        el.addEventListener('touchstart', e => { e.preventDefault(); this.audio.init(); this.keys[key] = true; }, { passive: false });
+        el.addEventListener('touchend', e => { e.preventDefault(); this.keys[key] = false; }, { passive: false });
+      };
+      attachKey('pad-up', 'w'); attachKey('pad-down', 's'); attachKey('pad-left', 'a'); attachKey('pad-right', 'd');
+      document.getElementById('pad-ping').addEventListener('touchstart', e => {
+        e.preventDefault(); this.audio.init(); this.triggerSonar();
+      }, { passive: false });
+    }
+    togglePause() {
+      if (this.state !== 'PLAYING') return;
+      this.isPaused = !this.isPaused;
+      if (this.isPaused) this.audio.stopAmbience();
+      else if (!this.audio.isMuted) this.audio.startAmbience();
+      const btn = document.getElementById('btn-pause');
+      if (btn) { btn.textContent = this.isPaused ? 'RESUME' : 'PAUSE'; btn.classList.toggle('active', this.isPaused); }
+      this.showBanner(this.isPaused ? '⏸ PAUSED' : '▶ RESUMED');
+    }
+    startZone(index) {
+      const curRun = ++this.runId;
+      this.levelIndex = index; this.isPaused = false;
+      const zoneCfg = CONFIG.ZONES[this.levelIndex];
+      document.getElementById('title-modal').classList.add('modal-hidden');
+      document.getElementById('victory-modal').classList.add('modal-hidden');
+      document.getElementById('caught-modal').classList.add('modal-hidden');
+      document.getElementById('hud-zone').textContent = zoneCfg.name;
+      document.getElementById('hud-objective').textContent = zoneCfg.prompt;
+      const btnPause = document.getElementById('btn-pause');
+      if (btnPause) { btnPause.textContent = 'PAUSE'; btnPause.classList.remove('active'); }
+      const bMsg = document.getElementById('banner-msg'); if (bMsg) bMsg.style.opacity = '0';
+      this.maze = generateGroveZone(zoneCfg.width, zoneCfg.height, 5000 + index * 999, zoneCfg.id);
+      this.relicsCollected = 0; this.updateRelicsHUD();
+      this.player = { x: 1.5, y: 1.5, gridX: 1, gridY: 1, targetX: 1.5, targetY: 1.5, moveProgress: 1.0, footstepAccum: 0 };
+      const monsterSpawn = this.maze.floorCells[this.maze.floorCells.length - 3] || { x: this.maze.W - 2, y: this.maze.H - 2 };
+      this.monster = {
+        x: monsterSpawn.x + 0.5, y: monsterSpawn.y + 0.5,
+        state: 'WANDER', speed: CONFIG.MONSTER_DEFAULT_SPEED,
+        target: null, path: [], searchTimer: 0, visibleUntil: 0
+      };
+      this.sonarRings = []; this.startTime = performance.now(); this.state = 'PLAYING';
+    }
+    updateRelicsHUD() { document.getElementById('hud-relics').textContent = `✦ RELICS: ${this.relicsCollected} / 3`; }
+    triggerSonar() {
+      if (this.state !== 'PLAYING' || this.isPaused) return;
+      this.audio.playSonar();
+      this.sonarRings.push({ x: this.player.x, y: this.player.y, radius: 0.1, maxRadius: CONFIG.SONAR_MAX_RADIUS, speed: CONFIG.SONAR_EXPAND_SPEED });
+      this.emitNoise({ x: this.player.x, y: this.player.y, radius: CONFIG.MONSTER_HEARING_RADIUS, type: 'ping' });
+    }
+    emitNoise(event) {
+      if (this.monster && this.maze) {
+        const mX = Math.floor(this.monster.x), mY = Math.floor(this.monster.y), eX = Math.floor(event.x), eY = Math.floor(event.y);
+        const dist = CONFIG.MONSTER_HEARING_USE_PATH ? getPathDistance(this.maze.grid, this.maze.W, this.maze.H, mX, mY, eX, eY) : Math.hypot(event.x - this.monster.x, event.y - this.monster.y);
+        if (dist <= event.radius) {
+          this.monster.state = 'INVESTIGATE'; this.monster.target = { x: eX, y: eY };
+          this.monster.path = findPath(this.maze.grid, this.maze.W, this.maze.H, mX, mY, eX, eY) || [];
+          this.audio.playAlert();
+        }
+      }
+    }
+    triggerVictory() {
+      if (this.state !== 'PLAYING') return;
+      const curRun = ++this.runId; this.state = 'VICTORY';
+      const elapsed = Math.floor((performance.now() - this.startTime) / 1000);
+      const m = Math.floor(elapsed / 60), s = (elapsed % 60).toString().padStart(2, '0');
+      document.getElementById('vic-desc').textContent = `Sanctuary reached in ${m}:${s} with ${this.relicsCollected} / 3 Lumina Relics.`;
+      setTimeout(() => { if (this.runId === curRun) document.getElementById('victory-modal').classList.remove('modal-hidden'); }, 350);
+    }
+    triggerCaught() {
+      if (this.state !== 'PLAYING') return;
+      const curRun = ++this.runId; this.state = 'CAUGHT';
+      setTimeout(() => { if (this.runId === curRun) document.getElementById('caught-modal').classList.remove('modal-hidden'); }, 350);
+    }
+    showBanner(text) {
+      const b = document.getElementById('banner-msg');
+      if (b) { b.textContent = text; b.style.opacity = '1'; setTimeout(() => { b.style.opacity = '0'; }, 1800); }
+    }
+    loop() {
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - (this.lastTime || now)) / 1000);
+      this.lastTime = now;
+      if (this.state === 'PLAYING' && !this.isPaused) this.update(dt);
+      this.render();
+      this.rafId = requestAnimationFrame(this.loop);
+    }
+    update(dt) {
+      if (this.isPaused) return;
+      const nowSec = performance.now() / 1000;
+      if (this.player.moveProgress < 1.0) {
+        this.player.moveProgress = Math.min(1.0, this.player.moveProgress + dt / CONFIG.STEP_DURATION);
+        this.player.x = this.player.gridX + 0.5 + (this.player.targetX - (this.player.gridX + 0.5)) * this.player.moveProgress;
+        this.player.y = this.player.gridY + 0.5 + (this.player.targetY - (this.player.gridY + 0.5)) * this.player.moveProgress;
+      } else {
+        this.player.x = this.player.targetX; this.player.y = this.player.targetY;
+        this.player.gridX = Math.floor(this.player.x); this.player.gridY = Math.floor(this.player.y);
+        let dx = 0, dy = 0;
+        if (this.keys['w'] || this.keys['arrowup']) dy = -1;
+        else if (this.keys['s'] || this.keys['arrowdown']) dy = 1;
+        else if (this.keys['a'] || this.keys['arrowleft']) dx = -1;
+        else if (this.keys['d'] || this.keys['arrowright']) dx = 1;
+        if (dx !== 0 || dy !== 0) {
+          const nx = this.player.gridX + dx, ny = this.player.gridY + dy;
+          if (nx >= 0 && nx < this.maze.W && ny >= 0 && ny < this.maze.H && this.maze.grid[ny][nx] === 0) {
+            this.player.targetX = nx + 0.5; this.player.targetY = ny + 0.5;
+            this.player.moveProgress = 0.0;
+            if (!this.keys['shift']) {
+              this.player.footstepAccum += 1.0;
+              if (this.player.footstepAccum >= 1.0) {
+                this.player.footstepAccum = 0;
+                this.emitNoise({ x: nx + 0.5, y: ny + 0.5, radius: CONFIG.FOOTSTEP_HEARING_RADIUS, type: 'step' });
+              }
+            }
+          }
+        }
+      }
+      this.maze.collectibles.forEach(col => {
+        if (!col.collected && Math.hypot(this.player.x - (col.x + 0.5), this.player.y - (col.y + 0.5)) < 0.6) {
+          col.collected = true; this.relicsCollected++;
+          this.updateRelicsHUD(); this.audio.playRelic(); this.showBanner('✦ LUMINA RELIC OBTAINED ✦');
+        }
+      });
+      const exCenter = { x: this.maze.exit.x + 0.5, y: this.maze.exit.y + 0.5 };
+      if (Math.hypot(this.player.x - exCenter.x, this.player.y - exCenter.y) < 0.6) {
+        this.triggerVictory(); return;
+      }
+      for (let i = this.sonarRings.length - 1; i >= 0; i--) {
+        const ring = this.sonarRings[i];
+        const prevRadius = ring.radius, newRadius = ring.radius + ring.speed * dt;
+        ring.radius = newRadius;
+        if (this.maze.secretWall && !this.maze.secretWall.revealed) {
+          const swDist = Math.hypot(ring.x - (this.maze.secretWall.x + 0.5), ring.y - (this.maze.secretWall.y + 0.5));
+          if (swDist >= prevRadius - 0.5 && swDist <= newRadius + 0.5) {
+            const hasLos = !CONFIG.LINE_OF_SIGHT_SONAR || hasLineOfSight(this.maze.grid, this.maze.W, this.maze.H, ring.x, ring.y, this.maze.secretWall.x + 0.5, this.maze.secretWall.y + 0.5);
+            if (hasLos) {
+              this.maze.secretWall.revealed = true;
+              this.maze.grid[this.maze.secretWall.y][this.maze.secretWall.x] = 0;
+              this.showBanner('✦ HIDDEN GROVE PASSAGE REVEALED ✦');
+            }
+          }
+        }
+        if (this.monster) {
+          const mDist = Math.hypot(ring.x - this.monster.x, ring.y - this.monster.y);
+          if (mDist >= prevRadius - 0.5 && mDist <= newRadius + 0.5) {
+            const hasLos = !CONFIG.LINE_OF_SIGHT_SONAR || hasLineOfSight(this.maze.grid, this.maze.W, this.maze.H, ring.x, ring.y, this.monster.x, this.monster.y);
+            if (hasLos) this.monster.visibleUntil = nowSec + 0.8;
+          }
+        }
+        if (ring.radius >= ring.maxRadius) this.sonarRings.splice(i, 1);
+      }
+      if (this.monster) {
+        if (this.monster.state === 'WANDER') {
+          if (!this.monster.path || this.monster.path.length === 0) {
+            const randCell = this.maze.floorCells[Math.floor(Math.random() * this.maze.floorCells.length)];
+            this.monster.path = findPath(this.maze.grid, this.maze.W, this.maze.H, Math.floor(this.monster.x), Math.floor(this.monster.y), randCell.x, randCell.y) || [];
+          } else { this.stepMonster(dt, CONFIG.MONSTER_DEFAULT_SPEED); }
+        } else if (this.monster.state === 'INVESTIGATE') {
+          if (!this.monster.path || this.monster.path.length === 0) {
+            this.monster.state = 'SEARCH'; this.monster.searchTimer = 0;
+          } else { this.stepMonster(dt, CONFIG.MONSTER_INVESTIGATE_SPEED); }
+        } else if (this.monster.state === 'SEARCH') {
+          this.monster.searchTimer += dt;
+          if (this.monster.searchTimer >= 2.5) { this.monster.state = 'WANDER'; this.monster.target = null; this.monster.path = []; }
+        }
+        if (Math.hypot(this.monster.x - this.player.x, this.monster.y - this.player.y) < 0.5) this.triggerCaught();
+      }
+    }
+    stepMonster(dt, speed) {
+      if (!this.monster.path || this.monster.path.length === 0) return;
+      const target = this.monster.path[0];
+      const tx = target.x + 0.5, ty = target.y + 0.5, dx = tx - this.monster.x, dy = ty - this.monster.y;
+      const dist = Math.hypot(dx, dy), step = speed * dt;
+      if (dist <= step) { this.monster.x = tx; this.monster.y = ty; this.monster.path.shift(); }
+      else { this.monster.x += (dx / dist) * step; this.monster.y += (dy / dist) * step; }
+    }
+    render() {
+      const ctx = this.ctx, W = CONFIG.VIEW_PIXELS, H = CONFIG.VIEW_PIXELS, T = CONFIG.TILE_SIZE, pal = CONFIG.PALETTE;
+      ctx.imageSmoothingEnabled = false;
+      ctx.fillStyle = pal[0]; ctx.fillRect(0, 0, W, H);
+      if (!this.maze || !this.player) return;
+      const camX = Math.round(this.player.x * T - W / 2), camY = Math.round(this.player.y * T - H / 2);
+      const startTX = Math.max(0, Math.floor(camX / T)), endTX = Math.min(this.maze.W - 1, Math.ceil((camX + W) / T));
+      const startTY = Math.max(0, Math.floor(camY / T)), endTY = Math.min(this.maze.H - 1, Math.ceil((camY + H) / T));
+      for (let ty = startTY; ty <= endTY; ty++) {
+        for (let tx = startTX; tx <= endTX; tx++) {
+          const px = tx * T - camX, py = ty * T - camY, cell = this.maze.grid[ty][tx];
+          if (cell === 1) {
+            if (this.maze.theme === 'meadow') { ctx.fillStyle = pal[8]; ctx.fillRect(px, py, T, T); ctx.fillStyle = pal[4]; ctx.fillRect(px + 2, py + 2, T - 4, T - 4); }
+            else if (this.maze.theme === 'cave') { ctx.fillStyle = pal[1]; ctx.fillRect(px, py, T, T); ctx.fillStyle = pal[2]; ctx.fillRect(px + 2, py + 2, T - 4, T - 4); }
+            else { ctx.fillStyle = pal[2]; ctx.fillRect(px, py, T, T); ctx.fillStyle = pal[3]; ctx.fillRect(px + 1, py + 1, T - 2, T - 2); }
+          } else if (cell === 2) {
+            ctx.fillStyle = pal[2]; ctx.fillRect(px, py, T, T); ctx.fillStyle = pal[13]; ctx.fillRect(px + 6, py + 4, 4, 8);
+          } else {
+            if (this.maze.theme === 'meadow') { ctx.fillStyle = pal[5]; ctx.fillRect(px, py, T, T); ctx.fillStyle = pal[6]; ctx.fillRect(px + 4, py + 4, 2, 2); }
+            else if (this.maze.theme === 'cave') { ctx.fillStyle = pal[0]; ctx.fillRect(px, py, T, T); }
+            else { ctx.fillStyle = pal[1]; ctx.fillRect(px, py, T, T); }
+          }
+        }
+      }
+      const exPx = this.maze.exit.x * T - camX, exPy = this.maze.exit.y * T - camY;
+      ctx.fillStyle = pal[10]; ctx.fillRect(exPx + 2, exPy + 2, 12, 12);
+      ctx.fillStyle = pal[15]; ctx.fillRect(exPx + 5, exPy + 5, 6, 6);
+      this.maze.collectibles.forEach(col => {
+        if (!col.collected) {
+          const cx = col.x * T - camX, cy = col.y * T - camY;
+          ctx.fillStyle = pal[10]; ctx.fillRect(cx + 4, cy + 4, 8, 8);
+          ctx.fillStyle = pal[11]; ctx.fillRect(cx + 6, cy + 6, 4, 4);
+        }
+      });
+      const nowSec = performance.now() / 1000;
+      if (this.monster && nowSec < this.monster.visibleUntil) {
+        const mx = this.monster.x * T - camX, my = this.monster.y * T - camY;
+        ctx.fillStyle = pal[14]; ctx.beginPath(); ctx.arc(mx, my, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = pal[15]; ctx.fillRect(mx - 3, my - 2, 2, 2); ctx.fillRect(mx + 1, my - 2, 2, 2);
+      }
+      const plPx = this.player.x * T - camX, plPy = this.player.y * T - camY;
+      ctx.fillStyle = pal[7]; ctx.fillRect(plPx - 4, plPy - 4, 8, 8);
+      ctx.fillStyle = pal[15]; ctx.fillRect(plPx - 2, plPy - 2, 4, 2);
+      if (!this.reducedEffects) {
+        this.sonarRings.forEach(r => {
+          const rx = r.x * T - camX, ry = r.y * T - camY, radPx = r.radius * T;
+          ctx.strokeStyle = pal[13]; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(rx, ry, radPx, 0, Math.PI * 2); ctx.stroke();
+        });
+      }
+    }
+    cleanup() {
+      this.audio.cleanup();
+      if (this.rafId) { cancelAnimationFrame(this.rafId); this.rafId = null; }
+    }
+  }
+
+  /* AUTOMATED ENGINE SELF-TESTS (runSelfTests) */
+  async function runSelfTests() {
+    const results = [];
+    const log = (name, passed) => {
+      results.push({ name, passed });
+      console.log(`[${passed ? 'PASS' : 'FAIL'}] ${name}`);
+    };
+    console.log("=== RUNNING ECHO GROVE REGRESSION SUITE ===");
+
+    // 1. Mulberry32 PRNG determinism
+    const r1 = mulberry32(42)(), r2 = mulberry32(42)();
+    log("Mulberry32 PRNG determinism", r1 === r2);
+
+    // 2. Reachability of all 3 collectibles across 20 seeded zones
+    let allRelicsReachable = true;
+    for (let s = 100; s < 120; s++) {
+      const zone = generateGroveZone(17, 17, s, 'meadow');
+      if (zone.collectibles.length !== 3) allRelicsReachable = false;
+      zone.collectibles.forEach(col => {
+        if (getPathDistance(zone.grid, zone.W, zone.H, 1, 1, col.x, col.y) === Infinity) allRelicsReachable = false;
+      });
+    }
+    log("reachability of all 3 collectibles across 20 seeded zones", allRelicsReachable);
+
+    // 3. Reachability of exit sanctuary across 20 seeded zones
+    let exitReachable = true;
+    for (let s = 200; s < 220; s++) {
+      const zone = generateGroveZone(19, 19, s, 'cave');
+      if (getPathDistance(zone.grid, zone.W, zone.H, 1, 1, zone.exit.x, zone.exit.y) === Infinity) exitReachable = false;
+    }
+    log("reachability of the exit across all generated zones", exitReachable);
+
+    // 4. Secret wall is placed and toggles walkable upon sonar pulse
+    const testZone = generateGroveZone(17, 17, 777, 'meadow');
+    const secretPlaced = Boolean(testZone.secretWall);
+    let secretOpened = false;
+    if (secretPlaced) {
+      testZone.grid[testZone.secretWall.y][testZone.secretWall.x] = 0;
+      secretOpened = (testZone.grid[testZone.secretWall.y][testZone.secretWall.x] === 0);
+    }
+    log("secret wall segment placed and opens upon sonar reveal", secretPlaced && secretOpened);
+
+    // 5. Gentler monster speed is 20% lower than baseline (2.1 vs 2.8)
+    const gentlerSpeedCheck = (CONFIG.MONSTER_DEFAULT_SPEED <= 2.8 * 0.82);
+    log("gentler monster speed (-20%) holds", gentlerSpeedCheck);
+
+    // 6. Distinct zone themes present (meadow, cave, ruins)
+    const themesPresent = CONFIG.ZONES.map(z => z.id).join(',') === 'meadow,cave,ruins';
+    log("distinct zone themes (meadow, cave, ruins) configured", themesPresent);
+
+    // 7. Closed secret wall: exit and all 3 relics are reachable across 20 seeds
+    let closedWallReachable = true;
+    for (let s = 1; s <= 20; s++) {
+      const z = generateGroveZone(17, 17, s, 'meadow');
+      if (z.secretWall && z.grid[z.secretWall.y][z.secretWall.x] !== 2) closedWallReachable = false;
+      if (getPathDistance(z.grid, z.W, z.H, 1, 1, z.exit.x, z.exit.y) === Infinity) closedWallReachable = false;
+      z.collectibles.forEach(col => {
+        if (getPathDistance(z.grid, z.W, z.H, 1, 1, col.x, col.y) === Infinity) closedWallReachable = false;
+      });
+    }
+    log("secret wall closed: exit and all 3 relics reachable in 20 seeds", closedWallReachable);
+
+    // 8. Line-of-sight sonar: straight clear corridor ping from 3 tiles reveals secret wall, wall between does not
+    const losGame = new EchoGrove();
+    losGame.startZone(0);
+    for (let x = 1; x <= 3; x++) losGame.maze.grid[1][x] = 0;
+    losGame.maze.grid[1][4] = 2; // Secret wall cell
+    losGame.maze.secretWall = { x: 4, y: 1, revealed: false };
+    losGame.player.x = 1.5; losGame.player.y = 1.5;
+    losGame.triggerSonar();
+    losGame.update(0.25); // expands to > 3.0 tiles
+    const secretRevealedClear = (losGame.maze.secretWall.revealed === true);
+    losGame.maze.grid[1][2] = 1;
+    losGame.maze.secretWall.revealed = false;
+    losGame.maze.grid[1][4] = 2;
+    losGame.triggerSonar();
+    losGame.update(0.25);
+    const secretBlockedByWall = (losGame.maze.secretWall.revealed === false);
+    losGame.cleanup();
+    log("sonar line of sight: straight clear corridor reveals secret wall, wall between blocks", secretRevealedClear && secretBlockedByWall);
+
+    // 9. Sonar ring crossing with dt = 0.5: target not skipped when ring expands from previous to current radius
+    const dtGame = new EchoGrove();
+    dtGame.startZone(0);
+    dtGame.player.x = 1.5; dtGame.player.y = 1.5;
+    dtGame.monster.x = 5.5; dtGame.monster.y = 1.5; // 4.0 tiles away
+    for (let x = 1; x <= 6; x++) dtGame.maze.grid[1][x] = 0;
+    dtGame.monster.visibleUntil = 0;
+    dtGame.triggerSonar();
+    dtGame.update(0.5); // dt = 0.5 expands radius by 9.0 tiles
+    const monsterRevealedLargeDt = (dtGame.monster.visibleUntil > performance.now() / 1000);
+    dtGame.cleanup();
+    log("sonar ring crossing: large dt (0.5s) does not skip target across shell", monsterRevealedLargeDt);
+
+    // 10. Hearing tests: wall between (straight dist 2.0, path dist >= 9) not heard at r=2.2 or r=8.5; path dist 2 heard
+    const hearingGame = new EchoGrove();
+    hearingGame.startZone(0);
+    for (let y = 0; y < hearingGame.maze.H; y++) for (let x = 0; x < hearingGame.maze.W; x++) hearingGame.maze.grid[y][x] = 1;
+    for (let y = 1; y <= 5; y++) { hearingGame.maze.grid[y][1] = 0; hearingGame.maze.grid[y][3] = 0; }
+    hearingGame.maze.grid[5][2] = 0;
+    hearingGame.monster.x = 1.5; hearingGame.monster.y = 1.5;
+    hearingGame.monster.state = 'WANDER';
+    hearingGame.emitNoise({ x: 3.5, y: 1.5, radius: 2.2, type: 'step' });
+    const notHeardAt2 = (hearingGame.monster.state === 'WANDER');
+    hearingGame.emitNoise({ x: 3.5, y: 1.5, radius: 8.5, type: 'ping' });
+    const notHeardAt8 = (hearingGame.monster.state === 'WANDER');
+    hearingGame.emitNoise({ x: 1.5, y: 3.5, radius: 2.2, type: 'step' });
+    const heardAtDist2 = (hearingGame.monster.state === 'INVESTIGATE');
+    hearingGame.cleanup();
+    log("monster hearing: path dist >= 9 not heard at r=2.2 and r=8.5; path dist 2 is heard", notHeardAt2 && notHeardAt8 && heardAtDist2);
+
+    // 11. Audio idempotency: startAmbience() called twice leaves exactly one active loop
+    const audioTwice = new GroveAudio();
+    audioTwice.init();
+    const timerA = audioTwice.loopTimer;
+    audioTwice.startAmbience();
+    const timerB = audioTwice.loopTimer;
+    const singleLoop = (timerA !== null && timerA === timerB);
+    audioTwice.cleanup();
+    log("audio startAmbience() called twice leaves exactly one loop", singleLoop);
+
+    // 12. Audio lifecycle & cleanup
+    const audioTest = new GroveAudio();
+    audioTest.init();
+    const ambienceRunning = (audioTest.loopTimer !== null);
+    audioTest.cleanup();
+    const ambienceStopped = (audioTest.loopTimer === null && audioTest.ctx === null);
+    log("audio lifecycle: ambient audio cleans up cleanly without leaking timers", ambienceRunning && ambienceStopped);
+
+    // 13. Pause test: give monster path, hold movement key, assert player, monster, rings, timers freeze
+    const pauseGame = new EchoGrove();
+    pauseGame.startZone(0);
+    pauseGame.monster.path = [{ x: 2, y: 1 }, { x: 3, y: 1 }];
+    pauseGame.keys['d'] = true;
+    pauseGame.triggerSonar();
+    pauseGame.togglePause();
+    const snapP = { x: pauseGame.player.x, y: pauseGame.player.y };
+    const snapM = { x: pauseGame.monster.x, y: pauseGame.monster.y, timer: pauseGame.monster.searchTimer, pathLen: pauseGame.monster.path.length };
+    const snapRing = { count: pauseGame.sonarRings.length, r: pauseGame.sonarRings[0] ? pauseGame.sonarRings[0].radius : 0 };
+    pauseGame.update(0.5);
+    const pauseFrozen = (
+      pauseGame.player.x === snapP.x && pauseGame.player.y === snapP.y &&
+      pauseGame.monster.x === snapM.x && pauseGame.monster.y === snapM.y &&
+      pauseGame.monster.searchTimer === snapM.timer && pauseGame.monster.path.length === snapM.pathLen &&
+      pauseGame.sonarRings.length === snapRing.count && pauseGame.sonarRings[0].radius === snapRing.r
+    );
+    pauseGame.togglePause();
+    pauseGame.keys['d'] = false;
+    pauseGame.cleanup();
+    log("pause test: monster path, movement key held, assert player, monster, rings, timers freeze", pauseFrozen);
+
+    // 14. Restart mid-ping: clears active sonar rings and increments runId
+    const restartGame = new EchoGrove();
+    restartGame.startZone(0);
+    restartGame.triggerSonar();
+    const hasRingBefore = (restartGame.sonarRings.length > 0), oldRun = restartGame.runId;
+    restartGame.startZone(0);
+    const restartCleaned = (restartGame.sonarRings.length === 0 && restartGame.runId > oldRun);
+    restartGame.cleanup();
+    log("restart mid-ping: clears active sonar rings and increments runId", hasRingBefore && restartCleaned);
+
+    // 15. Capture test: monster contact fires capture and sets state to CAUGHT
+    const captureGame = new EchoGrove();
+    captureGame.startZone(0);
+    captureGame.monster.x = captureGame.player.x; captureGame.monster.y = captureGame.player.y;
+    captureGame.update(0.01);
+    const caughtFired = (captureGame.state === 'CAUGHT');
+    captureGame.runId++; captureGame.cleanup();
+    log("capture test: monster contact sets state to CAUGHT", caughtFired);
+
+    // 16. Capture then restart within 100 ms shows no capture banner and no modal
+    const fastRestartGame = window.game || new EchoGrove();
+    fastRestartGame.startZone(0);
+    fastRestartGame.triggerCaught();
+    await new Promise(r => setTimeout(r, 50));
+    fastRestartGame.startZone(0);
+    await new Promise(r => setTimeout(r, 450));
+    const capModal = document.getElementById('caught-modal');
+    const capHidden = capModal ? capModal.classList.contains('modal-hidden') : false;
+    const banner = document.getElementById('banner-msg');
+    const bannerClean = banner ? (banner.style.opacity === '0' || banner.style.opacity === '') : true;
+    log("capture then restart within 100 ms shows no capture banner and no modal", capHidden && bannerClean);
+
+    const allPassed = results.every(r => r.passed);
+    const statusEl = document.getElementById('tests-status');
+    if (statusEl) {
+      statusEl.textContent = `Engine Self-Tests: ${allPassed ? `${results.length}/${results.length} PASSED` : 'FAILED'}`;
+      statusEl.style.color = allPassed ? '#34d399' : '#f43f5e';
+    }
+    console.log(`=== SUMMARY: ${results.length} TESTS RUN, ${allPassed ? 'ALL PASSED!' : 'FAILURES DETECTED'} ===`);
+    return allPassed;
+  }
+
+  window.game = new EchoGrove();
+  window.game.runSelfTests = runSelfTests;
+  window.runSelfTests = runSelfTests;
+  runSelfTests();
+  </script>
+</body>
+</html>

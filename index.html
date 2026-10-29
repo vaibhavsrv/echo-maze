@@ -204,6 +204,28 @@
       box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
     }
 
+    /* Pass 3 Subtle Alert & Pebble Status Badges */
+    .hud-subtle-status {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+    .hud-alert-badge {
+      color: #9cbacf;
+      transition: color 0.25s ease, text-shadow 0.25s ease;
+    }
+    .hud-alert-0 { color: #38bdf8; }
+    .hud-alert-1 { color: #f59e0b; }
+    .hud-alert-2 { color: #fb923c; }
+    .hud-alert-3 { color: #ff2244; text-shadow: 0 0 8px rgba(255, 34, 68, 0.6); }
+    .hud-pebbles-badge {
+      color: #94a3b8;
+    }
+
     /* Warning Alert banner */
     #pulse-warning {
       position: absolute;
@@ -454,6 +476,17 @@
       transition: opacity 0.1s ease;
     }
 
+    /* Screen Fade (0.4s) */
+    #screen-fade {
+      position: absolute;
+      inset: 0;
+      background: #000000;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 46;
+      transition: opacity 0.4s ease;
+    }
+
     /* Mobile On-Screen Touch Controls */
     #mobile-controls {
       position: absolute;
@@ -589,6 +622,7 @@
     
     <div class="vignette-overlay"></div>
     <div id="screen-flash"></div>
+    <div id="screen-fade"></div>
     <div id="pulse-warning">WARNING: PULSE DETECTED</div>
 
     <!-- Gameplay In-game HUD -->
@@ -597,6 +631,10 @@
         <div class="level-badge">
           <span id="hud-level-title">LEVEL 1 — THE SILENT VOID</span>
           <span class="objective-text" id="hud-objective">Locate the resonant exit beacon</span>
+          <div class="hud-subtle-status">
+            <span id="hud-alert-badge" class="hud-alert-badge hud-alert-0">ALERT: <span id="hud-alert-dots">●○○○</span></span>
+            <span id="hud-pebble-badge" class="hud-pebbles-badge">PEBBLE (F): <span id="hud-pebble-val">2</span></span>
+          </div>
         </div>
 
         <!-- Anti-Clockwise Dial Countdown Widget -->
@@ -637,6 +675,10 @@
         <button class="action-btn action-bell" id="btn-touch-bell" aria-label="Ring Bell">
           <span class="action-btn-icon">🔔</span>
           <span class="action-btn-text">BELL</span>
+        </button>
+        <button class="action-btn action-pebble" id="btn-touch-pebble" aria-label="Throw Pebble">
+          <span class="action-btn-icon">🪨</span>
+          <span class="action-btn-text">PEBBLE</span>
         </button>
       </div>
     </div>
@@ -683,6 +725,14 @@
         </div>
         
         <div class="settings-row">
+          <span>HINT MODE</span>
+          <select id="sel-hint-mode" class="level-select" style="width: 120px; padding: 4px 8px; font-size: 11px;">
+            <option value="OFF">OFF</option>
+            <option value="SUBTLE" selected>SUBTLE</option>
+            <option value="GUIDED">GUIDED</option>
+          </select>
+        </div>
+        <div class="settings-row">
           <span>ASSIST MODE</span>
           <input type="checkbox" id="chk-assist">
         </div>
@@ -704,7 +754,9 @@
         MOVEMENT: W (Up) | S (Down) | A (Left) | D (Right) or Arrow Keys<br>
         SHIFT : Creep (Silent Step)<br>
         SPACE : Sonar Pulse (Reveals Walls &amp; Attracts Patrol)<br>
-        GOLDEN ARROW : Compass Clue pointing toward Exit Gate<br>
+        F : Throw Pebble (Distracts Cops ahead, 2/level)<br>
+        E : Ring Bell (Decoy Misdirection, 2 uses, 6s cooldown)<br>
+        HINTS : Progressive Tiers (Hum boost &rarr; Safe edge arc &rarr; Guided route)<br>
         ESC : Pause &nbsp;|&nbsp; R : Restart Run<br>
         <span style="color: #ff3355; font-weight: 700; letter-spacing: 0.5px;">🔥 SEQUENTIAL CAMPAIGN: Levels 1 &rarr; 15. If you fail at any level, you restart from Level 1!</span>
       </div>
@@ -719,6 +771,14 @@
         <button class="menu-btn" id="btn-main-menu">MAIN MENU</button>
 
         <div class="settings-row" style="margin-top: 8px;">
+          <span>HINT MODE</span>
+          <select id="sel-pause-hint-mode" class="level-select" style="width: 120px; padding: 4px 8px; font-size: 11px;">
+            <option value="OFF">OFF</option>
+            <option value="SUBTLE">SUBTLE</option>
+            <option value="GUIDED">GUIDED</option>
+          </select>
+        </div>
+        <div class="settings-row">
           <span>ASSIST MODE</span>
           <input type="checkbox" id="chk-pause-assist">
         </div>
@@ -760,6 +820,10 @@
         <div class="stat-line"><span>LEVEL COMPLETED:</span><span class="stat-val" id="stat-level">1 / 15</span></div>
         <div class="stat-line"><span>TIME TAKEN:</span><span class="stat-val" id="stat-time">0:00</span></div>
         <div class="stat-line"><span>SONAR PINGS:</span><span class="stat-val" id="stat-pings">0</span></div>
+        <div class="stat-line"><span>NEAR MISSES:</span><span class="stat-val" id="stat-near-misses">0</span></div>
+        <div class="stat-line"><span>HINTS USED:</span><span class="stat-val" id="stat-hints">0</span></div>
+        <div class="stat-line"><span>STEALTH RATING:</span><span class="stat-val" id="stat-rating" style="color: #34d399; font-weight: 700;">S</span></div>
+        <div class="stat-line"><span>RECORD BEST:</span><span class="stat-val" id="stat-record-best">-</span></div>
       </div>
       <div class="menu-box">
         <button class="menu-btn" id="btn-next-level">PROCEED TO NEXT LEVEL ▶</button>
@@ -794,10 +858,38 @@
     DUST_PARTICLES_COUNT: 45,
     PARTICLE_FADE_SPEED: 0.9,
     WISP_PROGRESS_SPEED: 0.8,
+    WISP_SPAWN_RATE: 2.0, // wisps per second when guided or assisted
+    SHAKE_DECAY_RATE: 12.0, // screen shake decay per second
     MAX_FLASHES_PER_SEC: 2,
     MAX_FLASH_BRIGHTNESS: 0.48, // strictly below 50% brightness change
     FLASH_DURATION_MS: 200,
     TARGET_FRAME_TIME_MS: 8.0,
+
+    // Colors (Valid Canvas 2D strings)
+    COLOR_CYAN: '#00f3ff',
+    COLOR_DANGER: '#ff2244',
+
+    // Hint Mode & Pass 2 Tuning
+    HINT_MODE: 'SUBTLE', // 'OFF' | 'SUBTLE' | 'GUIDED'
+    HINT_PROGRESS_WINDOW_SUBTLE: 25.0, // seconds for SUBTLE progress check
+    HINT_PROGRESS_WINDOW_GUIDED: 15.0, // seconds for GUIDED progress check
+    HINT_PROGRESS_MIN_DIST_IMPROVE: 2, // tiles BFS distance improved
+    HINT_PROGRESS_MIN_DISTINCT_CELLS: 12, // distinct cells in window
+    HINT_TIER_IGNORE_DURATION: 20.0, // seconds previous tier shown & ignored
+    HINT_TIER1_DURATION: 8.0, // exit hum +30% duration
+    HINT_TIER2_DURATION: 1.5, // edge arc duration
+    HINT_TIER3_DURATION: 1.0, // safe route cells duration
+    HINT_MAX_PER_LEVEL: 3, // max 3 hints per level
+    HINT_COOLDOWN: 30.0, // 30s cooldown between hints
+    HINT_MONSTER_SAFE_DISTANCE: 4, // safe path >= 4 tiles from monsters & targets
+    HINT_INVESTIGATE_SAFETY_WINDOW: 8, // no hint if monster in INVESTIGATE within 8 tiles
+    TIER1_TIMER_ENABLED: false, // Pass 2 replaces 15-second hint timer
+
+    // Mechanic Toggles
+    ENABLE_TIMER: true,
+    ENABLE_BLACKOUT: true,
+    ENABLE_VOID_TRAIL: true,
+    RESET_CAMPAIGN_ON_FAILURE: true,
 
     // Physics & Timing
     WALL_FADE_DURATION: 3.5, // walls revealed by sonar fade over 3.5s
@@ -810,12 +902,18 @@
     PING_ENERGY_COST: 25,
     ENERGY_REGEN_PER_SEC: 12,
     
-    // Noise Events
+    // Noise Events & Stealth Tools (Pass 3)
     FOOTSTEP_DISTANCE_INTERVAL: 0.8,
     EVENT_LIFETIME: 0.1,
     PING_NOISE_RADIUS: 10.0,
     BELL_NOISE_RADIUS: 12.0,
     BELL_INTERACTION_RADIUS: 0.6,
+    BELL_MAX_USES: 2, // reusable 2 times
+    BELL_COOLDOWN: 6.0, // 6 s cooldown
+    PEBBLE_MAX_PER_LEVEL: 2, // 2 per level
+    PEBBLE_DISTANCE: 5, // 5 tiles ahead
+    PEBBLE_NOISE_RADIUS: 6.0, // radius 6
+    PING_PAR: [3, 4, 5, 6, 8, 10, 10, 12, 12, 14, 15, 15, 16, 18, 20], // par pings per level
     
     // Monster AI & FSM
     CAPTURE_DISTANCE: 0.45,
@@ -1232,6 +1330,109 @@
     return true;
   }
 
+  function getSafeExitPath(grid, W, H, startCell, exitCell, monsters = [], minSafeDist = 4) {
+    if (!startCell || !exitCell) return null;
+    const sx = Math.floor(startCell.x);
+    const sy = Math.floor(startCell.y);
+    const ex = Math.floor(exitCell.x);
+    const ey = Math.floor(exitCell.y);
+
+    if (sx < 0 || sx >= W || sy < 0 || sy >= H) return null;
+    if (ex < 0 || ex >= W || ey < 0 || ey >= H) return null;
+    if (grid[sy][sx] === 1 || grid[ey][ex] === 1) return null;
+
+    // Build forbidden set: any cell within minSafeDist BFS tiles of any monster or target
+    const forbidden = new Set();
+    monsters.forEach(m => {
+      const sources = [];
+      if (typeof m.x === 'number' && typeof m.y === 'number') {
+        sources.push({ x: Math.floor(m.x), y: Math.floor(m.y) });
+      }
+      if (m.target && typeof m.target.x === 'number' && typeof m.target.y === 'number') {
+        sources.push({ x: Math.floor(m.target.x), y: Math.floor(m.target.y) });
+      }
+      sources.forEach(src => {
+        if (src.x < 0 || src.x >= W || src.y < 0 || src.y >= H) return;
+        const q = [{ x: src.x, y: src.y, d: 0 }];
+        const vis = new Set([`${src.x},${src.y}`]);
+        forbidden.add(`${src.x},${src.y}`);
+        while (q.length > 0) {
+          const curr = q.shift();
+          if (curr.d < minSafeDist - 1) {
+            const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+            for (const [dx, dy] of dirs) {
+              const nx = curr.x + dx;
+              const ny = curr.y + dy;
+              const key = `${nx},${ny}`;
+              if (nx >= 0 && nx < W && ny >= 0 && ny < H && grid[ny][nx] === 0 && !vis.has(key)) {
+                vis.add(key);
+                forbidden.add(key);
+                q.push({ x: nx, y: ny, d: curr.d + 1 });
+              }
+            }
+          }
+        }
+      });
+    });
+
+    if (forbidden.has(`${sx},${sy}`) || forbidden.has(`${ex},${ey}`)) {
+      return null;
+    }
+
+    const queue = [[sx, sy]];
+    const prev = new Map();
+    const visited = new Set([`${sx},${sy}`]);
+    const startKey = `${sx},${sy}`;
+    const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+    while (queue.length > 0) {
+      const [cx, cy] = queue.shift();
+      if (cx === ex && cy === ey) {
+        const path = [{ x: sx, y: sy }];
+        const reverseSteps = [];
+        let curr = `${ex},${ey}`;
+        while (curr !== startKey) {
+          const [px, py] = curr.split(',').map(Number);
+          reverseSteps.unshift({ x: px, y: py });
+          curr = prev.get(curr);
+        }
+        return [...path, ...reverseSteps];
+      }
+
+      for (const [dx, dy] of dirs) {
+        const nx = cx + dx;
+        const ny = cy + dy;
+        const key = `${nx},${ny}`;
+        if (nx >= 0 && nx < W && ny >= 0 && ny < H && grid[ny][nx] === 0 && !visited.has(key) && !forbidden.has(key)) {
+          visited.add(key);
+          prev.set(key, `${cx},${cy}`);
+          queue.push([nx, ny]);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  function findCorridorEnds(grid, W, H) {
+    const ends = [];
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        if (grid[y][x] === 0) {
+          let openNeighbors = 0;
+          if (grid[y - 1][x] === 0) openNeighbors++;
+          if (grid[y + 1][x] === 0) openNeighbors++;
+          if (grid[y][x - 1] === 0) openNeighbors++;
+          if (grid[y][x + 1] === 0) openNeighbors++;
+          if (openNeighbors === 1) {
+            ends.push({ x, y });
+          }
+        }
+      }
+    }
+    return ends;
+  }
+
   /* ==========================================================================
      SYNTHESIZED WEB AUDIO ENGINE
      ========================================================================== */
@@ -1354,6 +1555,26 @@
       osc.stop(now + 0.07);
 
       setTimeout(() => { this.activeOneShots = Math.max(0, this.activeOneShots - 1); }, 80);
+    }
+
+    playDetectedSting() {
+      if (!this.ctx || this.isMuted) return;
+      this.ensureContext();
+      if (this.activeOneShots >= CONFIG.MAX_SIMULTANEOUS_SOUNDS) return;
+      this.activeOneShots++;
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(140, now + 0.18);
+      gain.gain.setValueAtTime(0.28, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(now);
+      osc.stop(now + 0.23);
+      setTimeout(() => { this.activeOneShots = Math.max(0, this.activeOneShots - 1); }, 250);
     }
 
     playClockTick(isUrgent = false) {
@@ -1562,13 +1783,16 @@
       }
     }
 
-    updateExitHum(distTiles, dxTiles, isPaused) {
+    updateExitHum(distTiles, dxTiles, isPaused, boost = 1.0) {
       if (!this.exitGain || !this.ctx) return;
       if (isPaused) {
         this.exitGain.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.1);
         return;
       }
-      const targetGain = clamp(1.0 - distTiles / 6.0, 0, 0.35);
+      let targetGain = clamp(1.0 - distTiles / 6.0, 0, 0.35);
+      if (boost > 1.0) {
+        targetGain = clamp(targetGain * boost, 0, 0.50);
+      }
       this.exitGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.08);
 
       if (this.exitPanner) {
@@ -1637,16 +1861,18 @@
     static STORAGE_KEY = 'echo_maze_settings_v1';
 
     static load() {
-      const defaults = { assistMode: false, volume: 80, isMuted: false, reducedEffects: false };
+      const defaults = { assistMode: false, volume: 80, isMuted: false, reducedEffects: false, hintMode: 'SUBTLE' };
       try {
         const raw = localStorage.getItem(this.STORAGE_KEY);
         if (!raw) return defaults;
         const parsed = JSON.parse(raw);
+        const validHintModes = ['OFF', 'SUBTLE', 'GUIDED'];
         return {
           assistMode: typeof parsed.assistMode === 'boolean' ? parsed.assistMode : defaults.assistMode,
           volume: typeof parsed.volume === 'number' ? clamp(parsed.volume, 0, 100) : defaults.volume,
           isMuted: typeof parsed.isMuted === 'boolean' ? parsed.isMuted : defaults.isMuted,
-          reducedEffects: typeof parsed.reducedEffects === 'boolean' ? parsed.reducedEffects : defaults.reducedEffects
+          reducedEffects: typeof parsed.reducedEffects === 'boolean' ? parsed.reducedEffects : defaults.reducedEffects,
+          hintMode: (parsed.hintMode && validHintModes.includes(parsed.hintMode)) ? parsed.hintMode : defaults.hintMode
         };
       } catch (err) {
         return defaults;
@@ -1657,6 +1883,92 @@
       try {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(settings));
       } catch (e) {}
+    }
+  }
+
+  /* ==========================================================================
+     STEALTH RATING SYSTEM & PERSISTENT HIGH SCORES (Pass 3)
+     ========================================================================== */
+  function computeStealthRating(eventLog, levelIndex, config) {
+    if (!Array.isArray(eventLog)) return 'C';
+    // Count player-caused investigations
+    const investigations = eventLog.filter(e => e.type === 'investigation' && e.causedByPlayer).length;
+    // Count sonar pings
+    const pings = eventLog.filter(e => e.type === 'ping').length;
+    // Count hints used
+    const hints = eventLog.filter(e => e.type === 'hint').length;
+
+    const parPings = (config && config.PING_PAR && config.PING_PAR[levelIndex]) || 5;
+
+    // S Rank: Flawless stealth — 0 player investigations, 0 hints, pings <= par
+    if (investigations === 0 && hints === 0 && pings <= parPings) {
+      return 'S';
+    }
+    // A Rank: Clean stealth — <= 1 player investigation, <= 1 hint, pings <= par + 3
+    if (investigations <= 1 && hints <= 1 && pings <= parPings + 3) {
+      return 'A';
+    }
+    // B Rank: Alerted stealth — <= 3 investigations, <= 2 hints, pings <= par + 7
+    if (investigations <= 3 && hints <= 2 && pings <= parPings + 7) {
+      return 'B';
+    }
+    // C Rank: Detected / Loud
+    return 'C';
+  }
+
+  class HighScoreManager {
+    static STORAGE_KEY = 'echo_maze_best_scores_v1';
+
+    static load() {
+      try {
+        const raw = localStorage.getItem(this.STORAGE_KEY);
+        if (!raw) return {};
+        const parsed = JSON.parse(raw);
+        if (typeof parsed !== 'object' || parsed === null) return {};
+        const validated = {};
+        const validRatings = ['S', 'A', 'B', 'C'];
+        for (const [lvl, entry] of Object.entries(parsed)) {
+          if (entry && typeof entry.bestTime === 'number' && entry.bestTime > 0 && validRatings.includes(entry.bestRating)) {
+            validated[lvl] = {
+              bestTime: entry.bestTime,
+              bestRating: entry.bestRating
+            };
+          }
+        }
+        return validated;
+      } catch (e) {
+        return {};
+      }
+    }
+
+    static recordScore(levelIndex, timeSec, rating) {
+      const scores = this.load();
+      const existing = scores[levelIndex];
+      const ratingWeight = { 'S': 4, 'A': 3, 'B': 2, 'C': 1 };
+      let shouldUpdate = false;
+
+      if (!existing) {
+        shouldUpdate = true;
+      } else {
+        const newWeight = ratingWeight[rating] || 0;
+        const oldWeight = ratingWeight[existing.bestRating] || 0;
+        if (newWeight > oldWeight) {
+          shouldUpdate = true;
+        } else if (newWeight === oldWeight && timeSec < existing.bestTime) {
+          shouldUpdate = true;
+        }
+      }
+
+      if (shouldUpdate) {
+        scores[levelIndex] = {
+          bestTime: timeSec,
+          bestRating: rating
+        };
+        try {
+          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(scores));
+        } catch (e) {}
+      }
+      return scores[levelIndex] || { bestTime: timeSec, bestRating: rating };
     }
   }
 
@@ -1729,6 +2041,33 @@
       }
       this.flashTimestamps = [];
       this.flashTimeoutId = null;
+      this.dynamicParticleRingIndex = CONFIG.DUST_PARTICLES_COUNT;
+      this.wispAccumulator = 0;
+      this.shakeOffsetX = 0;
+      this.shakeOffsetY = 0;
+      this.hintTier1Fired = false;
+      this.levelExplorationTimer = 0;
+      this.cpuTimeMs = 0;
+      this.cpuAvgMs = 0;
+      this.cpuMaxMs = 0;
+      this.cpuFrameHistory = [];
+
+      // Cache prefers-reduced-motion once at startup and update from change event
+      this.prefersReducedMotion = false;
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        try {
+          const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+          this.prefersReducedMotion = Boolean(mql.matches);
+          const updateMotion = (e) => { this.prefersReducedMotion = Boolean(e.matches); };
+          if (mql.addEventListener) {
+            mql.addEventListener('change', updateMotion);
+          } else if (mql.addListener) {
+            mql.addListener(updateMotion);
+          }
+        } catch (err) {
+          this.prefersReducedMotion = false;
+        }
+      }
 
       // Countdown Timer State
       this.levelTimeLimit = 35;
@@ -1759,11 +2098,20 @@
     }
 
     isReducedEffects() {
-      if (this.settings && this.settings.reducedEffects) return true;
-      if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        return true;
+      return Boolean(this.settings && this.settings.reducedEffects) || this.prefersReducedMotion;
+    }
+
+    getHintMode() {
+      if (this.settings && ['OFF', 'SUBTLE', 'GUIDED'].includes(this.settings.hintMode)) {
+        return this.settings.hintMode;
       }
-      return false;
+      return CONFIG.HINT_MODE || 'SUBTLE';
+    }
+
+    shouldShowExitWisps() {
+      const mode = this.getHintMode();
+      const isAssist = Boolean(this.settings && this.settings.assistMode);
+      return mode === 'GUIDED' || isAssist;
     }
 
     getActiveParticleCount() {
@@ -1777,8 +2125,8 @@
 
     spawnParticle(type, initFn) {
       if (this.isReducedEffects()) return null;
-      // Re-use first inactive slot in pool (zero per-frame allocation)
-      for (let i = 0; i < this.particlePool.length; i++) {
+      // First check for inactive dynamic slots (range 45 to 149; never touch 0..44 dust slots)
+      for (let i = CONFIG.DUST_PARTICLES_COUNT; i < CONFIG.MAX_PARTICLES; i++) {
         const p = this.particlePool[i];
         if (!p.active) {
           p.active = true;
@@ -1787,19 +2135,22 @@
           return p;
         }
       }
-      // If pool is fully saturated at 150 particles, re-use oldest dynamic slot
-      for (let i = CONFIG.DUST_PARTICLES_COUNT; i < this.particlePool.length; i++) {
-        const p = this.particlePool[i];
-        p.active = true;
-        p.type = type;
-        initFn(p);
-        return p;
+      // When pool is full, recycle the OLDEST dynamic particle in FIFO order via ring index
+      const idx = this.dynamicParticleRingIndex;
+      this.dynamicParticleRingIndex++;
+      if (this.dynamicParticleRingIndex >= CONFIG.MAX_PARTICLES) {
+        this.dynamicParticleRingIndex = CONFIG.DUST_PARTICLES_COUNT;
       }
-      return null;
+      const p = this.particlePool[idx];
+      p.active = true;
+      p.type = type;
+      initFn(p);
+      return p;
     }
 
     resetParticles() {
       if (!this.particlePool) return;
+      this.dynamicParticleRingIndex = CONFIG.DUST_PARTICLES_COUNT;
       for (let i = 0; i < this.particlePool.length; i++) {
         const p = this.particlePool[i];
         if (i < CONFIG.DUST_PARTICLES_COUNT) {
@@ -1819,7 +2170,7 @@
       }
     }
 
-    triggerScreenFlash(color = '#ff1e3c', intensity = 0.48) {
+    triggerScreenFlash(color = '#ff1e3c', intensity = 0.48, runId = this.runId) {
       if (this.isReducedEffects()) return;
       const now = performance.now();
       if (!this.flashTimestamps) this.flashTimestamps = [];
@@ -1837,9 +2188,37 @@
 
       if (this.flashTimeoutId) clearTimeout(this.flashTimeoutId);
       this.flashTimeoutId = setTimeout(() => {
-        flash.style.opacity = '0';
-        flash.style.background = 'red';
+        const flashElem = document.getElementById('screen-flash');
+        if (flashElem) {
+          flashElem.style.opacity = '0';
+          flashElem.style.background = 'red';
+        }
       }, CONFIG.FLASH_DURATION_MS);
+    }
+
+    triggerScreenFade() {
+      if (this.isReducedEffects()) return;
+      const fade = document.getElementById('screen-fade');
+      if (!fade) return;
+      fade.style.opacity = '1';
+      setTimeout(() => {
+        const f = document.getElementById('screen-fade');
+        if (f) f.style.opacity = '0';
+      }, 50);
+    }
+
+    showTacticalMessage(text) {
+      if (this.isReducedEffects()) return;
+      const hint = document.getElementById('hint-box');
+      if (hint) {
+        hint.textContent = text;
+        hint.style.opacity = '1';
+        hint.style.color = text === 'CLOSE.' ? '#ff2244' : '#00f3ff';
+        if (this.tacticalMessageTimeout) clearTimeout(this.tacticalMessageTimeout);
+        this.tacticalMessageTimeout = setTimeout(() => {
+          if (hint && hint.textContent === text) hint.style.opacity = '0';
+        }, 1200);
+      }
     }
 
     initDom() {
@@ -1855,6 +2234,11 @@
       this.audio.volume = this.settings.volume / 100;
       this.audio.isMuted = this.settings.isMuted;
       this.updateMuteButtonText();
+
+      const selHint = document.getElementById('sel-hint-mode');
+      if (selHint) selHint.value = this.getHintMode();
+      const selPauseHint = document.getElementById('sel-pause-hint-mode');
+      if (selPauseHint) selPauseHint.value = this.getHintMode();
 
       const selLevel = document.getElementById('sel-level-select');
       if (selLevel) {
@@ -1903,6 +2287,7 @@
           e.preventDefault();
           const move = MOVEMENT_MAP[code] || MOVEMENT_MAP[keyLower];
           this.bufferedMove = { dx: move.dx, dy: move.dy, time: performance.now() };
+          this.playerFacing = { dx: move.dx, dy: move.dy };
           const id = code || keyLower;
           if (!this.activeMovementKeys.includes(id)) {
             this.activeMovementKeys.push(id);
@@ -1920,6 +2305,8 @@
           this.triggerSonarPing();
         } else if (keyLower === 'e') {
           this.triggerBellInteract();
+        } else if (keyLower === 'f') {
+          this.triggerThrowPebble();
         }
       });
 
@@ -2013,6 +2400,22 @@
           this.restartCampaign();
         }
       });
+
+      const handleHintModeChange = (e) => {
+        const val = e.target.value;
+        if (['OFF', 'SUBTLE', 'GUIDED'].includes(val)) {
+          this.settings.hintMode = val;
+          const s1 = document.getElementById('sel-hint-mode');
+          const s2 = document.getElementById('sel-pause-hint-mode');
+          if (s1) s1.value = val;
+          if (s2) s2.value = val;
+          SettingsManager.save(this.settings);
+        }
+      };
+      const selHint = document.getElementById('sel-hint-mode');
+      if (selHint) selHint.addEventListener('change', handleHintModeChange);
+      const selPauseHint = document.getElementById('sel-pause-hint-mode');
+      if (selPauseHint) selPauseHint.addEventListener('change', handleHintModeChange);
 
       const handleAssistChange = (e) => {
         this.settings.assistMode = e.target.checked;
@@ -2118,6 +2521,20 @@
         });
       }
 
+      const btnPebble = document.getElementById('btn-touch-pebble');
+      if (btnPebble) {
+        btnPebble.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          this.audio.ensureContext();
+          this.triggerThrowPebble();
+          if (navigator.vibrate) navigator.vibrate(20);
+        }, { passive: false });
+        btnPebble.addEventListener('click', () => {
+          this.audio.ensureContext();
+          this.triggerThrowPebble();
+        });
+      }
+
       // Canvas Swipe & Quick-Tap Gestures for Seamless Mobile Play
       let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
       this.canvas.addEventListener('touchstart', (e) => {
@@ -2169,8 +2586,28 @@
       document.getElementById('victory-modal').classList.add('modal-hidden');
       const tm = document.getElementById('timeout-modal');
       if (tm) tm.classList.add('modal-hidden');
-      document.getElementById('screen-flash').style.opacity = '0';
-      document.getElementById('pulse-warning').style.opacity = '0';
+      const flash = document.getElementById('screen-flash');
+      if (flash) flash.style.opacity = '0';
+      const pw = document.getElementById('pulse-warning');
+      if (pw) pw.style.opacity = '0';
+
+      this.hintTier1Fired = false;
+      this.levelExplorationTimer = 0;
+      this.wispAccumulator = 0;
+      this.shakeAmount = 0;
+      this.shakeOffsetX = 0;
+      this.shakeOffsetY = 0;
+      this.nearMissCount = 0;
+      this.hintsUsedInLevel = 0;
+      this.currentHintTier = 0;
+      this.lastHintTime = -999;
+      this.lastTierTime = -999;
+      this.tier1HumBoostUntil = 0;
+      this.tier2ArcUntil = 0;
+      this.tier3PathUntil = 0;
+      this.tier3SafeCells = [];
+      this.progressHistory = [];
+      this.triggerScreenFade();
 
       document.getElementById('hud-level-title').textContent = levelCfg.title;
       document.getElementById('hud-objective').textContent = levelCfg.objective;
@@ -2236,7 +2673,7 @@
         initialHint.style.color = 'var(--radar-cyan)';
       }
 
-      // Setup Bell Decoy (Stage 5A)
+      // Setup Bell Decoy (Stage 5A, Pass 3: 2 uses max, 6s cooldown)
       this.bell = null;
       if (levelCfg.hasBell) {
         const candidates = this.maze.floorCells.filter(c => c.dist >= 4 && c.dist <= this.maze.maxDist * 0.75);
@@ -2246,6 +2683,8 @@
           y: cell.y + 0.5,
           cellX: cell.x,
           cellY: cell.y,
+          usesLeft: CONFIG.BELL_MAX_USES,
+          lastUsedTime: -999,
           used: false,
           revealedTime: -999
         };
@@ -2287,11 +2726,14 @@
           this.monsters.push({
             id: mCfg.id || `cop${idx + 1}`,
             name: mCfg.name || `Unit 0${idx + 1}`,
+            spawnCell: { x: spawnCell.x, y: spawnCell.y },
             x: spawnCell.x + 0.5,
             y: spawnCell.y + 0.5,
             state: mCfg.initialState || 'WANDER',
             target: null,
             path: [],
+            searchWaypoints: [],
+            searchWaypointIndex: 0,
             searchTimer: 0,
             wanderPauseTimer: 0,
             speed: (this.settings.assistMode ? (mCfg.speed || CONFIG.MONSTER_DEFAULT_SPEED) * 0.8 : (mCfg.speed || CONFIG.MONSTER_DEFAULT_SPEED)),
@@ -2308,6 +2750,14 @@
           });
         });
       }
+
+      // Pass 3: Pebble inventory, player facing, event log, HUD updates
+      this.pebblesLeft = CONFIG.PEBBLE_MAX_PER_LEVEL;
+      this.playerFacing = { dx: 0, dy: -1 };
+      this.eventLog = [];
+      const pebbleCountEl = document.getElementById('hud-pebble-val');
+      if (pebbleCountEl) pebbleCountEl.textContent = this.pebblesLeft;
+      this.updateAlertDisplay();
 
       this.audio.cleanupAll();
       this.audio.startExitHum();
@@ -2339,13 +2789,30 @@
     }
 
     restartCampaign() {
+      this.runId++;
+      document.getElementById('captured-modal').classList.add('modal-hidden');
+      const tm = document.getElementById('timeout-modal');
+      if (tm) tm.classList.add('modal-hidden');
+      document.getElementById('victory-modal').classList.add('modal-hidden');
+      const flash = document.getElementById('screen-flash');
+      if (flash) flash.style.opacity = '0';
       this.levelIndex = 0;
       this.startLevel(0);
     }
 
     restartLevel() {
-      // Sequential campaign rule: failing or restarting resets back to Level 1
-      this.restartCampaign();
+      this.runId++;
+      document.getElementById('captured-modal').classList.add('modal-hidden');
+      const tm = document.getElementById('timeout-modal');
+      if (tm) tm.classList.add('modal-hidden');
+      document.getElementById('victory-modal').classList.add('modal-hidden');
+      const flash = document.getElementById('screen-flash');
+      if (flash) flash.style.opacity = '0';
+      if (CONFIG.RESET_CAMPAIGN_ON_FAILURE) {
+        this.restartCampaign();
+      } else {
+        this.startLevel(this.levelIndex);
+      }
     }
 
     triggerSonarPing() {
@@ -2364,6 +2831,8 @@
       this.userPinged = true;
 
       const now = performance.now() / 1000;
+      this.recordEvent({ type: 'ping', time: now });
+
       this.sonarRings.push({
         x: this.player.x,
         y: this.player.y,
@@ -2384,10 +2853,27 @@
     }
 
     triggerBellInteract() {
-      if (this.state !== 'PLAYING' || !this.bell || this.bell.used) return;
+      if (this.state !== 'PLAYING' || !this.bell) return;
+      if (typeof this.bell.usesLeft === 'number' && this.bell.usesLeft <= 0) return;
+      if (this.bell.used) return;
+
+      const now = performance.now() / 1000;
+      if (typeof this.bell.lastUsedTime === 'number' && now - this.bell.lastUsedTime < CONFIG.BELL_COOLDOWN) {
+        const cdRem = (CONFIG.BELL_COOLDOWN - (now - this.bell.lastUsedTime)).toFixed(1);
+        this.showTacticalMessage(`BELL COOLDOWN (${cdRem}s)`);
+        return;
+      }
+
       const dist = Math.hypot(this.player.x - this.bell.x, this.player.y - this.bell.y);
       if (dist <= CONFIG.BELL_INTERACTION_RADIUS) {
-        this.bell.used = true;
+        if (typeof this.bell.usesLeft === 'number') {
+          this.bell.usesLeft--;
+          this.bell.used = (this.bell.usesLeft <= 0);
+        } else {
+          this.bell.used = true;
+        }
+        this.bell.lastUsedTime = now;
+        this.recordEvent({ type: 'bell', time: now });
         this.audio.playBell();
         this.emitNoiseEvent({
           type: 'bell',
@@ -2395,6 +2881,109 @@
           y: this.bell.y,
           radius: CONFIG.BELL_NOISE_RADIUS
         });
+      }
+    }
+
+    triggerThrowPebble() {
+      if (this.state !== 'PLAYING' || this.pebblesLeft <= 0 || !this.maze) return;
+
+      const pFacing = this.playerFacing || { dx: 0, dy: -1 };
+      const currentCellX = Math.floor(this.player.x);
+      const currentCellY = Math.floor(this.player.y);
+
+      // Find walkable cell ahead (starting at 5 tiles ahead, checking ray back to 1 tile)
+      let targetCell = null;
+      for (let dist = CONFIG.PEBBLE_DISTANCE; dist >= 1; dist--) {
+        const tx = currentCellX + pFacing.dx * dist;
+        const ty = currentCellY + pFacing.dy * dist;
+        if (tx >= 0 && tx < this.maze.W && ty >= 0 && ty < this.maze.H && this.maze.grid[ty][tx] === 0) {
+          targetCell = { x: tx, y: ty };
+          break;
+        }
+      }
+
+      // If no cell directly along ray is walkable, search nearest floor cells within 3 tiles of aimed target
+      if (!targetCell) {
+        let bestDist = Infinity;
+        for (let dy = -3; dy <= 3; dy++) {
+          for (let dx = -3; dx <= 3; dx++) {
+            const tx = currentCellX + pFacing.dx * 3 + dx;
+            const ty = currentCellY + pFacing.dy * 3 + dy;
+            if (tx >= 0 && tx < this.maze.W && ty >= 0 && ty < this.maze.H && this.maze.grid[ty][tx] === 0) {
+              const d = Math.hypot(tx - (currentCellX + pFacing.dx * 5), ty - (currentCellY + pFacing.dy * 5));
+              if (d < bestDist) {
+                bestDist = d;
+                targetCell = { x: tx, y: ty };
+              }
+            }
+          }
+        }
+      }
+
+      if (!targetCell) return;
+
+      this.pebblesLeft--;
+      const pebbleCountEl = document.getElementById('hud-pebble-val');
+      if (pebbleCountEl) pebbleCountEl.textContent = this.pebblesLeft;
+
+      const now = performance.now() / 1000;
+      this.recordEvent({ type: 'pebble', time: now, cellX: targetCell.x, cellY: targetCell.y });
+
+      this.audio.playStepHop();
+      this.emitNoiseEvent({
+        type: 'pebble',
+        x: targetCell.x + 0.5,
+        y: targetCell.y + 0.5,
+        radius: CONFIG.PEBBLE_NOISE_RADIUS
+      });
+
+      this.spawnParticle('wall_spark', sp => {
+        sp.x = targetCell.x + 0.5;
+        sp.y = targetCell.y + 0.5;
+        sp.vx = 0.2;
+        sp.vy = 0.2;
+        sp.life = 0.4;
+        sp.maxLife = 0.4;
+      });
+
+      this.showTacticalMessage('PEBBLE THROWN');
+    }
+
+    recordEvent(event) {
+      if (!this.eventLog) this.eventLog = [];
+      this.eventLog.push(event);
+    }
+
+    computeAlertLevel() {
+      if (!this.monsters || !this.maze || !this.player) return 0;
+      let maxAlert = 0;
+      this.monsters.forEach(m => {
+        if (m.state === 'SEARCH') {
+          maxAlert = Math.max(maxAlert, 1);
+        } else if (m.state === 'INVESTIGATE') {
+          const d = getBfsPathDistance(this.maze.grid, this.maze.W, this.maze.H, Math.floor(this.player.x), Math.floor(this.player.y), Math.floor(m.x), Math.floor(m.y));
+          if (d <= 6) {
+            maxAlert = Math.max(maxAlert, 3);
+          } else {
+            maxAlert = Math.max(maxAlert, 2);
+          }
+        }
+      });
+      return maxAlert;
+    }
+
+    updateAlertDisplay() {
+      const alert = this.computeAlertLevel();
+      const badge = document.getElementById('hud-alert-badge');
+      const dots = document.getElementById('hud-alert-dots');
+      if (dots) {
+        if (alert === 0) dots.textContent = '●○○○';
+        else if (alert === 1) dots.textContent = '●●○○';
+        else if (alert === 2) dots.textContent = '●●●○';
+        else dots.textContent = '●●●●';
+      }
+      if (badge) {
+        badge.className = `hud-alert-badge hud-alert-${alert}`;
       }
     }
 
@@ -2431,6 +3020,13 @@
             monster.target = { x: event.cellX, y: event.cellY };
             monster.path = findBfsPath(this.maze.grid, this.maze.W, this.maze.H, monsterCellX, monsterCellY, event.cellX, event.cellY) || [];
             this.audio.playGrowl(monster.growlPitch);
+            this.recordEvent({
+              type: 'investigation',
+              causedByPlayer: true,
+              triggerType: event.type,
+              time: performance.now() / 1000,
+              monsterId: monster.id
+            });
           }
           return;
         }
@@ -2453,6 +3049,16 @@
             monster.target = { x: event.cellX, y: event.cellY };
             monster.path = findBfsPath(this.maze.grid, this.maze.W, this.maze.H, monsterCellX, monsterCellY, event.cellX, event.cellY) || [];
             this.audio.playGrowl(monster.growlPitch);
+            this.audio.playDetectedSting();
+            if (['ping', 'footstep', 'pebble', 'bell'].includes(event.type)) {
+              this.recordEvent({
+                type: 'investigation',
+                causedByPlayer: true,
+                triggerType: event.type,
+                time: performance.now() / 1000,
+                monsterId: monster.id
+              });
+            }
           }
         }
       });
@@ -2460,6 +3066,7 @@
 
     triggerCapture() {
       if (this.state !== 'PLAYING') return;
+      const currentRunId = ++this.runId;
       const failedLevel = this.levelIndex + 1;
       this.state = 'CAPTURED';
       this.audio.playCapture();
@@ -2469,20 +3076,23 @@
         capSub.textContent = `The patrol caught you at Level ${failedLevel}. Sequential campaign failed — restart from Level 1!`;
       }
 
-      // Per rule: failing resets campaign progress back to Level 1
-      this.levelIndex = 0;
-      const selLevel = document.getElementById('sel-level-select');
-      if (selLevel) selLevel.value = "1";
+      if (CONFIG.RESET_CAMPAIGN_ON_FAILURE) {
+        this.levelIndex = 0;
+        const selLevel = document.getElementById('sel-level-select');
+        if (selLevel) selLevel.value = "1";
+      }
 
-      this.triggerScreenFlash('#ff1e3c', CONFIG.MAX_FLASH_BRIGHTNESS);
+      this.triggerScreenFlash('#ff1e3c', CONFIG.MAX_FLASH_BRIGHTNESS, currentRunId);
 
       setTimeout(() => {
+        if (this.runId !== currentRunId) return;
         document.getElementById('captured-modal').classList.remove('modal-hidden');
       }, 500);
     }
 
     triggerTimeout() {
       if (this.state !== 'PLAYING') return;
+      const currentRunId = ++this.runId;
       const failedLevel = this.levelIndex + 1;
       this.state = 'TIMEOUT';
       this.audio.playCapture();
@@ -2492,14 +3102,16 @@
         timeSub.textContent = `Time expired at Level ${failedLevel}. The gate sealed shut — restart from Level 1!`;
       }
 
-      // Per rule: failing resets campaign progress back to Level 1
-      this.levelIndex = 0;
-      const selLevel = document.getElementById('sel-level-select');
-      if (selLevel) selLevel.value = "1";
+      if (CONFIG.RESET_CAMPAIGN_ON_FAILURE) {
+        this.levelIndex = 0;
+        const selLevel = document.getElementById('sel-level-select');
+        if (selLevel) selLevel.value = "1";
+      }
 
-      this.triggerScreenFlash('#ff1e3c', CONFIG.MAX_FLASH_BRIGHTNESS);
+      this.triggerScreenFlash('#ff1e3c', CONFIG.MAX_FLASH_BRIGHTNESS, currentRunId);
 
       setTimeout(() => {
+        if (this.runId !== currentRunId) return;
         const tm = document.getElementById('timeout-modal');
         if (tm) tm.classList.remove('modal-hidden');
       }, 500);
@@ -2507,6 +3119,7 @@
 
     triggerVictory() {
       if (this.state !== 'PLAYING') return;
+      const currentRunId = ++this.runId;
       this.state = 'VICTORY';
       this.audio.playVictory();
 
@@ -2529,10 +3142,31 @@
       document.getElementById('stat-level').textContent = `${this.levelIndex + 1} / ${CONFIG.LEVELS.length}`;
       document.getElementById('stat-time').textContent = `${mins}:${secs}`;
       document.getElementById('stat-pings').textContent = this.totalPingsUsed;
+      const nmEl = document.getElementById('stat-near-misses');
+      if (nmEl) nmEl.textContent = this.nearMissCount || 0;
+      const hintsEl = document.getElementById('stat-hints');
+      if (hintsEl) hintsEl.textContent = this.hintsUsedInLevel || 0;
 
-      this.triggerScreenFlash('#34d399', 0.45);
+      // Pass 3: Stealth rating & high score update
+      const rating = computeStealthRating(this.eventLog, this.levelIndex, CONFIG);
+      const ratingEl = document.getElementById('stat-rating');
+      if (ratingEl) {
+        ratingEl.textContent = rating;
+        ratingEl.style.color = (rating === 'S') ? '#34d399' : (rating === 'A') ? '#60a5fa' : (rating === 'B') ? '#fbbf24' : '#f87171';
+      }
+
+      const bestRecord = HighScoreManager.recordScore(this.levelIndex, elapsedSec, rating);
+      const bestEl = document.getElementById('stat-record-best');
+      if (bestEl && bestRecord) {
+        const bMins = Math.floor(bestRecord.bestTime / 60);
+        const bSecs = Math.floor(bestRecord.bestTime % 60).toString().padStart(2, '0');
+        bestEl.textContent = `Grade ${bestRecord.bestRating} (${bMins}:${bSecs})`;
+      }
+
+      this.triggerScreenFlash('#34d399', 0.45, currentRunId);
 
       setTimeout(() => {
+        if (this.runId !== currentRunId) return;
         document.getElementById('victory-modal').classList.remove('modal-hidden');
       }, 400);
     }
@@ -2546,12 +3180,24 @@
       this.fps = Math.round(1000 / Math.max(1, this.frameTimeMs));
       this.lastFrameTime = timestamp;
 
+      const cpuStart = performance.now();
       if (this.state === 'PLAYING') {
         this.update(dt);
       }
 
       this.render();
       this.renderClockDial();
+
+      const cpuDuration = performance.now() - cpuStart;
+      this.cpuTimeMs = cpuDuration;
+      if (!this.cpuFrameHistory) this.cpuFrameHistory = [];
+      this.cpuFrameHistory.push(cpuDuration);
+      if (this.cpuFrameHistory.length > 120) {
+        this.cpuFrameHistory.shift();
+      }
+      this.cpuAvgMs = this.cpuFrameHistory.reduce((a, b) => a + b, 0) / this.cpuFrameHistory.length;
+      this.cpuMaxMs = Math.max(...this.cpuFrameHistory);
+
       this.updateDebugOverlay();
 
       requestAnimationFrame(this.loop.bind(this));
@@ -2562,66 +3208,73 @@
       const now = performance.now() / 1000;
 
       // 1. Anti-Clockwise Countdown Timer
-      this.levelTimeRemaining -= dt;
-      const curSec = Math.ceil(this.levelTimeRemaining);
-      if (curSec !== this.lastTickSecond && this.levelTimeRemaining > 0) {
-        this.lastTickSecond = curSec;
-        this.audio.playClockTick(this.levelTimeRemaining <= 8);
-      }
-      if (this.levelTimeRemaining <= 0) {
-        this.levelTimeRemaining = 0;
-        this.triggerTimeout();
-        return;
+      if (CONFIG.ENABLE_TIMER) {
+        this.levelTimeRemaining -= dt;
+        const curSec = Math.ceil(this.levelTimeRemaining);
+        if (curSec !== this.lastTickSecond && this.levelTimeRemaining > 0) {
+          this.lastTickSecond = curSec;
+          this.audio.playClockTick(this.levelTimeRemaining <= 8);
+        }
+        if (this.levelTimeRemaining <= 0) {
+          this.levelTimeRemaining = 0;
+          this.triggerTimeout();
+          return;
+        }
       }
 
       // 1B. Dynamic Suspense Blackout Thriller Cycle (Blinks and blacks out periodically)
       // Thriller & difficulty scale with higher levels: blackouts become more frequent and longer!
-      const levelProgress = Math.min(1.0, this.levelIndex / 14); // 0.0 at Level 1, 1.0 at Level 15
-      const minVisible = CONFIG.BLACKOUT_MIN_VISIBLE * (1.0 - 0.45 * levelProgress); // 4.0s down to 2.2s
-      const maxVisible = CONFIG.BLACKOUT_MAX_VISIBLE * (1.0 - 0.40 * levelProgress); // 7.5s down to 4.5s
-      const minDark = CONFIG.BLACKOUT_MIN_DARK * (1.0 + 0.85 * levelProgress);       // 2.2s up to 4.07s
-      const maxDark = CONFIG.BLACKOUT_MAX_DARK * (1.0 + 0.85 * levelProgress);       // 4.2s up to 7.77s
+      if (CONFIG.ENABLE_BLACKOUT) {
+        const levelProgress = Math.min(1.0, this.levelIndex / 14); // 0.0 at Level 1, 1.0 at Level 15
+        const minVisible = CONFIG.BLACKOUT_MIN_VISIBLE * (1.0 - 0.45 * levelProgress); // 4.0s down to 2.2s
+        const maxVisible = CONFIG.BLACKOUT_MAX_VISIBLE * (1.0 - 0.40 * levelProgress); // 7.5s down to 4.5s
+        const minDark = CONFIG.BLACKOUT_MIN_DARK * (1.0 + 0.85 * levelProgress);       // 2.2s up to 4.07s
+        const maxDark = CONFIG.BLACKOUT_MAX_DARK * (1.0 + 0.85 * levelProgress);       // 4.2s up to 7.77s
 
-      this.blackoutTimer -= dt;
-      if (this.blackoutState === 'VISIBLE') {
-        this.blackoutIntensity = 1.0;
-        if (this.blackoutTimer <= CONFIG.BLACKOUT_WARNING_TIME) {
-          this.blackoutState = 'WARNING';
-        }
-      } else if (this.blackoutState === 'WARNING') {
-        // High-tension rapid electric flicker before power cut
-        this.blackoutIntensity = (Math.sin(now * 38) > 0) ? 0.75 : 0.08;
-        if (this.blackoutTimer <= 0) {
-          this.blackoutState = 'BLACKOUT';
-          // Randomized blackout duration scaling with level difficulty
-          this.blackoutTimer = minDark + Math.random() * (maxDark - minDark);
-          this.blackoutIntensity = 0.0;
-          this.audio.playPowerCut();
-          this.shakeAmount = 4 + Math.round(levelProgress * 3);
-          const hint = document.getElementById('hint-box');
-          if (hint) {
-            hint.textContent = `⚡ BLACKOUT! (${this.monsters.length} COP${this.monsters.length > 1 ? 'S' : ''} IN THE DARK — USE COMPASS & SONAR!)`;
-            hint.style.opacity = '1';
-            hint.style.color = '#ff3355';
-          }
-        }
-      } else if (this.blackoutState === 'BLACKOUT') {
-        this.blackoutIntensity = 0.0;
-        if (this.blackoutTimer <= 0) {
-          this.blackoutState = 'VISIBLE';
-          // Randomized visible duration scaling with level difficulty
-          this.blackoutTimer = minVisible + Math.random() * (maxVisible - minVisible);
+        this.blackoutTimer -= dt;
+        if (this.blackoutState === 'VISIBLE') {
           this.blackoutIntensity = 1.0;
-          this.audio.playPowerSurge();
-          this.shakeAmount = 3;
-          const hint = document.getElementById('hint-box');
-          if (hint) {
-            hint.textContent = '⚡ POWER RESTORED — PATHS ILLUMINATED!';
-            hint.style.opacity = '1';
-            hint.style.color = 'var(--radar-cyan)';
-            setTimeout(() => { if (hint && this.blackoutState === 'VISIBLE') hint.style.opacity = '0'; }, 2000);
+          if (this.blackoutTimer <= CONFIG.BLACKOUT_WARNING_TIME) {
+            this.blackoutState = 'WARNING';
+          }
+        } else if (this.blackoutState === 'WARNING') {
+          // High-tension rapid electric flicker before power cut
+          this.blackoutIntensity = (Math.sin(now * 38) > 0) ? 0.75 : 0.08;
+          if (this.blackoutTimer <= 0) {
+            this.blackoutState = 'BLACKOUT';
+            // Randomized blackout duration scaling with level difficulty
+            this.blackoutTimer = minDark + Math.random() * (maxDark - minDark);
+            this.blackoutIntensity = 0.0;
+            this.audio.playPowerCut();
+            this.shakeAmount = 4 + Math.round(levelProgress * 3);
+            const hint = document.getElementById('hint-box');
+            if (hint) {
+              hint.textContent = `⚡ BLACKOUT! (${this.monsters.length} COP${this.monsters.length > 1 ? 'S' : ''} IN THE DARK — USE COMPASS & SONAR!)`;
+              hint.style.opacity = '1';
+              hint.style.color = '#ff3355';
+            }
+          }
+        } else if (this.blackoutState === 'BLACKOUT') {
+          this.blackoutIntensity = 0.0;
+          if (this.blackoutTimer <= 0) {
+            this.blackoutState = 'VISIBLE';
+            // Randomized visible duration scaling with level difficulty
+            this.blackoutTimer = minVisible + Math.random() * (maxVisible - minVisible);
+            this.blackoutIntensity = 1.0;
+            this.audio.playPowerSurge();
+            this.shakeAmount = 3;
+            const hint = document.getElementById('hint-box');
+            if (hint) {
+              hint.textContent = '⚡ POWER RESTORED — PATHS ILLUMINATED!';
+              hint.style.opacity = '1';
+              hint.style.color = 'var(--radar-cyan)';
+              setTimeout(() => { if (hint && this.blackoutState === 'VISIBLE') hint.style.opacity = '0'; }, 2000);
+            }
           }
         }
+      } else {
+        this.blackoutState = 'VISIBLE';
+        this.blackoutIntensity = 1.0;
       }
 
       // 2. Energy Regeneration
@@ -2699,10 +3352,13 @@
           const nextGX = this.player.gridX + chosenDx;
           const nextGY = this.player.gridY + chosenDy;
 
+          this.playerFacing = { dx: chosenDx, dy: chosenDy };
           this.userMoved = true;
           // WHEREVER STARTED MOVING, PATH TURNS PITCH BLACK!
-          this.voidTrail[this.player.gridY][this.player.gridX] = true;
-          this.addVoidCrumble(this.player.gridX, this.player.gridY);
+          if (CONFIG.ENABLE_VOID_TRAIL) {
+            this.voidTrail[this.player.gridY][this.player.gridX] = true;
+            this.addVoidCrumble(this.player.gridX, this.player.gridY);
+          }
 
           // Initiate 1-block step
           this.player.fromX = this.player.x;
@@ -2744,9 +3400,20 @@
       // 4. Update Sonar Rings & Line-of-Sight Wall Reveal
       for (let i = this.sonarRings.length - 1; i >= 0; i--) {
         const ring = this.sonarRings[i];
+        const prevRadius = ring.radius;
         ring.radius += ring.speed * dt;
 
         this.revealWallsInRadius(ring.x, ring.y, ring.radius, 'blue');
+
+        // Monster silhouette for 0.6s only when a sonar ring crosses it
+        this.monsters.forEach(m => {
+          const dist = Math.hypot(ring.x - m.x, ring.y - m.y);
+          if (dist >= prevRadius && dist <= ring.radius) {
+            if (hasLineOfSight(this.maze.grid, this.maze.W, this.maze.H, ring.x, ring.y, m.x, m.y)) {
+              m.silhouetteUntil = now + 0.60;
+            }
+          }
+        });
 
         if (this.bell && Math.hypot(ring.x - this.bell.x, ring.y - this.bell.y) <= ring.radius) {
           if (hasLineOfSight(this.maze.grid, this.maze.W, this.maze.H, ring.x, ring.y, this.bell.x, this.bell.y)) {
@@ -2794,14 +3461,15 @@
           if (monster.copChirpTimer <= 0) {
             monster.copChirpTimer = 4.5 + Math.random() * 2.0;
             this.audio.playCopChirp();
+            this.recordEvent({ type: 'chirp', causedByPlayer: false, time: now });
           }
         }
 
         if (monster.state === 'ASLEEP' || monster.state === 'CAPTURE') return;
 
         if (monster.state === 'WANDER') {
-          if (monster.path.length === 0) {
-            monster.wanderPauseTimer += dt;
+          if (!monster.path || monster.path.length === 0) {
+            monster.wanderPauseTimer = (monster.wanderPauseTimer || 0) + dt;
             if (monster.wanderPauseTimer >= CONFIG.WANDER_PAUSE_DURATION) {
               monster.wanderPauseTimer = 0;
               const randCell = this.maze.floorCells[Math.floor(Math.random() * this.maze.floorCells.length)];
@@ -2811,21 +3479,57 @@
             this.stepMonsterAlongPath(monster, dt, monster.speed);
           }
         } else if (monster.state === 'INVESTIGATE') {
-          if (monster.path.length === 0) {
+          if (!monster.path || monster.path.length === 0) {
             monster.state = 'SEARCH';
             monster.searchTimer = 0;
             if (monster.hasPulseOnSearch) {
               this.triggerMonsterPulse(monster);
+            }
+            // Pass 3: SEARCH visits target, then two nearest corridor ends, then returns to nearest patrol waypoint
+            const mCellX = Math.floor(monster.x);
+            const mCellY = Math.floor(monster.y);
+            const ends = findCorridorEnds(this.maze.grid, this.maze.W, this.maze.H);
+            const scoredEnds = ends.map(e => ({
+              x: e.x,
+              y: e.y,
+              dist: getBfsPathDistance(this.maze.grid, this.maze.W, this.maze.H, mCellX, mCellY, e.x, e.y)
+            })).filter(e => e.dist < Infinity && !(e.x === mCellX && e.y === mCellY));
+            scoredEnds.sort((a, b) => a.dist - b.dist);
+
+            const waypoints = [];
+            if (scoredEnds[0]) waypoints.push({ x: scoredEnds[0].x, y: scoredEnds[0].y });
+            if (scoredEnds[1]) waypoints.push({ x: scoredEnds[1].x, y: scoredEnds[1].y });
+
+            const patrolPoint = monster.spawnCell || { x: mCellX, y: mCellY };
+            waypoints.push({ x: patrolPoint.x, y: patrolPoint.y });
+
+            monster.searchWaypoints = waypoints;
+            monster.searchWaypointIndex = 0;
+            if (waypoints.length > 0) {
+              monster.target = waypoints[0];
+              monster.path = findBfsPath(this.maze.grid, this.maze.W, this.maze.H, mCellX, mCellY, waypoints[0].x, waypoints[0].y) || [];
             }
           } else {
             this.stepMonsterAlongPath(monster, dt, CONFIG.MONSTER_INVESTIGATE_SPEED);
           }
         } else if (monster.state === 'SEARCH') {
           monster.searchTimer += dt;
-          if (monster.searchTimer >= CONFIG.SEARCH_DURATION) {
+          if (monster.path && monster.path.length > 0) {
+            this.stepMonsterAlongPath(monster, dt, monster.speed);
+          } else if (monster.searchWaypoints && monster.searchWaypointIndex < monster.searchWaypoints.length - 1) {
+            monster.searchWaypointIndex++;
+            const nextWp = monster.searchWaypoints[monster.searchWaypointIndex];
+            monster.target = nextWp;
+            monster.path = findBfsPath(this.maze.grid, this.maze.W, this.maze.H, Math.floor(monster.x), Math.floor(monster.y), nextWp.x, nextWp.y) || [];
+          } else if (monster.searchTimer >= CONFIG.SEARCH_DURATION || !monster.path || monster.path.length === 0) {
             monster.state = 'WANDER';
             monster.target = null;
             monster.path = [];
+            monster.searchWaypoints = [];
+            const dist = Math.hypot(monster.x - this.player.x, monster.y - this.player.y);
+            if (dist <= 10.0) {
+              this.showTacticalMessage('LOST IT.');
+            }
           }
         }
 
@@ -2835,6 +3539,15 @@
           monster.state = 'CAPTURE';
           this.triggerCapture();
           return;
+        }
+
+        // Near-miss check: came within 1.2 tiles, no capture
+        if (distToPlayer <= 1.2) {
+          monster.wasClose = true;
+        } else if (monster.wasClose && distToPlayer > 1.4) {
+          monster.wasClose = false;
+          this.nearMissCount = (this.nearMissCount || 0) + 1;
+          this.showTacticalMessage('CLOSE.');
         }
       });
 
@@ -2849,16 +3562,43 @@
 
       // 8. Continuous Audio Updates
       const dxToExit = exitCenterX - this.player.x;
-      this.audio.updateExitHum(distToExit, dxToExit, this.state !== 'PLAYING');
+      const exitHumBoost = (this.tier1HumBoostUntil && now < this.tier1HumBoostUntil) ? 1.30 : 1.0;
+      this.audio.updateExitHum(distToExit, dxToExit, this.state !== 'PLAYING', exitHumBoost);
 
       let minMonsterDist = Infinity;
+      let minMonsterState = 'WANDER';
       this.monsters.forEach(m => {
         if (m.state !== 'ASLEEP') {
           const d = getBfsPathDistance(this.maze.grid, this.maze.W, this.maze.H, Math.floor(this.player.x), Math.floor(this.player.y), Math.floor(m.x), Math.floor(m.y));
-          if (d < minMonsterDist) minMonsterDist = d;
+          if (d < minMonsterDist) {
+            minMonsterDist = d;
+            minMonsterState = m.state;
+          }
         }
       });
+      this.minMonsterDist = minMonsterDist;
+      this.minMonsterState = minMonsterState;
       this.audio.updateHeartbeat(minMonsterDist, this.state !== 'PLAYING');
+
+      // 8B. Screen Shake Decay & Offset (driven by dt; zero Math.random in render)
+      if (this.shakeAmount > 0) {
+        if (!this.isReducedEffects()) {
+          this.shakeOffsetX = (Math.random() - 0.5) * this.shakeAmount * 2;
+          this.shakeOffsetY = (Math.random() - 0.5) * this.shakeAmount * 2;
+        } else {
+          this.shakeOffsetX = 0;
+          this.shakeOffsetY = 0;
+        }
+        this.shakeAmount = Math.max(0, this.shakeAmount - dt * CONFIG.SHAKE_DECAY_RATE);
+      } else {
+        this.shakeOffsetX = 0;
+        this.shakeOffsetY = 0;
+      }
+
+      // 8C. Pass 2 Progressive Acoustic Hints & Pass 3 Alert Status
+      this.levelExplorationTimer += dt;
+      this.updateHints(dt);
+      this.updateAlertDisplay();
 
       // 9. Particles Updates (Strict max 150 live particles, zero per-frame allocation)
       if (!this.isReducedEffects()) {
@@ -2881,19 +3621,30 @@
             if (p.x > 14) p.x -= 28;
             if (p.y < -14) p.y += 28;
             if (p.y > 14) p.y -= 28;
+          } else if (p.type === 'wall_spark') {
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.alpha -= dt * 3.5;
+            if (p.alpha <= 0) p.active = false;
           }
         }
 
-        // Golden echo wisps floating towards exit (pooled)
-        if (Math.random() < 0.25) {
-          this.spawnParticle('wisp', wp => {
-            wp.x = this.player.x;
-            wp.y = this.player.y;
-            wp.targetX = exitCenterX;
-            wp.targetY = exitCenterY;
-            wp.progress = 0;
-            wp.alpha = 0.8;
-          });
+        // Golden echo wisps: spawned from accumulator driven by dt, gated by guided/assist/tier1
+        if (this.shouldShowExitWisps()) {
+          this.wispAccumulator += dt * CONFIG.WISP_SPAWN_RATE;
+          while (this.wispAccumulator >= 1.0) {
+            this.wispAccumulator -= 1.0;
+            this.spawnParticle('wisp', wp => {
+              wp.x = this.player.x;
+              wp.y = this.player.y;
+              wp.targetX = exitCenterX;
+              wp.targetY = exitCenterY;
+              wp.progress = 0;
+              wp.alpha = 0.8;
+            });
+          }
+        } else {
+          this.wispAccumulator = 0;
         }
       }
 
@@ -2918,6 +3669,95 @@
           vp.size = 1.5 + Math.random() * 2;
           vp.alpha = 0.85;
         });
+      }
+    }
+
+    updateHints(dt) {
+      if (this.state !== 'PLAYING' || !this.maze) return;
+      const hintMode = this.getHintMode();
+      if (hintMode === 'OFF') return;
+
+      const now = performance.now() / 1000;
+      const currentCellX = Math.floor(this.player.x);
+      const currentCellY = Math.floor(this.player.y);
+      const exitCellX = this.maze.exit.x;
+      const exitCellY = this.maze.exit.y;
+      const currentBfsDist = getBfsPathDistance(this.maze.grid, this.maze.W, this.maze.H, currentCellX, currentCellY, exitCellX, exitCellY);
+
+      if (!this.progressHistory) this.progressHistory = [];
+      this.progressHistory.push({ time: now, cellX: currentCellX, cellY: currentCellY, dist: currentBfsDist });
+
+      const windowDuration = (hintMode === 'GUIDED') ? CONFIG.HINT_PROGRESS_WINDOW_GUIDED : CONFIG.HINT_PROGRESS_WINDOW_SUBTLE;
+      while (this.progressHistory.length > 1 && this.progressHistory[0].time < now - windowDuration) {
+        this.progressHistory.shift();
+      }
+
+      // Need at least windowDuration seconds of history in the level
+      if (this.levelExplorationTimer < windowDuration) return;
+
+      const distinctCells = new Set(this.progressHistory.map(p => `${p.cellX},${p.cellY}`)).size;
+      const startDist = this.progressHistory[0].dist;
+      const minDist = Math.min(...this.progressHistory.map(p => p.dist));
+      const distImproved = startDist - minDist;
+
+      const hasProgress = (distImproved >= CONFIG.HINT_PROGRESS_MIN_DIST_IMPROVE && distinctCells >= CONFIG.HINT_PROGRESS_MIN_DISTINCT_CELLS);
+
+      if (hasProgress) {
+        this.currentHintTier = 0;
+        return;
+      }
+
+      // Max 3 hints per level, 30s cooldown
+      if (this.hintsUsedInLevel >= CONFIG.HINT_MAX_PER_LEVEL) return;
+      if (now - this.lastHintTime < CONFIG.HINT_COOLDOWN) return;
+
+      // No hint while a monster is in INVESTIGATE within 8 path-tiles
+      const hasInvestigatingNearby = this.monsters.some(m => {
+        if (m.state !== 'INVESTIGATE') return false;
+        const d = getBfsPathDistance(this.maze.grid, this.maze.W, this.maze.H, currentCellX, currentCellY, Math.floor(m.x), Math.floor(m.y));
+        return d <= CONFIG.HINT_INVESTIGATE_SAFETY_WINDOW;
+      });
+      if (hasInvestigatingNearby) return;
+
+      // Each tier needs the previous shown and ignored 20s
+      if (this.currentHintTier > 0 && (now - this.lastTierTime < CONFIG.HINT_TIER_IGNORE_DURATION)) {
+        return;
+      }
+
+      // Direction comes only from a shortest path that stays >= 4 path-tiles from every monster and every monster target
+      const safePath = getSafeExitPath(this.maze.grid, this.maze.W, this.maze.H, { x: currentCellX, y: currentCellY }, { x: exitCellX, y: exitCellY }, this.monsters, CONFIG.HINT_MONSTER_SAFE_DISTANCE);
+      if (!safePath || safePath.length < 2) return;
+
+      if (this.currentHintTier === 0) {
+        // Tier 1: exit hum +30% for 8s
+        this.currentHintTier = 1;
+        this.hintsUsedInLevel++;
+        this.totalHintsUsed = (this.totalHintsUsed || 0) + 1;
+        this.lastHintTime = now;
+        this.lastTierTime = now;
+        this.tier1HumBoostUntil = now + CONFIG.HINT_TIER1_DURATION;
+        this.recordEvent({ type: 'hint', tier: 1, time: now });
+      } else if (this.currentHintTier === 1) {
+        // Tier 2: edge arc toward the exit for 1.5s, no distance
+        this.currentHintTier = 2;
+        this.hintsUsedInLevel++;
+        this.totalHintsUsed = (this.totalHintsUsed || 0) + 1;
+        this.lastHintTime = now;
+        this.lastTierTime = now;
+        this.tier2ArcUntil = now + CONFIG.HINT_TIER2_DURATION;
+        const nextStep = safePath[1];
+        this.hintSafeAngle = Math.atan2(nextStep.y + 0.5 - this.player.y, nextStep.x + 0.5 - this.player.x);
+        this.recordEvent({ type: 'hint', tier: 2, time: now });
+      } else if (this.currentHintTier === 2 && hintMode === 'GUIDED') {
+        // Tier 3 GUIDED only: 3 cells of safe route, 1s
+        this.currentHintTier = 3;
+        this.hintsUsedInLevel++;
+        this.totalHintsUsed = (this.totalHintsUsed || 0) + 1;
+        this.lastHintTime = now;
+        this.lastTierTime = now;
+        this.tier3PathUntil = now + CONFIG.HINT_TIER3_DURATION;
+        this.tier3SafeCells = safePath.slice(1, 4);
+        this.recordEvent({ type: 'hint', tier: 3, time: now });
       }
     }
 
@@ -2971,7 +3811,25 @@
             const dist = Math.hypot(cx - (x + 0.5), cy - (y + 0.5));
             if (dist <= radius) {
               if (hasLineOfSight(this.maze.grid, this.maze.W, this.maze.H, cx, cy, x + 0.5, y + 0.5)) {
-                this.wallReveals[y][x] = { time: now, color: color };
+                const prev = this.wallReveals[y][x] || { time: -999 };
+                const isNewCross = (now - prev.time) > 0.4;
+                this.wallReveals[y][x] = {
+                  time: now,
+                  color: color,
+                  flashUntil: isNewCross ? (now + 0.10) : (prev.flashUntil || 0)
+                };
+                if (isNewCross && !this.isReducedEffects()) {
+                  for (let p = 0; p < 6; p++) {
+                    this.spawnParticle('wall_spark', sp => {
+                      sp.x = x + 0.5;
+                      sp.y = y + 0.5;
+                      sp.vx = Math.sin(p * 1.05 + x) * 1.2;
+                      sp.vy = Math.cos(p * 1.05 + y) * 1.2;
+                      sp.size = 1.2;
+                      sp.alpha = 0.8;
+                    });
+                  }
+                }
               }
             }
           }
@@ -2988,8 +3846,8 @@
       c.clearRect(0, 0, 62, 62);
 
       const cx = 31, cy = 31, r = 24;
-      const frac = clamp(this.levelTimeRemaining / this.levelTimeLimit, 0, 1);
-      const isUrgent = this.levelTimeRemaining <= 8;
+      const frac = CONFIG.ENABLE_TIMER ? clamp(this.levelTimeRemaining / this.levelTimeLimit, 0, 1) : 1.0;
+      const isUrgent = CONFIG.ENABLE_TIMER && (this.levelTimeRemaining <= 8);
 
       // Background Track Ring
       c.strokeStyle = 'rgba(0, 243, 255, 0.12)';
@@ -3020,8 +3878,8 @@
       c.lineTo(handX, handY);
       c.stroke();
 
-      // Center glowing pip
-      c.fillStyle = isUrgent ? '#ff2244' : 'var(--radar-cyan)';
+      // Center glowing pip (valid canvas color string, no var())
+      c.fillStyle = isUrgent ? CONFIG.COLOR_DANGER : CONFIG.COLOR_CYAN;
       c.beginPath();
       c.arc(cx, cy, 3, 0, Math.PI * 2);
       c.fill();
@@ -3029,7 +3887,7 @@
       // Update digital readout
       const clockValElem = document.getElementById('clock-val');
       if (clockValElem) {
-        clockValElem.textContent = `${this.levelTimeRemaining.toFixed(1)}s`;
+        clockValElem.textContent = CONFIG.ENABLE_TIMER ? `${this.levelTimeRemaining.toFixed(1)}s` : '∞';
         if (isUrgent) {
           clockValElem.classList.add('clock-urgent');
         } else {
@@ -3056,12 +3914,9 @@
       let cameraX = w / 2 - this.player.x * tileSize;
       let cameraY = h / 2 - this.player.y * tileSize;
 
-      if (this.shakeAmount > 0) {
-        if (!this.isReducedEffects()) {
-          cameraX += (Math.random() - 0.5) * this.shakeAmount * 2;
-          cameraY += (Math.random() - 0.5) * this.shakeAmount * 2;
-        }
-        this.shakeAmount = Math.max(0, this.shakeAmount - (1 / 60) * 12);
+      if (this.shakeAmount > 0 && !this.isReducedEffects()) {
+        cameraX += this.shakeOffsetX;
+        cameraY += this.shakeOffsetY;
       }
 
       ctx.save();
@@ -3100,7 +3955,7 @@
           const pyTile = gy * tileSize;
 
           if (this.maze.grid[gy][gx] === 0) {
-            if (!this.voidTrail[gy][gx]) {
+            if (!CONFIG.ENABLE_VOID_TRAIL || !this.voidTrail[gy][gx]) {
               // During blackout (blackoutIntensity = 0), unvisited paths are shrouded in pitch black!
               if (this.blackoutIntensity > 0.02) {
                 ctx.save();
@@ -3179,16 +4034,25 @@
             // Active Sonar Pulse Flare
             if (age < CONFIG.WALL_FADE_DURATION) {
               const alpha = Math.max(0, 1.0 - age / CONFIG.WALL_FADE_DURATION);
-              if (rev.color === 'red') {
-                ctx.fillStyle = `rgba(255, 30, 60, ${alpha * 0.45})`;
-                ctx.strokeStyle = `rgba(255, 60, 90, ${alpha * 0.95})`;
+              const isFlashing = (!this.isReducedEffects() && rev.flashUntil && now < rev.flashUntil);
+              if (isFlashing) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(pxTile, pyTile, tileSize, tileSize);
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(pxTile + 0.5, pyTile + 0.5, tileSize - 1, tileSize - 1);
               } else {
-                ctx.fillStyle = `rgba(0, 180, 220, ${alpha * 0.35})`;
-                ctx.strokeStyle = `rgba(0, 243, 255, ${alpha * 0.95})`;
+                if (rev.color === 'red') {
+                  ctx.fillStyle = `rgba(255, 30, 60, ${alpha * 0.45})`;
+                  ctx.strokeStyle = `rgba(255, 60, 90, ${alpha * 0.95})`;
+                } else {
+                  ctx.fillStyle = `rgba(0, 180, 220, ${alpha * 0.35})`;
+                  ctx.strokeStyle = `rgba(0, 243, 255, ${alpha * 0.95})`;
+                }
+                ctx.lineWidth = 1.5;
+                ctx.fillRect(pxTile, pyTile, tileSize, tileSize);
+                ctx.strokeRect(pxTile + 0.5, pyTile + 0.5, tileSize - 1, tileSize - 1);
               }
-              ctx.lineWidth = 1.5;
-              ctx.fillRect(pxTile, pyTile, tileSize, tileSize);
-              ctx.strokeRect(pxTile + 0.5, pyTile + 0.5, tileSize - 1, tileSize - 1);
             }
             // Player Proximity Glow
             else if (distToPlayer <= 2.2) {
@@ -3259,8 +4123,8 @@
       ctx.arc(exitPx, exitPy, 5, 0, Math.PI * 2);
       ctx.fill();
 
-      // 7. GOLDEN ECHO WISPS (Pooled, zero shadowBlur)
-      if (!this.isReducedEffects()) {
+      // 7. GOLDEN ECHO WISPS (Pooled, zero shadowBlur, only when guided/assist/tier1)
+      if (!this.isReducedEffects() && this.shouldShowExitWisps()) {
         for (let i = 0; i < this.particlePool.length; i++) {
           const wp = this.particlePool[i];
           if (wp.active && wp.type === 'wisp') {
@@ -3273,6 +4137,19 @@
             ctx.fillStyle = `rgba(255, 183, 3, ${wp.alpha})`;
             ctx.beginPath();
             ctx.arc(curX * tileSize, curY * tileSize, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      // 7B. Wall spark particles (Pooled)
+      if (!this.isReducedEffects()) {
+        ctx.fillStyle = 'rgba(0, 243, 255, 0.75)';
+        for (let i = 0; i < this.particlePool.length; i++) {
+          const sp = this.particlePool[i];
+          if (sp.active && sp.type === 'wall_spark') {
+            ctx.beginPath();
+            ctx.arc(sp.x * tileSize, sp.y * tileSize, sp.size, 0, Math.PI * 2);
             ctx.fill();
           }
         }
@@ -3321,6 +4198,17 @@
         ctx.beginPath();
         ctx.arc(ringPx, ringPy, rPx, 0, Math.PI * 2);
         ctx.stroke();
+
+        // Echo ring 0.25s behind at 60% radius
+        if (!this.isReducedEffects() && ring.radius * 0.60 > 0.1) {
+          const echoRPx = ring.radius * 0.60 * tileSize;
+          const echoAlpha = alpha * 0.35;
+          ctx.strokeStyle = `rgba(0, 243, 255, ${echoAlpha})`;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(ringPx, ringPy, echoRPx, 0, Math.PI * 2);
+          ctx.stroke();
+        }
       });
 
       // 10. Monster Red Wavefronts (Stage 5C)
@@ -3449,6 +4337,37 @@
             ctx.stroke();
           }
         }
+
+        // Monster silhouette for 0.6s only when a sonar ring crosses it
+        if (!this.isReducedEffects() && monster.silhouetteUntil && monster.silhouetteUntil > now) {
+          const silAlpha = Math.max(0, (monster.silhouetteUntil - now) / 0.60);
+          ctx.save();
+          ctx.strokeStyle = `rgba(0, 243, 255, ${silAlpha * 0.9})`;
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(mx, my, tileSize * 0.42, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Red eyes within 3 tiles while in INVESTIGATE, widening and trembling within 2
+        const distToPlayer = Math.hypot(monster.x - this.player.x, monster.y - this.player.y);
+        if (!this.isReducedEffects() && monster.state === 'INVESTIGATE' && distToPlayer <= 3.0) {
+          const isTrembling = distToPlayer <= 2.0;
+          const eyeRadius = isTrembling ? 2.8 : 1.6;
+          const tremX = isTrembling ? Math.sin(now * 30) * 1.2 : 0;
+          const tremY = isTrembling ? Math.cos(now * 25) * 1.2 : 0;
+
+          ctx.save();
+          ctx.fillStyle = '#ff1e3c';
+          ctx.beginPath();
+          ctx.arc(mx - 4 + tremX, my - 2 + tremY, eyeRadius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(mx + 4 + tremX, my - 2 + tremY, eyeRadius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
       });
 
       // 12. PLAYER WITH SQUASH-AND-STRETCH & DIRECTIONAL GATE COMPASS
@@ -3460,14 +4379,31 @@
       ctx.translate(px, py);
       ctx.scale(this.player.squashX, this.player.squashY);
 
+      // State colors: calm cyan, investigating within 12 path-tiles amber, pursuit within 6 shrinking red pulse synced to the heartbeat, exit within 6 warm tint
+      let stateColor = CONFIG.COLOR_CYAN;
+      let stateCoreScale = 1.0;
+      if (!this.isReducedEffects()) {
+        const exitDistTiles = Math.hypot(this.player.x - (this.maze.exit.x + 0.5), this.player.y - (this.maze.exit.y + 0.5));
+        if (exitDistTiles <= 6.0) {
+          stateColor = '#fbbf24'; // Warm tint near exit
+        } else if (this.minMonsterDist <= 6.0) {
+          stateColor = '#ff2244'; // Pursuit within 6
+          const hbPeriod = clamp(0.3 + (this.minMonsterDist / 6.0) * 0.5, 0.25, 0.8);
+          const hbPhase = (now % hbPeriod) / hbPeriod;
+          stateCoreScale = 0.80 + 0.25 * (1.0 - hbPhase);
+        } else if (this.minMonsterState === 'INVESTIGATE' && this.minMonsterDist <= 12.0) {
+          stateColor = '#f59e0b'; // Amber investigating within 12 path-tiles
+        }
+      }
+
       // Player Core (crisp halo ring, zero shadowBlur)
-      ctx.fillStyle = 'rgba(0, 243, 255, 0.25)';
+      ctx.fillStyle = stateColor === CONFIG.COLOR_CYAN ? 'rgba(0, 243, 255, 0.25)' : (stateColor === '#fbbf24' ? 'rgba(251, 191, 36, 0.35)' : (stateColor === '#f59e0b' ? 'rgba(245, 158, 11, 0.35)' : 'rgba(255, 34, 68, 0.45)'));
       ctx.beginPath();
-      ctx.arc(0, 0, tileSize * 0.30, 0, Math.PI * 2);
+      ctx.arc(0, 0, tileSize * 0.30 * stateCoreScale, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.arc(0, 0, tileSize * 0.22, 0, Math.PI * 2);
+      ctx.arc(0, 0, tileSize * 0.22 * stateCoreScale, 0, Math.PI * 2);
       ctx.fill();
 
       // Energy Ring around player
@@ -3478,7 +4414,7 @@
       ctx.stroke();
 
       if (energyFraction > 0.01) {
-        ctx.strokeStyle = energyFraction < 0.25 ? '#ff3355' : 'var(--radar-cyan)';
+        ctx.strokeStyle = energyFraction < 0.25 ? CONFIG.COLOR_DANGER : CONFIG.COLOR_CYAN;
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.arc(0, 0, ringRadius, -Math.PI / 2, -Math.PI / 2 + energyFraction * Math.PI * 2);
@@ -3487,28 +4423,35 @@
 
       ctx.restore();
 
-      // 13. CLUE FOR THE GATE: Acoustic Compass Pointer Needle
-      const angleToExit = Math.atan2(exitPy - py, exitPx - px);
-      const compassDist = ringRadius + 6;
-      const arrowTipX = px + Math.cos(angleToExit) * (compassDist + 8);
-      const arrowTipY = py + Math.sin(angleToExit) * (compassDist + 8);
-      const arrowLeftX = px + Math.cos(angleToExit - 0.35) * compassDist;
-      const arrowLeftY = py + Math.sin(angleToExit - 0.35) * compassDist;
-      const arrowRightX = px + Math.cos(angleToExit + 0.35) * compassDist;
-      const arrowRightY = py + Math.sin(angleToExit + 0.35) * compassDist;
+      // 13. PASS 2 HINTS: Tier 2 Edge Arc & Tier 3 Safe Route Cells (Replaces straight-line compass)
+      if (!this.isReducedEffects() && this.tier2ArcUntil && now < this.tier2ArcUntil && typeof this.hintSafeAngle === 'number') {
+        const arcAlpha = Math.max(0, (this.tier2ArcUntil - now) / CONFIG.HINT_TIER2_DURATION);
+        ctx.save();
+        ctx.strokeStyle = `rgba(255, 200, 50, ${arcAlpha * 0.95})`;
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        const arcR = tileSize * 0.65;
+        ctx.arc(px, py, arcR, this.hintSafeAngle - 0.45, this.hintSafeAngle + 0.45);
+        ctx.stroke();
+        ctx.restore();
+      }
 
-      // Pulsing golden directional arrowhead pointing to the gate (crisp stroke, zero shadowBlur)
-      const arrowPulse = 0.65 + Math.sin(now * 5) * 0.35;
-      ctx.fillStyle = `rgba(255, 183, 3, ${arrowPulse})`;
-      ctx.strokeStyle = `rgba(255, 220, 100, ${arrowPulse * 0.9})`;
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(arrowTipX, arrowTipY);
-      ctx.lineTo(arrowLeftX, arrowLeftY);
-      ctx.lineTo(arrowRightX, arrowRightY);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
+      if (!this.isReducedEffects() && this.tier3PathUntil && now < this.tier3PathUntil && this.tier3SafeCells && this.tier3SafeCells.length > 0) {
+        const pathAlpha = Math.max(0, (this.tier3PathUntil - now) / CONFIG.HINT_TIER3_DURATION);
+        ctx.save();
+        this.tier3SafeCells.forEach(cell => {
+          const cx = (cell.x + 0.5) * tileSize;
+          const cy = (cell.y + 0.5) * tileSize;
+          ctx.fillStyle = `rgba(0, 243, 255, ${pathAlpha * 0.30})`;
+          ctx.strokeStyle = `rgba(0, 243, 255, ${pathAlpha * 0.85})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(cx, cy, tileSize * 0.22, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
 
       ctx.restore();
     }
@@ -3517,7 +4460,7 @@
       if (!this.debugMode) return;
       document.getElementById('dbg-seed').textContent = `Seed: ${this.currentSeed || '-'}`;
       const particleStr = `Particles: ${this.getActiveParticleCount()}/${CONFIG.MAX_PARTICLES}`;
-      document.getElementById('dbg-fps').textContent = `Frame: ${this.frameTimeMs.toFixed(1)}ms (${this.fps} FPS) | ${particleStr}`;
+      document.getElementById('dbg-fps').textContent = `CPU: ${this.cpuAvgMs.toFixed(2)}ms (max ${this.cpuMaxMs.toFixed(2)}ms) | Frame: ${this.frameTimeMs.toFixed(1)}ms (${this.fps} FPS) | ${particleStr}`;
       if (this.player) {
         document.getElementById('dbg-pos').textContent = `Player: [${this.player.gridX}, ${this.player.gridY}]`;
         document.getElementById('dbg-energy').textContent = `Energy: ${Math.round(this.player.energy)}%`;
@@ -3532,9 +4475,12 @@
      AUTOMATED SELF-TEST SUITE: runSelfTests()
      Verifies all 19 requirements across Stages 1, 2, 3, 5A, 5B, 5C
      ========================================================================== */
-  function runSelfTests() {
-    console.log("=== RUNNING ECHO MAZE AUTOMATED SELF-TEST SUITE ===");
-    const results = [];
+  let runningTestPromise = null;
+  async function runSelfTests() {
+    if (runningTestPromise) return runningTestPromise;
+    runningTestPromise = (async () => {
+      console.log("=== RUNNING ECHO MAZE AUTOMATED SELF-TEST SUITE ===");
+      const results = [];
 
     function logTest(name, passed, detail = "") {
       results.push({ name, passed });
@@ -3717,21 +4663,370 @@
     }
     logTest("no pulse during pause, capture or victory", !canEmitPulse(true, false, false) && !canEmitPulse(false, true, false) && !canEmitPulse(false, false, true));
 
+    // 20. Real test: restart within 100 ms of capture suppresses capture modal and clears flash
+    if (window.game) {
+      window.game.state = 'PLAYING';
+      window.game.triggerCapture();
+      await new Promise(r => setTimeout(r, 50));
+      window.game.restartCampaign();
+      await new Promise(r => setTimeout(r, 700));
+      const capModal = document.getElementById('captured-modal');
+      const flashEl = document.getElementById('screen-flash');
+      const capHidden = capModal ? capModal.classList.contains('modal-hidden') : false;
+      const flashClear20 = flashEl ? (flashEl.style.opacity === '0' || flashEl.style.opacity === '') : false;
+      logTest("restart within 100 ms of capture suppresses modal and clears flash", capHidden && flashClear20);
+
+      // 21. Real test: restart within 100 ms of victory suppresses victory modal and clears flash
+      window.game.state = 'PLAYING';
+      window.game.triggerVictory();
+      await new Promise(r => setTimeout(r, 50));
+      window.game.restartCampaign();
+      await new Promise(r => setTimeout(r, 700));
+      const vicModal = document.getElementById('victory-modal');
+      const vicHidden = vicModal ? vicModal.classList.contains('modal-hidden') : false;
+      const flashClear21 = flashEl ? (flashEl.style.opacity === '0' || flashEl.style.opacity === '') : false;
+      logTest("restart within 100 ms of victory suppresses modal and clears flash", vicHidden && flashClear21);
+
+      // 22. Real test: restart within 100 ms of timeout suppresses timeout modal and clears flash
+      window.game.state = 'PLAYING';
+      window.game.triggerTimeout();
+      await new Promise(r => setTimeout(r, 50));
+      window.game.restartCampaign();
+      await new Promise(r => setTimeout(r, 700));
+      const tmModal = document.getElementById('timeout-modal');
+      const tmHidden = tmModal ? tmModal.classList.contains('modal-hidden') : false;
+      const flashClear22 = flashEl ? (flashEl.style.opacity === '0' || flashEl.style.opacity === '') : false;
+      logTest("restart within 100 ms of timeout suppresses modal and clears flash", tmHidden && flashClear22);
+
+      // 23. startLevel resets hintTier1Fired, levelExplorationTimer, wispAccumulator, shake
+      window.game.hintTier1Fired = true;
+      window.game.levelExplorationTimer = 99.0;
+      window.game.wispAccumulator = 4.5;
+      window.game.shakeAmount = 10.0;
+      window.game.shakeOffsetX = 5.0;
+      window.game.shakeOffsetY = 5.0;
+      window.game.startLevel(0);
+      const resetOk = (
+        window.game.hintTier1Fired === false &&
+        window.game.levelExplorationTimer === 0 &&
+        window.game.wispAccumulator === 0 &&
+        window.game.shakeAmount === 0 &&
+        window.game.shakeOffsetX === 0 &&
+        window.game.shakeOffsetY === 0
+      );
+      logTest("startLevel resets hintTier1Fired, levelExplorationTimer, wispAccumulator, shake", resetOk);
+
+      // 24. 120-frame rolling CPU average under CONFIG.TARGET_FRAME_TIME_MS
+      window.game.startLevel(4);
+      while (window.game.monsters.length < 5) {
+        window.game.monsters.push({
+          id: `testCop${window.game.monsters.length + 1}`,
+          x: 1.5, y: 1.5,
+          state: 'INVESTIGATE',
+          target: { x: window.game.maze.W - 2, y: window.game.maze.H - 2 },
+          path: [],
+          speed: 3.4,
+          pingRadius: 10.0,
+          footstepRadius: 2.5
+        });
+      }
+      const perfStart = performance.now();
+      for (let f = 0; f < 120; f++) {
+        if (f % 5 === 0) {
+          window.game.triggerSonarPing();
+        }
+        for (const m of window.game.monsters) {
+          m.target = { x: Math.floor(Math.random() * (window.game.maze.W - 2)) + 1, y: Math.floor(Math.random() * (window.game.maze.H - 2)) + 1 };
+          m.path = findBfsPath(window.game.maze.grid, window.game.maze.W, window.game.maze.H, Math.floor(m.x), Math.floor(m.y), m.target.x, m.target.y) || [];
+        }
+        window.game.update(0.016);
+        window.game.render();
+        window.game.renderClockDial();
+      }
+      const perfAvg = (performance.now() - perfStart) / 120;
+      logTest(`120-frame rolling CPU average (${perfAvg.toFixed(2)}ms) under TARGET_FRAME_TIME_MS (${CONFIG.TARGET_FRAME_TIME_MS}ms)`, perfAvg <= CONFIG.TARGET_FRAME_TIME_MS);
+
+      // 25. Real test: Near miss fires only in stated condition (within 1.2 tiles, no capture)
+      window.game.startLevel(0);
+      window.game.player.x = 1.5;
+      window.game.player.y = 1.5;
+      window.game.monsters = [{
+        id: 'testM25',
+        x: 3.5,
+        y: 1.5,
+        state: 'WANDER',
+        wasClose: false,
+        speed: 0,
+        path: []
+      }];
+      window.game.nearMissCount = 0;
+      window.game.update(0.016);
+      const nmA = (window.game.nearMissCount === 0 && !window.game.monsters[0].wasClose);
+      window.game.monsters[0].x = 2.5; // distance 1.0 (<= 1.2, > 0.45)
+      window.game.update(0.016);
+      const nmB = (window.game.nearMissCount === 0 && window.game.monsters[0].wasClose === true && window.game.state === 'PLAYING');
+      window.game.monsters[0].x = 3.5; // distance 2.0 (> 1.4)
+      window.game.update(0.016);
+      const nmC = (window.game.nearMissCount === 1 && window.game.monsters[0].wasClose === false);
+      window.game.monsters[0].x = 1.7; // distance 0.2 (<= 0.45 capture)
+      window.game.update(0.016);
+      const nmD = (window.game.state === 'CAPTURED' && window.game.nearMissCount === 1);
+      logTest("near miss fires only in stated condition (within 1.2 tiles, no capture)", nmA && nmB && nmC && nmD);
+
+      // 26. Real test: Silhouette appears only when a ring crosses
+      window.game.startLevel(0);
+      window.game.player.x = 1.5;
+      window.game.player.y = 1.5;
+      window.game.maze.grid[1][1] = 0;
+      window.game.maze.grid[1][2] = 0;
+      window.game.maze.grid[1][3] = 0;
+      const silMonster = {
+        id: 'silM26',
+        x: 3.5,
+        y: 1.5,
+        state: 'WANDER',
+        silhouetteUntil: 0,
+        path: [],
+        wanderPauseTimer: 0
+      };
+      window.game.monsters = [silMonster];
+      window.game.sonarRings = [];
+      const now26 = performance.now() / 1000;
+      window.game.update(0.016);
+      const silNoRing = (silMonster.silhouetteUntil <= now26);
+      window.game.sonarRings.push({
+        x: 1.5, y: 1.5, radius: 0.5, maxRadius: 10, speed: 2.0, birthTime: now26
+      });
+      window.game.update(0.5); // radius reaches 1.5 (< 2.0)
+      const silBeforeCross = (silMonster.silhouetteUntil <= performance.now() / 1000);
+      window.game.update(0.5); // radius reaches 2.5 (> 2.0)
+      const silAfterCross = (silMonster.silhouetteUntil > performance.now() / 1000);
+      window.game.maze.grid[1][2] = 1; // place wall
+      silMonster.silhouetteUntil = 0;
+      window.game.sonarRings = [{
+        x: 1.5, y: 1.5, radius: 1.5, maxRadius: 10, speed: 2.0, birthTime: performance.now() / 1000
+      }];
+      window.game.update(0.5); // radius crosses 2.0, but wall blocks
+      const silBlockedByWall = (silMonster.silhouetteUntil === 0);
+      logTest("silhouette appears only when a ring crosses", silNoRing && silBeforeCross && silAfterCross && silBlockedByWall);
+
+      // 27. Real test: Particle count never exceeds 150
+      window.game.startLevel(0);
+      const origPrefers = window.game.prefersReducedMotion;
+      const origRedEff = window.game.settings ? window.game.settings.reducedEffects : false;
+      window.game.prefersReducedMotion = false;
+      if (window.game.settings) window.game.settings.reducedEffects = false;
+      for (let i = 0; i < 300; i++) {
+        window.game.spawnParticle('wall_spark', p => {
+          p.x = 1.5; p.y = 1.5; p.vx = 0.5; p.vy = 0.5; p.life = 1.0; p.maxLife = 1.0;
+        });
+      }
+      const pActiveCount = window.game.getActiveParticleCount();
+      const pPoolSize = window.game.particlePool.length;
+      let dustIntact = true;
+      for (let d = 0; d < CONFIG.DUST_PARTICLES_COUNT; d++) {
+        if (window.game.particlePool[d].type !== 'dust') dustIntact = false;
+      }
+      window.game.prefersReducedMotion = origPrefers;
+      if (window.game.settings) window.game.settings.reducedEffects = origRedEff;
+      logTest("particle count never exceeds 150 ceiling and dust is preserved", pActiveCount <= 150 && pPoolSize === 150 && dustIntact);
+
+      // 28. Pass 2: path never enters the 4-tile zone
+      window.game.startLevel(0);
+      const testSafeMon = [{ x: 3.5, y: 1.5, target: null }];
+      // Try path when corridor is blocked (monster at dist 1)
+      const blockedPath = getSafeExitPath(window.game.maze.grid, window.game.maze.W, window.game.maze.H, { x: 1, y: 1 }, { x: window.game.maze.exit.x, y: window.game.maze.exit.y }, [{ x: 2, y: 1 }], 4);
+      // Try path when monster is far away
+      const openPath = getSafeExitPath(window.game.maze.grid, window.game.maze.W, window.game.maze.H, { x: 1, y: 1 }, { x: window.game.maze.exit.x, y: window.game.maze.exit.y }, [{ x: window.game.maze.W - 2, y: 1 }], 4);
+      let openPathSafe = true;
+      if (openPath && openPath.length > 0) {
+        for (const step of openPath) {
+          const d = getBfsPathDistance(window.game.maze.grid, window.game.maze.W, window.game.maze.H, step.x, step.y, window.game.maze.W - 2, 1);
+          if (d < 4) openPathSafe = false;
+        }
+      }
+      logTest("path never enters the 4-tile zone", blockedPath === null && openPathSafe);
+
+      // 29. Pass 2: no hint in the safety window
+      window.game.startLevel(0);
+      window.game.player.x = 1.5;
+      window.game.player.y = 1.5;
+      window.game.monsters = [{
+        id: 'safetyMon',
+        x: 3.5,
+        y: 1.5,
+        state: 'INVESTIGATE',
+        path: [],
+        speed: 0
+      }];
+      window.game.levelExplorationTimer = 30.0;
+      const now29 = performance.now() / 1000;
+      const curDist29 = getBfsPathDistance(window.game.maze.grid, window.game.maze.W, window.game.maze.H, 1, 1, window.game.maze.exit.x, window.game.maze.exit.y);
+      window.game.progressHistory = [
+        { time: now29 - 20, cellX: 1, cellY: 1, dist: curDist29 },
+        { time: now29 - 5, cellX: 1, cellY: 1, dist: curDist29 }
+      ];
+      window.game.updateHints(0.016);
+      const safetyBlocked = (window.game.currentHintTier === 0 && window.game.hintsUsedInLevel === 0);
+      // When monster is not investigating or clear, hint tier 1 fires
+      window.game.monsters = [];
+      window.game.updateHints(0.016);
+      const allowedWhenSafe = (window.game.currentHintTier === 1 && window.game.hintsUsedInLevel === 1);
+      logTest("no hint in the safety window", safetyBlocked && allowedWhenSafe);
+
+      // 30. Pass 2: counters reset per level
+      window.game.hintsUsedInLevel = 3;
+      window.game.currentHintTier = 2;
+      window.game.lastHintTime = 123.45;
+      window.game.tier1HumBoostUntil = 200.0;
+      window.game.tier2ArcUntil = 200.0;
+      window.game.tier3PathUntil = 200.0;
+      window.game.startLevel(0);
+      const resetPass2Ok = (
+        window.game.hintsUsedInLevel === 0 &&
+        window.game.currentHintTier === 0 &&
+        window.game.lastHintTime === -999 &&
+        window.game.tier1HumBoostUntil === 0 &&
+        window.game.tier2ArcUntil === 0 &&
+        window.game.tier3PathUntil === 0
+      );
+      logTest("counters reset per level", resetPass2Ok);
+
+      // 31. Pass 2: OFF shows nothing
+      window.game.startLevel(0);
+      window.game.settings.hintMode = 'OFF';
+      window.game.levelExplorationTimer = 40.0;
+      window.game.progressHistory = [
+        { time: 0, cellX: 1, cellY: 1, dist: 10 },
+        { time: 35, cellX: 1, cellY: 1, dist: 10 }
+      ];
+      window.game.monsters = [];
+      window.game.updateHints(0.016);
+      const offShowsNothing = (
+        window.game.currentHintTier === 0 &&
+        window.game.hintsUsedInLevel === 0 &&
+        window.game.tier1HumBoostUntil === 0 &&
+        window.game.tier2ArcUntil === 0 &&
+        window.game.tier3PathUntil === 0
+      );
+      window.game.settings.hintMode = 'SUBTLE';
+      logTest("OFF shows nothing", offShowsNothing);
+
+      // 32. Pass 3: same event log gives same rating
+      const sampleLog = [
+        { type: 'ping', time: 1.0 },
+        { type: 'ping', time: 2.0 },
+        { type: 'investigation', causedByPlayer: true, triggerType: 'footstep', time: 3.0 }
+      ];
+      const r1 = computeStealthRating(sampleLog, 0, CONFIG);
+      const r2 = computeStealthRating([...sampleLog], 0, CONFIG);
+      const r3 = computeStealthRating(JSON.parse(JSON.stringify(sampleLog)), 0, CONFIG);
+      logTest("same event log gives same rating", r1 === r2 && r2 === r3 && typeof r1 === 'string');
+
+      // 33. Pass 3: rating ignores cosmetic sounds
+      const baseLog = [
+        { type: 'ping', time: 1.0 },
+        { type: 'ping', time: 2.0 }
+      ];
+      const cosmeticLog = [
+        { type: 'ping', time: 1.0 },
+        { type: 'chirp', causedByPlayer: false, time: 1.5 },
+        { type: 'siren', time: 1.8 },
+        { type: 'ping', time: 2.0 },
+        { type: 'clock_tick', time: 2.5 }
+      ];
+      const rBase = computeStealthRating(baseLog, 0, CONFIG);
+      const rCosmetic = computeStealthRating(cosmeticLog, 0, CONFIG);
+      logTest("rating ignores cosmetic sounds", rBase === rCosmetic && rBase === 'S');
+
+      // 34. Pass 3: pebble never targets a wall
+      window.game.startLevel(0);
+      window.game.pebblesLeft = 2;
+      let allPebblesValid = true;
+      const testDirs = [
+        { dx: 0, dy: -1 },
+        { dx: 0, dy: 1 },
+        { dx: -1, dy: 0 },
+        { dx: 1, dy: 0 }
+      ];
+      for (const fc of window.game.maze.floorCells.slice(0, 10)) {
+        window.game.player.x = fc.x + 0.5;
+        window.game.player.y = fc.y + 0.5;
+        for (const dir of testDirs) {
+          window.game.playerFacing = dir;
+          window.game.pebblesLeft = 2;
+          const preEventCount = window.game.eventLog.length;
+          window.game.triggerThrowPebble();
+          if (window.game.eventLog.length > preEventCount) {
+            const lastEv = window.game.eventLog[window.game.eventLog.length - 1];
+            if (lastEv.type === 'pebble') {
+              if (window.game.maze.grid[lastEv.cellY][lastEv.cellX] !== 0) {
+                allPebblesValid = false;
+              }
+            }
+          }
+        }
+      }
+      logTest("pebble never targets a wall", allPebblesValid);
+
+      // 35. Pass 3: bell cooldown holds (2 uses max, rejected during 6s cooldown)
+      window.game.startLevel(1);
+      if (!window.game.bell) {
+        window.game.bell = { x: 1.5, y: 1.5, cellX: 1, cellY: 1, usesLeft: CONFIG.BELL_MAX_USES, lastUsedTime: -999, used: false };
+      }
+      window.game.player.x = window.game.bell.x;
+      window.game.player.y = window.game.bell.y;
+      window.game.bell.usesLeft = CONFIG.BELL_MAX_USES;
+      window.game.bell.lastUsedTime = -999;
+      window.game.bell.used = false;
+
+      // Use 1: Should succeed
+      window.game.triggerBellInteract();
+      const use1Ok = (window.game.bell.usesLeft === 1);
+
+      // Immediate attempt: Should reject due to cooldown
+      const preNoiseCount = window.game.noiseEvents.length;
+      window.game.triggerBellInteract();
+      const cdRejectOk = (window.game.bell.usesLeft === 1 && window.game.noiseEvents.length === preNoiseCount);
+
+      // Simulate 6.1s later: Should succeed (Use 2)
+      window.game.bell.lastUsedTime -= 6.1;
+      window.game.triggerBellInteract();
+      const use2Ok = (window.game.bell.usesLeft === 0 && window.game.bell.used === true);
+
+      // Simulate another 6.1s later: Should reject because 2 uses exhausted
+      window.game.bell.lastUsedTime -= 6.1;
+      window.game.triggerBellInteract();
+      const exhaustedRejectOk = (window.game.bell.usesLeft === 0 && window.game.bell.used === true);
+
+      logTest("bell cooldown holds", use1Ok && cdRejectOk && use2Ok && exhaustedRejectOk);
+
+      // Reset back to clean title screen
+      window.game.startLevel(0);
+      window.game.showTitleScreen();
+    }
+
     const allPassed = results.every(r => r.passed);
-    console.log(`=== SUMMARY: ${results.length} TESTS RUN, ${allPassed ? "ALL 19 TESTS PASSED!" : "FAILURES DETECTED"} ===\n`);
+    console.log(`=== SUMMARY: ${results.length} TESTS RUN, ${allPassed ? `ALL ${results.length} TESTS PASSED!` : "FAILURES DETECTED"} ===\n`);
 
     const dbgTestsElem = document.getElementById('dbg-tests');
     if (dbgTestsElem) {
-      dbgTestsElem.textContent = `Self-Tests: ${allPassed ? '19/19 PASSED' : 'FAILED'}`;
+      dbgTestsElem.textContent = `Self-Tests: ${allPassed ? `${results.length}/${results.length} PASSED` : 'FAILED'}`;
       dbgTestsElem.style.color = allPassed ? '#34d399' : '#ff3355';
     }
 
-    return allPassed;
+      return allPassed;
+    })();
+    try {
+      return await runningTestPromise;
+    } finally {
+      runningTestPromise = null;
+    }
   }
 
+  window.game = new Game();
   window.runSelfTests = runSelfTests;
   runSelfTests();
-  window.game = new Game();
   </script>
 </body>
 </html>
