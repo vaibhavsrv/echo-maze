@@ -5,37 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="icon" href="data:,">
   <title>ECHO GROVE — Whispering Glades</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root { --bg: #090d16; --panel: #131c2e; --border: #1e293b; --text: #f8fafc; --muted: #94a3b8; --accent: #10b981; --gold: #f59e0b; --cyan: #38bdf8; --danger: #f43f5e; }
+    :root { --bg: #030806; --panel: rgba(10,24,18,0.85); --border: rgba(52,211,153,0.22); --text: #f0fdf4; --accent: #10b981; --gold: #fbbf24; --cyan: #38bdf8; --danger: #f43f5e; --font-title: 'Cinzel', serif; --font-body: 'Outfit', sans-serif; }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-x: hidden; touch-action: manipulation; }
-    .game-shell { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 12px; max-width: 600px; width: 100%; }
-    .hud-bar { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-    .hud-title-group { display: flex; align-items: center; gap: 8px; }
-    .game-logo { font-size: 14px; font-weight: 800; letter-spacing: 1px; color: var(--accent); }
-    .zone-badge { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; font-weight: 700; text-transform: uppercase; }
-    .hud-relics { font-size: 12.5px; font-weight: 700; color: var(--gold); display: flex; align-items: center; gap: 4px; }
-    .hud-controls { display: flex; gap: 6px; }
-    .icon-btn { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text); font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
-    .icon-btn:hover { background: rgba(255,255,255,0.12); }
-    .icon-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
-    .hud-objective { width: 100%; font-size: 11px; color: var(--muted); text-align: center; }
-    .canvas-container { position: relative; border: 2px solid var(--border); border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-    #gameCanvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; max-width: 480px; height: auto; aspect-ratio: 1 / 1; }
-    .banner-msg { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.9); border: 1px solid var(--cyan); color: var(--cyan); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 10; }
-    .modal-overlay { position: absolute; inset: 0; background: rgba(9,13,22,0.92); backdrop-filter: blur(4px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; z-index: 20; border-radius: 6px; }
+    body { background: radial-gradient(circle at 50% 25%, #0d2820 0%, #061511 50%, #020705 100%); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-x: hidden; touch-action: manipulation; }
+    .game-shell { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px; max-width: 580px; width: 100%; z-index: 1; }
+    .hud-bar { width: 100%; background: var(--panel); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border); box-shadow: 0 12px 36px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08); border-radius: 14px; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .hud-title-group { display: flex; align-items: center; gap: 10px; }
+    .game-logo { font-family: var(--font-title); font-size: 15px; font-weight: 900; letter-spacing: 2px; color: #34d399; text-shadow: 0 0 16px rgba(52,211,153,0.5); }
+    .zone-badge { font-size: 11px; padding: 3px 9px; border-radius: 6px; background: rgba(16,185,129,0.16); border: 1px solid rgba(52,211,153,0.35); color: #a7f3d0; font-weight: 600; text-transform: uppercase; }
+    .hud-relics { font-size: 12.5px; font-weight: 700; color: var(--gold); text-shadow: 0 0 10px rgba(251,191,36,0.4); display: flex; align-items: center; gap: 5px; }
+    .hud-controls { display: flex; gap: 6px; align-items: center; }
+    .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #e2e8f0; font-family: var(--font-body); font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4,0,0.2,1); }
+    .icon-btn:hover { background: rgba(52,211,153,0.18); border-color: rgba(52,211,153,0.4); color: #fff; transform: translateY(-1px); }
+    .icon-btn.active { background: var(--accent); color: #022c22; border-color: var(--accent); box-shadow: 0 0 14px rgba(16,185,129,0.35); }
+    .hud-objective { width: 100%; font-size: 11.5px; color: #94a3b8; text-align: center; }
+    .canvas-container { position: relative; border: 1.5px solid rgba(52,211,153,0.25); border-radius: 16px; overflow: hidden; background: #030806; box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 35px rgba(16,185,129,0.12); width: 100%; max-width: 544px; aspect-ratio: 1/1; }
+    #gameCanvas { display: block; width: 100%; height: 100%; aspect-ratio: 1/1; }
+    .banner-msg { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: rgba(8,20,16,0.92); backdrop-filter: blur(8px); border: 1px solid var(--cyan); box-shadow: 0 0 20px rgba(56,189,248,0.4); color: #e0f2fe; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; opacity: 0; transition: opacity 0.25s, transform 0.25s; pointer-events: none; z-index: 10; }
+    .modal-overlay { position: absolute; inset: 0; background: rgba(3,8,6,0.92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; z-index: 20; }
     .modal-hidden { display: none !important; }
-    .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
-    .modal-desc { font-size: 12px; color: var(--muted); max-width: 340px; margin-bottom: 16px; line-height: 1.5; }
-    .action-btn { background: var(--accent); color: #042f2e; font-weight: 800; font-size: 13px; padding: 9px 22px; border-radius: 6px; border: none; cursor: pointer; transition: transform 0.15s; }
-    .action-btn:hover { transform: scale(1.03); }
-    .action-btn.btn-danger { background: var(--danger); color: #fff; }
-    .touch-bar { display: none; width: 100%; max-width: 480px; justify-content: space-between; align-items: center; gap: 10px; padding-top: 4px; }
+    .modal-title { font-family: var(--font-title); font-size: 24px; font-weight: 900; letter-spacing: 2px; margin-bottom: 8px; }
+    .modal-desc { font-size: 13px; color: #94a3b8; max-width: 380px; margin-bottom: 20px; line-height: 1.6; }
+    .action-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #022c22; font-family: var(--font-body); font-weight: 800; font-size: 13.5px; padding: 11px 26px; border-radius: 8px; border: none; cursor: pointer; box-shadow: 0 4px 18px rgba(16,185,129,0.4); transition: all 0.2s cubic-bezier(0.4,0,0.2,1); }
+    .action-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 25px rgba(16,185,129,0.6); color: #000; }
+    .action-btn.btn-danger { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); color: #fff; box-shadow: 0 4px 18px rgba(244,63,94,0.4); }
+    .action-btn.btn-danger:hover { box-shadow: 0 8px 25px rgba(244,63,94,0.6); }
+    .touch-bar { display: none; width: 100%; max-width: 544px; justify-content: space-between; align-items: center; gap: 12px; padding-top: 4px; }
     @media (pointer: coarse) { .touch-bar { display: flex; } }
-    .touch-dpad { display: grid; grid-template-columns: repeat(3, 42px); grid-template-rows: repeat(3, 42px); gap: 3px; }
-    .touch-key { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 14px; display: flex; align-items: center; justify-content: center; user-select: none; }
-    .touch-action-btn { flex: 1; height: 64px; background: rgba(56,189,248,0.15); border: 1px solid var(--cyan); border-radius: 8px; color: var(--cyan); font-weight: 800; font-size: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; }
-    .tests-status { font-size: 10px; color: #64748b; margin-top: 4px; font-family: monospace; }
+    .touch-dpad { display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(3, 44px); gap: 4px; }
+    .touch-key { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 15px; display: flex; align-items: center; justify-content: center; user-select: none; }
+    .touch-action-btn { flex: 1; height: 70px; background: rgba(56,189,248,0.12); border: 1px solid var(--cyan); box-shadow: 0 0 15px rgba(56,189,248,0.2); border-radius: 10px; color: #bae6fd; font-weight: 800; font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; }
+    .tests-status { font-size: 11px; color: #64748b; margin-top: 4px; font-family: var(--font-body); display: flex; align-items: center; gap: 6px; background: rgba(15,23,42,0.4); padding: 4px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
   </style>
 </head>
 <body>
@@ -57,23 +61,23 @@
     </header>
 
     <div class="canvas-container">
-      <canvas id="gameCanvas" width="240" height="240"></canvas>
+      <canvas id="gameCanvas" width="544" height="544"></canvas>
       <div class="banner-msg" id="banner-msg">SECRET WALL REVEALED</div>
 
       <div class="modal-overlay" id="title-modal">
-        <h1 class="modal-title" style="color: var(--accent);">ECHO GROVE</h1>
-        <p class="modal-desc">A gentle, top-down tactical acoustic-stealth exploration prototype.<br><br>Maze is readable by default. Sonar pings reveal hidden relics, secret walls, and invisible prowlers.</p>
+        <h1 class="modal-title" style="color: #34d399; text-shadow: 0 0 20px rgba(52, 211, 153, 0.5);">ECHO GROVE</h1>
+        <p class="modal-desc">Tactical acoustic-stealth exploration through bioluminescent ancient glades.<br><br>Glade paths are softly visible. Sonar pings awaken hidden Lumina Relics, ancient runic walls, and prowlers lurking in deep shadows.</p>
         <button class="action-btn" id="btn-start">ENTER THE GROVE ▶</button>
       </div>
 
       <div class="modal-overlay modal-hidden" id="victory-modal">
-        <h2 class="modal-title" style="color: var(--gold);">SHRINE AWAKENED!</h2>
+        <h2 class="modal-title" style="color: var(--gold); text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);">SHRINE AWAKENED!</h2>
         <p class="modal-desc" id="vic-desc">All relics gathered in 0:24.</p>
         <button class="action-btn" id="btn-next">PROCEED TO NEXT ZONE ▶</button>
       </div>
 
       <div class="modal-overlay modal-hidden" id="caught-modal">
-        <h2 class="modal-title" style="color: var(--danger);">CAUGHT IN THE DARK</h2>
+        <h2 class="modal-title" style="color: var(--danger); text-shadow: 0 0 20px rgba(244, 63, 94, 0.5);">CAUGHT IN THE DARK</h2>
         <p class="modal-desc">A forest prowler heard your acoustic footprints and intercepted you.</p>
         <button class="action-btn btn-danger" id="btn-retry">TRY ZONE AGAIN</button>
       </div>
@@ -91,22 +95,17 @@
   </div>
 
   <script>
-  /* CONFIG & 16-COLOR PROCEDURAL PALETTE */
+  /* CONFIG & PROCEDURAL PALETTE */
   const CONFIG = {
-    TILE_SIZE: 16, VIEW_TILES: 15, VIEW_PIXELS: 240,
+    TILE_SIZE: 32, VIEW_TILES: 17, VIEW_PIXELS: 544,
     PALETTE: [
-      '#090d16', '#1e293b', '#334155', '#64748b', '#064e3b', '#047857', '#10b981', '#34d399',
+      '#030806', '#0f172a', '#1e293b', '#334155', '#064e3b', '#047857', '#10b981', '#34d399',
       '#78350f', '#b45309', '#f59e0b', '#fde68a', '#1e3a8a', '#38bdf8', '#f43f5e', '#f8fafc'
     ],
     MONSTER_DEFAULT_SPEED: 2.1, MONSTER_INVESTIGATE_SPEED: 2.5,
     MONSTER_HEARING_RADIUS: 8.5, FOOTSTEP_HEARING_RADIUS: 2.2,
     SONAR_EXPAND_SPEED: 18.0, SONAR_MAX_RADIUS: 8.5, STEP_DURATION: 0.12,
-    // LINE_OF_SIGHT_SONAR: when true, sonar waves reveal the prowler and secret walls only if
-    // an unobstructed line of sight exists between the ping origin and the target (walls block detection).
-    // Target's own cell is never treated as blocking.
     LINE_OF_SIGHT_SONAR: true,
-    // MONSTER_HEARING_USE_PATH: when true, monster perception uses acoustic BFS corridor path distance
-    // (like index.html); footsteps and pings cannot be heard through solid walls.
     MONSTER_HEARING_USE_PATH: true,
     ZONES: [
       { id: 'meadow', name: '🌿 Meadow', width: 17, height: 17, prompt: 'Collect 3 Lumina Relics in the verdant meadow and reach the Shrine.' },
@@ -134,7 +133,7 @@
     for (let i = 1; i < steps; i++) {
       const cx = Math.floor(x0 + (x1 - x0) * (i / steps));
       const cy = Math.floor(y0 + (y1 - y0) * (i / steps));
-      if (cx === targetCX && cy === targetCY) continue; // Target's own cell never blocks
+      if (cx === targetCX && cy === targetCY) continue;
       if (cx < 0 || cx >= W || cy < 0 || cy >= H) return false;
       if (grid[cy][cx] === 1 || grid[cy][cx] === 2) return false;
     }
@@ -200,13 +199,15 @@
     }
   }
 
-  /* MAP GENERATOR: 3 Collectibles, Secret Wall, Optional Route */
-  function generateGroveZone(W, H, seed, zoneTheme) {
-    const rnd = mulberry32(seed);
-    const grid = Array.from({ length: H }, () => Array.from({ length: W }, () => 1));
-    const stack = [{ x: 1, y: 1 }]; grid[1][1] = 0;
+  /* PROCEDURAL MAZE GENERATOR (Depth-First Search + Relics & Secret Wall) */
+  function generateGroveZone(W, H, seed, theme) {
+    const rng = mulberry32(seed);
+    const grid = Array.from({ length: H }, () => Array(W).fill(1));
+    const stack = [{ x: 1, y: 1 }];
+    grid[1][1] = 0;
     while (stack.length > 0) {
-      const cur = stack[stack.length - 1], neighbors = [];
+      const cur = stack[stack.length - 1];
+      const neighbors = [];
       [[0, -2], [0, 2], [-2, 0], [2, 0]].forEach(([dx, dy]) => {
         const nx = cur.x + dx, ny = cur.y + dy;
         if (nx > 0 && nx < W - 1 && ny > 0 && ny < H - 1 && grid[ny][nx] === 1) {
@@ -214,71 +215,70 @@
         }
       });
       if (neighbors.length > 0) {
-        const next = neighbors[Math.floor(rnd() * neighbors.length)];
-        grid[next.wallY][next.wallX] = 0; grid[next.y][next.x] = 0;
+        const next = neighbors[Math.floor(rng() * neighbors.length)];
+        grid[next.wallY][next.wallX] = 0;
+        grid[next.y][next.x] = 0;
         stack.push({ x: next.x, y: next.y });
-      } else { stack.pop(); }
-    }
-    for (let i = 0; i < Math.floor(W / 2); i++) {
-      const rx = 1 + Math.floor(rnd() * (W - 2)), ry = 1 + Math.floor(rnd() * (H - 2));
-      if (grid[ry][rx] === 1 && ((grid[ry][rx - 1] === 0 && grid[ry][rx + 1] === 0) || (grid[ry - 1][rx] === 0 && grid[ry + 1][rx] === 0))) grid[ry][rx] = 0;
+      } else {
+        stack.pop();
+      }
     }
     const floorCells = [];
     for (let y = 1; y < H - 1; y++) {
-      for (let x = 1; x < W - 1; x++) if (grid[y][x] === 0) floorCells.push({ x, y });
+      for (let x = 1; x < W - 1; x++) {
+        if (grid[y][x] === 0 && !(x === 1 && y === 1)) floorCells.push({ x, y });
+      }
     }
-    const distMap = Array.from({ length: H }, () => Array.from({ length: W }, () => Infinity));
-    const q = [{ x: 1, y: 1, d: 0 }]; distMap[1][1] = 0;
-    let maxDist = 0, exitCell = { x: 1, y: 1 };
-    while (q.length > 0) {
-      const { x, y, d } = q.shift();
-      if (d > maxDist) { maxDist = d; exitCell = { x, y }; }
-      [[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx, dy]) => {
-        const nx = x + dx, ny = y + dy;
-        if (nx >= 0 && nx < W && ny >= 0 && ny < H && grid[ny][nx] === 0 && distMap[ny][nx] === Infinity) {
-          distMap[ny][nx] = d + 1; q.push({ x: nx, y: ny, d: d + 1 });
-        }
-      });
+    for (let i = floorCells.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [floorCells[i], floorCells[j]] = [floorCells[j], floorCells[i]];
+    }
+    const collectibles = [];
+    for (let i = 0; i < 3 && i < floorCells.length; i++) {
+      collectibles.push({ x: floorCells[i].x, y: floorCells[i].y, collected: false });
+    }
+    let exit = { x: W - 2, y: H - 2 };
+    for (let i = floorCells.length - 1; i >= 3; i--) {
+      if (Math.hypot(floorCells[i].x - 1, floorCells[i].y - 1) > 6) {
+        exit = { x: floorCells[i].x, y: floorCells[i].y }; break;
+      }
     }
     let secretWall = null;
     for (let y = 2; y < H - 2; y++) {
       for (let x = 2; x < W - 2; x++) {
         if (grid[y][x] === 1) {
-          const adjH = (grid[y][x - 1] === 0 && grid[y][x + 1] === 0 && Math.abs(distMap[y][x-1] - distMap[y][x+1]) > 4);
-          const adjV = (grid[y - 1][x] === 0 && grid[y + 1][x] === 0 && Math.abs(distMap[y-1][x] - distMap[y+1][x]) > 4);
-          if (adjH || adjV) { secretWall = { x, y, revealed: false }; grid[y][x] = 2; break; }
+          const horiz = (grid[y][x - 1] === 0 && grid[y][x + 1] === 0 && grid[y - 1][x] === 1 && grid[y + 1][x] === 1);
+          const vert = (grid[y - 1][x] === 0 && grid[y + 1][x] === 0 && grid[y][x - 1] === 1 && grid[y][x + 1] === 1);
+          if (horiz || vert) {
+            secretWall = { x, y, revealed: false };
+            grid[y][x] = 2; break;
+          }
         }
       }
       if (secretWall) break;
     }
-    const sortedFloors = [...floorCells].filter(c => c.x !== 1 || c.y !== 1).sort((a, b) => distMap[a.y][a.x] - distMap[b.y][b.x]);
-    const collectibles = [
-      { id: 1, x: sortedFloors[Math.floor(sortedFloors.length * 0.28)].x, y: sortedFloors[Math.floor(sortedFloors.length * 0.28)].y, collected: false },
-      { id: 2, x: sortedFloors[Math.floor(sortedFloors.length * 0.58)].x, y: sortedFloors[Math.floor(sortedFloors.length * 0.58)].y, collected: false },
-      { id: 3, x: sortedFloors[Math.floor(sortedFloors.length * 0.88)].x, y: sortedFloors[Math.floor(sortedFloors.length * 0.88)].y, collected: false }
-    ];
-    return { W, H, grid, exit: exitCell, secretWall, collectibles, floorCells, theme: zoneTheme };
+    return { W, H, grid, exit, collectibles, secretWall, floorCells, theme };
   }
 
   /* BFS PATHFINDING */
   function findPath(grid, W, H, sx, sy, tx, ty) {
     if (sx === tx && sy === ty) return [];
-    const visited = Array.from({ length: H }, () => Array.from({ length: W }, () => false));
-    const parent = Array.from({ length: H }, () => Array.from({ length: W }, () => null));
-    const q = [{ x: sx, y: sy }]; visited[sy][sx] = true;
-    while (q.length > 0) {
-      const cur = q.shift();
-      if (cur.x === tx && cur.y === ty) {
-        const path = []; let curr = cur;
-        while (curr && !(curr.x === sx && curr.y === sy)) { path.unshift({ x: curr.x, y: curr.y }); curr = parent[curr.y][curr.x]; }
-        return path;
-      }
-      [[0,-1],[0,1],[-1,0],[1,0]].forEach(([dx, dy]) => {
-        const nx = cur.x + dx, ny = cur.y + dy;
-        if (nx >= 0 && nx < W && ny >= 0 && ny < H && !visited[ny][nx] && grid[ny][nx] === 0) {
-          visited[ny][nx] = true; parent[ny][nx] = cur; q.push({ x: nx, y: ny });
+    const queue = [{ x: sx, y: sy, path: [] }];
+    const visited = Array.from({ length: H }, () => Array(W).fill(false));
+    visited[sy][sx] = true;
+    while (queue.length > 0) {
+      const { x, y, path } = queue.shift();
+      const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+      for (const [dx, dy] of dirs) {
+        const nx = x + dx, ny = y + dy;
+        if (nx >= 0 && nx < W && ny >= 0 && ny < H && !visited[ny][nx]) {
+          if (nx === tx && ny === ty) return [...path, { x: nx, y: ny }];
+          if (grid[ny][nx] === 0) {
+            visited[ny][nx] = true;
+            queue.push({ x: nx, y: ny, path: [...path, { x: nx, y: ny }] });
+          }
         }
-      });
+      }
     }
     return null;
   }
@@ -304,12 +304,8 @@
     }
     setupDOM() {
       const start = () => { this.audio.init(); this.startZone(this.levelIndex); };
-      document.getElementById('btn-start').addEventListener('click', start);
-      document.getElementById('btn-next').addEventListener('click', () => {
-        this.levelIndex = (this.levelIndex + 1) % CONFIG.ZONES.length; start();
-      });
-      document.getElementById('btn-retry').addEventListener('click', start);
-      document.getElementById('btn-restart').addEventListener('click', start);
+      ['btn-start', 'btn-retry', 'btn-restart'].forEach(id => document.getElementById(id).addEventListener('click', start));
+      document.getElementById('btn-next').addEventListener('click', () => { this.levelIndex = (this.levelIndex + 1) % CONFIG.ZONES.length; start(); });
       document.getElementById('btn-pause').addEventListener('click', () => this.togglePause());
       const btnSound = document.getElementById('btn-sound');
       btnSound.addEventListener('click', () => {
@@ -510,54 +506,122 @@
       else { this.monster.x += (dx / dist) * step; this.monster.y += (dy / dist) * step; }
     }
     render() {
-      const ctx = this.ctx, W = CONFIG.VIEW_PIXELS, H = CONFIG.VIEW_PIXELS, T = CONFIG.TILE_SIZE, pal = CONFIG.PALETTE;
-      ctx.imageSmoothingEnabled = false;
-      ctx.fillStyle = pal[0]; ctx.fillRect(0, 0, W, H);
-      if (!this.maze || !this.player) return;
-      const camX = Math.round(this.player.x * T - W / 2), camY = Math.round(this.player.y * T - H / 2);
+      const ctx = this.ctx, W = CONFIG.VIEW_PIXELS, H = CONFIG.VIEW_PIXELS, T = CONFIG.TILE_SIZE;
+      if (!this.maze || !this.player) {
+        ctx.fillStyle = '#030806'; ctx.fillRect(0, 0, W, H); return;
+      }
+      const nowSec = performance.now() / 1000;
+      const maxCamX = Math.max(0, this.maze.W * T - W);
+      const maxCamY = Math.max(0, this.maze.H * T - H);
+      const camX = this.maze.W * T <= W ? (this.maze.W * T - W) / 2 : Math.max(0, Math.min(maxCamX, Math.round(this.player.x * T - W / 2)));
+      const camY = this.maze.H * T <= H ? (this.maze.H * T - H) / 2 : Math.max(0, Math.min(maxCamY, Math.round(this.player.y * T - H / 2)));
+
+      ctx.fillStyle = '#030806'; ctx.fillRect(0, 0, W, H);
       const startTX = Math.max(0, Math.floor(camX / T)), endTX = Math.min(this.maze.W - 1, Math.ceil((camX + W) / T));
       const startTY = Math.max(0, Math.floor(camY / T)), endTY = Math.min(this.maze.H - 1, Math.ceil((camY + H) / T));
+
       for (let ty = startTY; ty <= endTY; ty++) {
         for (let tx = startTX; tx <= endTX; tx++) {
           const px = tx * T - camX, py = ty * T - camY, cell = this.maze.grid[ty][tx];
           if (cell === 1) {
-            if (this.maze.theme === 'meadow') { ctx.fillStyle = pal[8]; ctx.fillRect(px, py, T, T); ctx.fillStyle = pal[4]; ctx.fillRect(px + 2, py + 2, T - 4, T - 4); }
-            else if (this.maze.theme === 'cave') { ctx.fillStyle = pal[1]; ctx.fillRect(px, py, T, T); ctx.fillStyle = pal[2]; ctx.fillRect(px + 2, py + 2, T - 4, T - 4); }
-            else { ctx.fillStyle = pal[2]; ctx.fillRect(px, py, T, T); ctx.fillStyle = pal[3]; ctx.fillRect(px + 1, py + 1, T - 2, T - 2); }
+            if (this.maze.theme === 'meadow') {
+              ctx.fillStyle = '#0c1f18'; ctx.fillRect(px, py, T, T);
+              ctx.fillStyle = '#143628'; ctx.fillRect(px + 2, py + 2, T - 4, T - 6);
+              ctx.fillStyle = '#22543d'; ctx.fillRect(px + 4, py + 4, T - 8, T - 10);
+              ctx.fillStyle = '#38a169'; ctx.fillRect(px + 3, py + 3, T - 6, 2.5);
+            } else if (this.maze.theme === 'cave') {
+              ctx.fillStyle = '#0f172a'; ctx.fillRect(px, py, T, T);
+              ctx.fillStyle = '#1e293b'; ctx.fillRect(px + 2, py + 2, T - 4, T - 6);
+              ctx.fillStyle = '#334155'; ctx.fillRect(px + 4, py + 4, T - 8, T - 10);
+              ctx.fillStyle = '#38bdf8'; ctx.fillRect(px + 3, py + 3, 3, 2);
+            } else {
+              ctx.fillStyle = '#1c1917'; ctx.fillRect(px, py, T, T);
+              ctx.fillStyle = '#292524'; ctx.fillRect(px + 2, py + 2, T - 4, T - 6);
+              ctx.fillStyle = '#44403c'; ctx.fillRect(px + 4, py + 4, T - 8, T - 10);
+              ctx.fillStyle = '#fbbf24'; ctx.fillRect(px + 4, py + 4, 3, 2);
+            }
           } else if (cell === 2) {
-            ctx.fillStyle = pal[2]; ctx.fillRect(px, py, T, T); ctx.fillStyle = pal[13]; ctx.fillRect(px + 6, py + 4, 4, 8);
+            ctx.fillStyle = '#0d2820'; ctx.fillRect(px, py, T, T);
+            ctx.fillStyle = '#10b981';
+            ctx.fillRect(px + T/2 - 2, py + 6, 4, T - 12);
+            ctx.fillRect(px + 6, py + T/2 - 2, T - 12, 4);
           } else {
-            if (this.maze.theme === 'meadow') { ctx.fillStyle = pal[5]; ctx.fillRect(px, py, T, T); ctx.fillStyle = pal[6]; ctx.fillRect(px + 4, py + 4, 2, 2); }
-            else if (this.maze.theme === 'cave') { ctx.fillStyle = pal[0]; ctx.fillRect(px, py, T, T); }
-            else { ctx.fillStyle = pal[1]; ctx.fillRect(px, py, T, T); }
+            if (this.maze.theme === 'meadow') {
+              ctx.fillStyle = '#06130e'; ctx.fillRect(px, py, T, T);
+              if ((tx * 7 + ty * 13) % 4 === 0) { ctx.fillStyle = '#0a231b'; ctx.fillRect(px + 8, py + 8, 3, 3); }
+            } else if (this.maze.theme === 'cave') {
+              ctx.fillStyle = '#060a10'; ctx.fillRect(px, py, T, T);
+              if ((tx * 7 + ty * 13) % 4 === 0) { ctx.fillStyle = '#0d1829'; ctx.fillRect(px + 8, py + 8, 3, 3); }
+            } else {
+              ctx.fillStyle = '#0d0b09'; ctx.fillRect(px, py, T, T);
+              if ((tx * 7 + ty * 13) % 4 === 0) { ctx.fillStyle = '#1c1917'; ctx.fillRect(px + 8, py + 8, 3, 3); }
+            }
           }
         }
       }
-      const exPx = this.maze.exit.x * T - camX, exPy = this.maze.exit.y * T - camY;
-      ctx.fillStyle = pal[10]; ctx.fillRect(exPx + 2, exPy + 2, 12, 12);
-      ctx.fillStyle = pal[15]; ctx.fillRect(exPx + 5, exPy + 5, 6, 6);
+
+      // Exit Sanctuary Dais
+      const exPx = this.maze.exit.x * T - camX + T / 2, exPy = this.maze.exit.y * T - camY + T / 2;
+      const shrineGlow = 0.5 + 0.5 * Math.sin(nowSec * 3);
+      const gradShrine = ctx.createRadialGradient(exPx, exPy, 2, exPx, exPy, T * 1.1);
+      gradShrine.addColorStop(0, `rgba(251, 191, 36, ${0.45 + 0.3 * shrineGlow})`);
+      gradShrine.addColorStop(1, 'rgba(251, 191, 36, 0)');
+      ctx.fillStyle = gradShrine; ctx.beginPath(); ctx.arc(exPx, exPy, T * 1.1, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(exPx, exPy, T * 0.42, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#fef08a'; ctx.fillRect(exPx - 3.5, exPy - 3.5, 7, 7);
+
+      // Collectibles: Lumina Relics
       this.maze.collectibles.forEach(col => {
         if (!col.collected) {
-          const cx = col.x * T - camX, cy = col.y * T - camY;
-          ctx.fillStyle = pal[10]; ctx.fillRect(cx + 4, cy + 4, 8, 8);
-          ctx.fillStyle = pal[11]; ctx.fillRect(cx + 6, cy + 6, 4, 4);
+          const cx = col.x * T - camX + T / 2, cy = col.y * T - camY + T / 2;
+          const bob = Math.sin(nowSec * 4 + col.x) * 2.5;
+          const gradRelic = ctx.createRadialGradient(cx, cy + bob, 1, cx, cy + bob, T * 0.75);
+          gradRelic.addColorStop(0, 'rgba(251, 191, 36, 0.55)');
+          gradRelic.addColorStop(1, 'rgba(251, 191, 36, 0)');
+          ctx.fillStyle = gradRelic; ctx.beginPath(); ctx.arc(cx, cy + bob, T * 0.75, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#f59e0b';
+          ctx.beginPath(); ctx.moveTo(cx, cy + bob - 7); ctx.lineTo(cx + 6, cy + bob); ctx.lineTo(cx, cy + bob + 7); ctx.lineTo(cx - 6, cy + bob); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = '#fffbeb';
+          ctx.beginPath(); ctx.moveTo(cx, cy + bob - 3.5); ctx.lineTo(cx + 3, cy + bob); ctx.lineTo(cx, cy + bob + 3.5); ctx.lineTo(cx - 3, cy + bob); ctx.closePath(); ctx.fill();
         }
       });
-      const nowSec = performance.now() / 1000;
+
+      // Prowler in the Shadows
       if (this.monster && nowSec < this.monster.visibleUntil) {
         const mx = this.monster.x * T - camX, my = this.monster.y * T - camY;
-        ctx.fillStyle = pal[14]; ctx.beginPath(); ctx.arc(mx, my, 6, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = pal[15]; ctx.fillRect(mx - 3, my - 2, 2, 2); ctx.fillRect(mx + 1, my - 2, 2, 2);
+        const fade = Math.min(1.0, (this.monster.visibleUntil - nowSec) / 0.3);
+        const gradM = ctx.createRadialGradient(mx, my, 2, mx, my, T * 0.85);
+        gradM.addColorStop(0, `rgba(244, 63, 94, ${0.65 * fade})`); gradM.addColorStop(1, 'rgba(244, 63, 94, 0)');
+        ctx.fillStyle = gradM; ctx.beginPath(); ctx.arc(mx, my, T * 0.85, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = `rgba(15, 23, 42, ${fade})`; ctx.beginPath(); ctx.arc(mx, my, 9, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = `rgba(244, 63, 94, ${fade})`; ctx.fillRect(mx - 4, my - 2.5, 3, 3); ctx.fillRect(mx + 1.5, my - 2.5, 3, 3);
       }
+
+      // Player Spirit Listener
       const plPx = this.player.x * T - camX, plPy = this.player.y * T - camY;
-      ctx.fillStyle = pal[7]; ctx.fillRect(plPx - 4, plPy - 4, 8, 8);
-      ctx.fillStyle = pal[15]; ctx.fillRect(plPx - 2, plPy - 2, 4, 2);
+      const gradP = ctx.createRadialGradient(plPx, plPy, 2, plPx, plPy, T * 1.1);
+      gradP.addColorStop(0, 'rgba(52, 211, 153, 0.4)'); gradP.addColorStop(1, 'rgba(52, 211, 153, 0)');
+      ctx.fillStyle = gradP; ctx.beginPath(); ctx.arc(plPx, plPy, T * 1.1, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc(plPx, plPy, 7.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ecfdf5'; ctx.beginPath(); ctx.arc(plPx, plPy, 3.5, 0, Math.PI * 2); ctx.fill();
+
+      // Sonar Acoustic Waves
       if (!this.reducedEffects) {
         this.sonarRings.forEach(r => {
           const rx = r.x * T - camX, ry = r.y * T - camY, radPx = r.radius * T;
-          ctx.strokeStyle = pal[13]; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(rx, ry, radPx, 0, Math.PI * 2); ctx.stroke();
+          const life = Math.max(0, 1 - r.radius / r.maxRadius);
+          ctx.strokeStyle = `rgba(56, 189, 248, ${life * 0.85})`; ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.arc(rx, ry, radPx, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = `rgba(16, 185, 129, ${life * 0.4})`; ctx.lineWidth = 5;
+          ctx.beginPath(); ctx.arc(rx, ry, Math.max(0, radPx - 2), 0, Math.PI * 2); ctx.stroke();
         });
       }
+
+      // Vignette
+      const gradVignette = ctx.createRadialGradient(W/2, H/2, W * 0.38, W/2, H/2, W * 0.72);
+      gradVignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      gradVignette.addColorStop(1, 'rgba(2, 6, 5, 0.78)');
+      ctx.fillStyle = gradVignette; ctx.fillRect(0, 0, W, H);
     }
     cleanup() {
       this.audio.cleanup();
@@ -583,9 +647,7 @@
     for (let s = 100; s < 120; s++) {
       const zone = generateGroveZone(17, 17, s, 'meadow');
       if (zone.collectibles.length !== 3) allRelicsReachable = false;
-      zone.collectibles.forEach(col => {
-        if (getPathDistance(zone.grid, zone.W, zone.H, 1, 1, col.x, col.y) === Infinity) allRelicsReachable = false;
-      });
+      zone.collectibles.forEach(col => { if (getPathDistance(zone.grid, zone.W, zone.H, 1, 1, col.x, col.y) === Infinity) allRelicsReachable = false; });
     }
     log("reachability of all 3 collectibles across 20 seeded zones", allRelicsReachable);
 
@@ -621,27 +683,19 @@
       const z = generateGroveZone(17, 17, s, 'meadow');
       if (z.secretWall && z.grid[z.secretWall.y][z.secretWall.x] !== 2) closedWallReachable = false;
       if (getPathDistance(z.grid, z.W, z.H, 1, 1, z.exit.x, z.exit.y) === Infinity) closedWallReachable = false;
-      z.collectibles.forEach(col => {
-        if (getPathDistance(z.grid, z.W, z.H, 1, 1, col.x, col.y) === Infinity) closedWallReachable = false;
-      });
+      z.collectibles.forEach(col => { if (getPathDistance(z.grid, z.W, z.H, 1, 1, col.x, col.y) === Infinity) closedWallReachable = false; });
     }
     log("secret wall closed: exit and all 3 relics reachable in 20 seeds", closedWallReachable);
 
     // 8. Line-of-sight sonar: straight clear corridor ping from 3 tiles reveals secret wall, wall between does not
-    const losGame = new EchoGrove();
-    losGame.startZone(0);
+    const losGame = new EchoGrove(); losGame.startZone(0);
     for (let x = 1; x <= 3; x++) losGame.maze.grid[1][x] = 0;
-    losGame.maze.grid[1][4] = 2; // Secret wall cell
-    losGame.maze.secretWall = { x: 4, y: 1, revealed: false };
+    losGame.maze.grid[1][4] = 2; losGame.maze.secretWall = { x: 4, y: 1, revealed: false };
     losGame.player.x = 1.5; losGame.player.y = 1.5;
-    losGame.triggerSonar();
-    losGame.update(0.25); // expands to > 3.0 tiles
+    losGame.triggerSonar(); losGame.update(0.25);
     const secretRevealedClear = (losGame.maze.secretWall.revealed === true);
-    losGame.maze.grid[1][2] = 1;
-    losGame.maze.secretWall.revealed = false;
-    losGame.maze.grid[1][4] = 2;
-    losGame.triggerSonar();
-    losGame.update(0.25);
+    losGame.maze.grid[1][2] = 1; losGame.maze.secretWall.revealed = false; losGame.maze.grid[1][4] = 2;
+    losGame.triggerSonar(); losGame.update(0.25);
     const secretBlockedByWall = (losGame.maze.secretWall.revealed === false);
     losGame.cleanup();
     log("sonar line of sight: straight clear corridor reveals secret wall, wall between blocks", secretRevealedClear && secretBlockedByWall);
@@ -660,13 +714,10 @@
     log("sonar ring crossing: large dt (0.5s) does not skip target across shell", monsterRevealedLargeDt);
 
     // 10. Hearing tests: wall between (straight dist 2.0, path dist >= 9) not heard at r=2.2 or r=8.5; path dist 2 heard
-    const hearingGame = new EchoGrove();
-    hearingGame.startZone(0);
+    const hearingGame = new EchoGrove(); hearingGame.startZone(0);
     for (let y = 0; y < hearingGame.maze.H; y++) for (let x = 0; x < hearingGame.maze.W; x++) hearingGame.maze.grid[y][x] = 1;
     for (let y = 1; y <= 5; y++) { hearingGame.maze.grid[y][1] = 0; hearingGame.maze.grid[y][3] = 0; }
-    hearingGame.maze.grid[5][2] = 0;
-    hearingGame.monster.x = 1.5; hearingGame.monster.y = 1.5;
-    hearingGame.monster.state = 'WANDER';
+    hearingGame.maze.grid[5][2] = 0; hearingGame.monster.x = 1.5; hearingGame.monster.y = 1.5; hearingGame.monster.state = 'WANDER';
     hearingGame.emitNoise({ x: 3.5, y: 1.5, radius: 2.2, type: 'step' });
     const notHeardAt2 = (hearingGame.monster.state === 'WANDER');
     hearingGame.emitNoise({ x: 3.5, y: 1.5, radius: 8.5, type: 'ping' });
@@ -677,43 +728,23 @@
     log("monster hearing: path dist >= 9 not heard at r=2.2 and r=8.5; path dist 2 is heard", notHeardAt2 && notHeardAt8 && heardAtDist2);
 
     // 11. Audio idempotency: startAmbience() called twice leaves exactly one active loop
-    const audioTwice = new GroveAudio();
-    audioTwice.init();
-    const timerA = audioTwice.loopTimer;
-    audioTwice.startAmbience();
-    const timerB = audioTwice.loopTimer;
-    const singleLoop = (timerA !== null && timerA === timerB);
-    audioTwice.cleanup();
+    const audioTwice = new GroveAudio(); audioTwice.init(); const timerA = audioTwice.loopTimer; audioTwice.startAmbience(); const singleLoop = (timerA !== null && timerA === audioTwice.loopTimer); audioTwice.cleanup();
     log("audio startAmbience() called twice leaves exactly one loop", singleLoop);
 
     // 12. Audio lifecycle & cleanup
-    const audioTest = new GroveAudio();
-    audioTest.init();
-    const ambienceRunning = (audioTest.loopTimer !== null);
-    audioTest.cleanup();
-    const ambienceStopped = (audioTest.loopTimer === null && audioTest.ctx === null);
-    log("audio lifecycle: ambient audio cleans up cleanly without leaking timers", ambienceRunning && ambienceStopped);
+    const audioTest = new GroveAudio(); audioTest.init(); const ambienceRunning = (audioTest.loopTimer !== null); audioTest.cleanup();
+    log("audio lifecycle: ambient audio cleans up cleanly without leaking timers", ambienceRunning && audioTest.loopTimer === null && audioTest.ctx === null);
 
     // 13. Pause test: give monster path, hold movement key, assert player, monster, rings, timers freeze
-    const pauseGame = new EchoGrove();
-    pauseGame.startZone(0);
+    const pauseGame = new EchoGrove(); pauseGame.startZone(0);
     pauseGame.monster.path = [{ x: 2, y: 1 }, { x: 3, y: 1 }];
-    pauseGame.keys['d'] = true;
-    pauseGame.triggerSonar();
-    pauseGame.togglePause();
+    pauseGame.keys['d'] = true; pauseGame.triggerSonar(); pauseGame.togglePause();
     const snapP = { x: pauseGame.player.x, y: pauseGame.player.y };
     const snapM = { x: pauseGame.monster.x, y: pauseGame.monster.y, timer: pauseGame.monster.searchTimer, pathLen: pauseGame.monster.path.length };
     const snapRing = { count: pauseGame.sonarRings.length, r: pauseGame.sonarRings[0] ? pauseGame.sonarRings[0].radius : 0 };
     pauseGame.update(0.5);
-    const pauseFrozen = (
-      pauseGame.player.x === snapP.x && pauseGame.player.y === snapP.y &&
-      pauseGame.monster.x === snapM.x && pauseGame.monster.y === snapM.y &&
-      pauseGame.monster.searchTimer === snapM.timer && pauseGame.monster.path.length === snapM.pathLen &&
-      pauseGame.sonarRings.length === snapRing.count && pauseGame.sonarRings[0].radius === snapRing.r
-    );
-    pauseGame.togglePause();
-    pauseGame.keys['d'] = false;
-    pauseGame.cleanup();
+    const pauseFrozen = (pauseGame.player.x === snapP.x && pauseGame.player.y === snapP.y && pauseGame.monster.x === snapM.x && pauseGame.monster.y === snapM.y && pauseGame.monster.searchTimer === snapM.timer && pauseGame.monster.path.length === snapM.pathLen && pauseGame.sonarRings.length === snapRing.count && pauseGame.sonarRings[0].radius === snapRing.r);
+    pauseGame.togglePause(); pauseGame.keys['d'] = false; pauseGame.cleanup();
     log("pause test: monster path, movement key held, assert player, monster, rings, timers freeze", pauseFrozen);
 
     // 14. Restart mid-ping: clears active sonar rings and increments runId
@@ -737,8 +768,7 @@
 
     // 16. Capture then restart within 100 ms shows no capture banner and no modal
     const fastRestartGame = window.game || new EchoGrove();
-    fastRestartGame.startZone(0);
-    fastRestartGame.triggerCaught();
+    fastRestartGame.startZone(0); fastRestartGame.triggerCaught();
     await new Promise(r => setTimeout(r, 50));
     fastRestartGame.startZone(0);
     await new Promise(r => setTimeout(r, 450));
