@@ -3911,9 +3911,14 @@
 
       if (!this.maze || !this.player) return;
 
-      const tileSize = CONFIG.TILE_SIZE;
-      let cameraX = w / 2 - this.player.x * tileSize;
-      let cameraY = h / 2 - this.player.y * tileSize;
+      // Centric maze grid positioning: the maze grid is always dead-center on the canvas.
+      // When the grid size increases, it expands equally in every direction from the center.
+      const maxGridTiles = Math.max(this.maze.W, this.maze.H);
+      const maxAvailablePixels = Math.min(w, h) - 96;
+      const tileSize = Math.min(CONFIG.TILE_SIZE, Math.floor(maxAvailablePixels / maxGridTiles));
+
+      let cameraX = w / 2 - (this.maze.W * tileSize) / 2;
+      let cameraY = h / 2 - (this.maze.H * tileSize) / 2;
 
       if (this.shakeAmount > 0 && !this.isReducedEffects()) {
         cameraX += this.shakeOffsetX;
@@ -3924,10 +3929,10 @@
       ctx.translate(cameraX, cameraY);
 
       // 1. Tactical Radar Grid Lines (shrouded during blackout)
-      const gridMinX = Math.floor(this.player.x - 13);
-      const gridMaxX = Math.ceil(this.player.x + 13);
-      const gridMinY = Math.floor(this.player.y - 13);
-      const gridMaxY = Math.ceil(this.player.y + 13);
+      const gridMinX = -2;
+      const gridMaxX = this.maze.W + 2;
+      const gridMinY = -2;
+      const gridMaxY = this.maze.H + 2;
 
       if (this.blackoutIntensity > 0.05) {
         ctx.save();
@@ -5027,7 +5032,12 @@
 
   window.game = new Game();
   window.runSelfTests = runSelfTests;
-  runSelfTests();
+  runSelfTests().then(() => {
+    const p = new URLSearchParams(window.location.search);
+    if (p.get('autostart') === '1') {
+      window.game.startLevel(parseInt(p.get('level') || '0', 10));
+    }
+  });
   </script>
 </body>
 </html>
