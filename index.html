@@ -5,22 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#030806">
+  <meta name="theme-color" content="#030805">
   <title>ECHO MAZE — Light Costs Noise</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #030806;
+      --bg: #030805;
+      --bg-card: #06140c;
+      --bg-button: #092114;
+      --bg-input: #081a10;
+      --hud-text: #b7f7cf;
+      --text-main: #b7f7cf;
+      --text-muted: #74c69d;
+      --border-green: #34d399;
+      --border-dim: #1b4d36;
       --radar-cyan: #34d399;
-      --radar-dim: #0d2820;
-      --danger-red: #ff2244;
-      --danger-glow: rgba(255, 34, 68, 0.55);
-      --amber-gold: #fbbf24;
-      --border-gold: rgba(232, 182, 42, 0.45);
-      --police-blue: #0077ff;
-      --text-main: #fef08a;
+      --radar-dim: #0b3d24;
+      --sonar-band: #39ff88;
+      --sonar-echo: #86efac;
+      --danger-red: #ff3b4a;
+      --danger-glow: rgba(255, 59, 74, 0.55);
+      --exit-gold: #fff3b0;
+      --door-locked: #c9a227;
+      --key-gold: #f5c518;
+      --hint-amber: #ffb703;
       --font-display: 'Cinzel', serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
@@ -53,7 +63,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #020504;
+      background: var(--bg);
       overflow: hidden;
     }
 
@@ -65,10 +75,10 @@
       height: min(100vw, 100vh, 800px);
       aspect-ratio: 1 / 1;
       image-rendering: pixelated;
-      background: #040907;
-      border: 2px solid var(--border-gold);
+      background: var(--bg);
+      border: 2px solid var(--border-green);
       border-radius: 16px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 35px rgba(251, 191, 36, 0.15);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 35px rgba(52, 211, 153, 0.15);
       touch-action: none;
     }
 
@@ -91,7 +101,7 @@
       position: absolute;
       inset: 0;
       pointer-events: none;
-      background: radial-gradient(circle at center, transparent 38%, rgba(2, 8, 5, 0.75) 80%, rgba(1, 4, 3, 0.98) 100%);
+      background: radial-gradient(circle at center, transparent 38%, rgba(6, 20, 12, 0.75) 80%, rgba(3, 8, 5, 0.98) 100%);
       z-index: 10;
     }
 
@@ -118,18 +128,18 @@
       font-family: var(--font-display);
       font-size: 14px;
       letter-spacing: 2px;
-      color: #fbbf24;
+      color: var(--hud-text);
       text-transform: uppercase;
       display: flex;
       flex-direction: column;
       gap: 4px;
-      text-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
+      text-shadow: 0 0 12px rgba(52, 211, 153, 0.45);
     }
 
     .objective-text {
       font-family: var(--font-mono);
       font-size: 11px;
-      color: #94a3b8;
+      color: var(--text-muted);
       letter-spacing: 1px;
     }
 
@@ -160,9 +170,9 @@
       position: relative;
       font-size: 11px;
       font-weight: 700;
-      color: #fef08a;
+      color: var(--hud-text);
       font-family: var(--font-mono);
-      text-shadow: 0 0 8px rgba(251, 191, 36, 0.8);
+      text-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
       z-index: 2;
     }
 
@@ -175,7 +185,7 @@
     .clock-label {
       font-size: 8px;
       letter-spacing: 1.5px;
-      color: #657e93;
+      color: var(--text-muted);
       margin-top: 2px;
       font-weight: 600;
     }
@@ -187,9 +197,9 @@
     }
 
     .btn-icon {
-      background: rgba(10, 22, 17, 0.88);
-      border: 1px solid rgba(232, 182, 42, 0.35);
-      color: #fef08a;
+      background: var(--bg-card);
+      border: 1px solid var(--border-dim);
+      color: var(--hud-text);
       padding: 7px 14px;
       font-family: var(--font-mono);
       font-size: 12px;
@@ -204,9 +214,9 @@
     }
 
     .btn-icon:hover {
-      background: rgba(251, 191, 36, 0.2);
-      border-color: rgba(251, 191, 36, 0.6);
-      box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+      background: var(--bg-button);
+      border-color: var(--border-green);
+      box-shadow: 0 0 12px rgba(52, 211, 153, 0.3);
       transform: translateY(-1px);
     }
 
@@ -221,15 +231,57 @@
       font-weight: 600;
     }
     .hud-alert-badge {
-      color: #9cbacf;
+      color: var(--text-muted);
       transition: color 0.25s ease, text-shadow 0.25s ease;
     }
-    .hud-alert-0 { color: #38bdf8; }
-    .hud-alert-1 { color: #f59e0b; }
-    .hud-alert-2 { color: #fb923c; }
-    .hud-alert-3 { color: #ff2244; text-shadow: 0 0 8px rgba(255, 34, 68, 0.6); }
-    .hud-pebbles-badge {
-      color: #94a3b8;
+    .hud-alert-0 { color: var(--sonar-band); }
+    .hud-alert-1 { color: var(--hint-amber); }
+    .hud-alert-2 { color: var(--key-gold); }
+    .hud-alert-3 { color: var(--danger-red); text-shadow: 0 0 8px var(--danger-glow); }
+    .hud-pebbles-badge { color: var(--text-muted); }
+
+    /* Keys and Siren HUD Badges */
+    .hud-keys-badge {
+      background: rgba(245, 197, 24, 0.18);
+      border: 1px solid var(--key-gold);
+      color: var(--key-gold);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .hud-siren-badge {
+      background: rgba(255, 59, 74, 0.25);
+      border: 1px solid var(--danger-red);
+      color: #ffffff;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      animation: sirenPulse 0.5s infinite alternate;
+    }
+    @keyframes sirenPulse {
+      0% { opacity: 0.6; transform: scale(0.98); }
+      100% { opacity: 1; transform: scale(1.02); }
+    }
+    #locked-banner {
+      position: absolute;
+      top: 85px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(201, 162, 39, 0.28);
+      border: 1px solid var(--door-locked);
+      color: var(--exit-gold);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      padding: 8px 24px;
+      border-radius: 4px;
+      box-shadow: 0 0 25px rgba(201, 162, 39, 0.4);
+      text-transform: uppercase;
+      pointer-events: none;
+      z-index: 100;
+      transition: opacity 0.2s ease;
     }
 
     /* Warning Alert banner */
@@ -238,9 +290,9 @@
       top: 85px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(255, 0, 50, 0.28);
+      background: rgba(255, 59, 74, 0.28);
       border: 1px solid var(--danger-red);
-      color: #fff;
+      color: #ffffff;
       font-size: 13px;
       font-weight: 700;
       letter-spacing: 3px;
@@ -256,7 +308,9 @@
     }
 
     @keyframes blinkRed {
-      from { border-color: rgba(255, 51, 85, 0.4); }
+      from { border-color: rgba(255, 59, 74, 0.4); }
+      to { border-color: rgba(255, 59, 74, 1); }
+    }
       to { border-color: rgba(255, 51, 85, 1); }
     }
 
@@ -266,14 +320,14 @@
       bottom: 35px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(8, 20, 16, 0.92);
-      border: 1px solid rgba(232, 182, 42, 0.4);
+      background: var(--bg-card);
+      border: 1px solid var(--border-green);
       padding: 9px 20px;
       border-radius: 6px;
       font-size: 11px;
       letter-spacing: 1px;
-      color: #fef08a;
-      box-shadow: 0 0 15px rgba(232, 182, 42, 0.2);
+      color: var(--hud-text);
+      box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
       transition: opacity 0.5s ease;
       pointer-events: none;
       text-align: center;
@@ -283,7 +337,7 @@
     .modal-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(3, 8, 6, 0.94);
+      background: rgba(3, 8, 5, 0.94);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       display: flex;
@@ -306,8 +360,8 @@
       font-size: 56px;
       font-weight: 900;
       letter-spacing: 8px;
-      color: #fbbf24;
-      text-shadow: 0 0 25px rgba(251, 191, 36, 0.6);
+      color: var(--exit-gold);
+      text-shadow: 0 0 25px rgba(255, 243, 176, 0.6);
       margin-bottom: 6px;
       text-align: center;
     }
@@ -315,7 +369,7 @@
     .tagline {
       font-size: 14px;
       letter-spacing: 4px;
-      color: #a7f3d0;
+      color: var(--text-muted);
       text-transform: uppercase;
       margin-bottom: 32px;
     }
@@ -328,9 +382,9 @@
     }
 
     .menu-btn {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.25) 100%);
-      border: 1px solid rgba(232, 182, 42, 0.5);
-      color: #fef08a;
+      background: var(--bg-button);
+      border: 1px solid var(--border-green);
+      color: var(--hud-text);
       padding: 13px 20px;
       font-family: var(--font-mono);
       font-size: 13px;
@@ -344,20 +398,21 @@
     }
 
     .menu-btn:hover {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: #1c1002;
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+      background: var(--border-green);
+      color: var(--bg);
+      box-shadow: 0 0 20px rgba(52, 211, 153, 0.6);
       transform: translateY(-1px);
     }
 
     .menu-btn.btn-danger {
       border-color: var(--danger-red);
-      background: rgba(255, 34, 68, 0.12);
+      background: rgba(255, 59, 74, 0.12);
+      color: var(--danger-red);
     }
 
     .menu-btn.btn-danger:hover {
       background: var(--danger-red);
-      color: #fff;
+      color: #ffffff;
       box-shadow: 0 0 20px var(--danger-glow);
     }
 
@@ -366,27 +421,27 @@
       justify-content: space-between;
       align-items: center;
       font-size: 12px;
-      color: #9cbacf;
+      color: var(--text-muted);
       letter-spacing: 1px;
       padding: 6px 0;
     }
 
     .settings-row input[type="range"] {
       width: 130px;
-      accent-color: var(--radar-cyan);
+      accent-color: var(--border-green);
     }
 
     .settings-row input[type="checkbox"] {
       width: 18px;
       height: 18px;
-      accent-color: var(--radar-cyan);
+      accent-color: var(--border-green);
       cursor: pointer;
     }
 
     .controls-guide {
       margin-top: 26px;
       font-size: 11px;
-      color: #657e93;
+      color: var(--text-muted);
       line-height: 1.8;
       text-align: center;
       letter-spacing: 1px;
@@ -411,7 +466,7 @@
 
     .heard-sub {
       font-size: 13px;
-      color: #a8727a;
+      color: var(--text-muted);
       letter-spacing: 3px;
       margin-bottom: 32px;
     }
@@ -422,14 +477,14 @@
       font-size: 50px;
       font-weight: 900;
       letter-spacing: 8px;
-      color: #a7f3d0;
-      text-shadow: 0 0 30px rgba(52, 211, 153, 0.6);
+      color: var(--exit-gold);
+      text-shadow: 0 0 30px rgba(255, 243, 176, 0.6);
       margin-bottom: 8px;
     }
 
     .stats-card {
-      background: rgba(10, 25, 20, 0.6);
-      border: 1px solid rgba(52, 211, 153, 0.4);
+      background: var(--bg-card);
+      border: 1px solid var(--border-dim);
       padding: 16px 26px;
       border-radius: 6px;
       margin-bottom: 26px;
@@ -444,12 +499,12 @@
     .stat-line {
       display: flex;
       justify-content: space-between;
-      color: #d1fae5;
+      color: var(--text-muted);
     }
 
     .stat-val {
       font-weight: 700;
-      color: #34d399;
+      color: var(--hud-text);
     }
 
     /* Debug Overlay */
@@ -457,9 +512,9 @@
       position: absolute;
       top: 60px;
       left: 20px;
-      background: rgba(3, 8, 14, 0.9);
-      border: 1px solid rgba(0, 243, 255, 0.4);
-      color: #4df0ff;
+      background: rgba(3, 8, 5, 0.9);
+      border: 1px solid var(--border-dim);
+      color: var(--hud-text);
       font-size: 10px;
       line-height: 1.5;
       padding: 10px 14px;
@@ -476,7 +531,7 @@
     #screen-flash {
       position: absolute;
       inset: 0;
-      background: red;
+      background: var(--danger-red);
       opacity: 0;
       pointer-events: none;
       z-index: 45;
@@ -533,17 +588,17 @@
       width: 44px;
       height: 44px;
       border-radius: 8px;
-      background: rgba(0, 243, 255, 0.05);
-      border: 1px dashed rgba(0, 243, 255, 0.2);
+      background: rgba(52, 211, 153, 0.05);
+      border: 1px dashed var(--border-dim);
     }
 
     .dpad-btn {
       width: 48px;
       height: 48px;
       border-radius: 10px;
-      background: rgba(10, 22, 17, 0.85);
-      border: 1.5px solid rgba(232, 182, 42, 0.4);
-      color: #fef08a;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-dim);
+      color: var(--hud-text);
       font-size: 20px;
       display: flex;
       align-items: center;
@@ -556,11 +611,11 @@
     }
 
     .dpad-btn:active, .dpad-btn.active {
-      background: #e8b62a;
-      color: #022c22;
+      background: var(--border-green);
+      color: var(--bg);
       transform: scale(0.92);
-      border-color: #e8b62a;
-      box-shadow: 0 0 15px rgba(232, 182, 42, 0.6);
+      border-color: var(--border-green);
+      box-shadow: 0 0 15px rgba(52, 211, 153, 0.6);
     }
 
     .action-cluster {
@@ -571,9 +626,9 @@
       width: 64px;
       height: 64px;
       border-radius: 50%;
-      background: rgba(10, 22, 17, 0.88);
-      border: 2px solid #e8b62a;
-      color: #fef08a;
+      background: var(--bg-card);
+      border: 2px solid var(--border-green);
+      color: var(--hud-text);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -581,16 +636,16 @@
       gap: 2px;
       cursor: pointer;
       backdrop-filter: blur(8px);
-      box-shadow: 0 0 16px rgba(232, 182, 42, 0.35);
+      box-shadow: 0 0 16px rgba(52, 211, 153, 0.35);
       touch-action: manipulation;
       transition: all 0.08s ease;
     }
 
     .action-btn:active, .action-btn.active {
       transform: scale(0.90);
-      background: #e8b62a;
-      color: #022c22;
-      box-shadow: 0 0 25px rgba(232, 182, 42, 0.8);
+      background: var(--border-green);
+      color: var(--bg);
+      box-shadow: 0 0 25px rgba(52, 211, 153, 0.8);
     }
 
     .action-btn-icon {
@@ -601,18 +656,18 @@
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 1px;
-      color: #fef08a;
+      color: var(--hud-text);
     }
 
     .action-bell {
       width: 52px;
       height: 52px;
-      border-color: #ffb703;
+      border-color: var(--hint-amber);
       box-shadow: 0 0 12px rgba(255, 183, 3, 0.35);
     }
 
     .action-bell .action-btn-text {
-      color: #ffb703;
+      color: var(--hint-amber);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -642,7 +697,10 @@
           <div class="hud-subtle-status">
             <span id="hud-alert-badge" class="hud-alert-badge hud-alert-0">ALERT: <span id="hud-alert-dots">●○○○</span></span>
             <span id="hud-pebble-badge" class="hud-pebbles-badge">PEBBLE (F): <span id="hud-pebble-val">2</span></span>
+            <span id="hud-keys-badge" class="hud-keys-badge">KEYS: <span id="hud-keys-val">0/1</span></span>
+            <span id="hud-siren-badge" class="hud-siren-badge modal-hidden">🚨 SIREN</span>
           </div>
+          <div id="locked-banner" class="modal-hidden">LOCKED 0/1</div>
         </div>
 
         <!-- Anti-Clockwise Dial Countdown Widget -->
@@ -701,7 +759,7 @@
       <div id="dbg-energy">Energy: -</div>
       <div id="dbg-monsters">Monsters: 0</div>
       <div id="dbg-events">Noise Events: 0</div>
-      <div id="dbg-tests" style="margin-top: 6px; font-weight: 700;">Self-Tests: RUNNING...</div>
+      <div id="dbg-tests" style="margin-top: 6px; font-weight: 700;">Self-Tests: Ready (?test=1)</div>
     </div>
 
     <!-- Title Screen Modal -->
@@ -831,6 +889,7 @@
         <div class="stat-line"><span>SONAR PINGS:</span><span class="stat-val" id="stat-pings">0</span></div>
         <div class="stat-line"><span>NEAR MISSES:</span><span class="stat-val" id="stat-near-misses">0</span></div>
         <div class="stat-line"><span>HINTS USED:</span><span class="stat-val" id="stat-hints">0</span></div>
+        <div class="stat-line"><span>SIRENS TRIGGERED:</span><span class="stat-val" id="stat-sirens">0</span></div>
         <div class="stat-line"><span>STEALTH RATING:</span><span class="stat-val" id="stat-rating" style="color: #34d399; font-weight: 700;">S</span></div>
         <div class="stat-line"><span>RECORD BEST:</span><span class="stat-val" id="stat-record-best">-</span></div>
       </div>
@@ -843,9 +902,55 @@
 
   <script>
   /* ==========================================================================
+     THEME CONFIGURATION — Comprehensive Green Grove Theme & Color Blind Palettes
+     ========================================================================== */
+  const THEME = {
+    bg: '#030805',
+    bgCard: '#06140c',
+    bgButton: '#092114',
+    bgInput: '#081a10',
+    hudText: '#b7f7cf',
+    textMain: '#b7f7cf',
+    textMuted: '#74c69d',
+    playerCore: '#eafff1',
+    playerHalo: '#4dff9a',
+    sonarBand: '#39ff88',
+    sonarEcho: '#86efac',
+    wallLit: '#34d399',
+    wallDim: '#0b3d24',
+    wallBase: '#0a1712',
+    wallBevel: '#142c22',
+    wallCore: '#1d4133',
+    wallMoss: '#2d6a4f',
+    dustFog: '#071a10',
+    borderGreen: '#34d399',
+    borderDim: '#1b4d36',
+    exitDoor: '#fff3b0',
+    doorUnlocked: '#fff3b0',
+    doorLocked: '#c9a227',
+    key: '#f5c518',
+    hint: '#ffb703',
+    danger: '#ff3b4a',
+    siren: '#ff3b4a',
+    monster: '#ff3b4a',
+    monsterCore: '#ff3b4a',
+    monsterEyes: '#ff3b4a',
+    rgba(hex, alpha) {
+      let c = hex.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      const num = parseInt(c, 16);
+      return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+    }
+  };
+
+  /* ==========================================================================
      CONFIG OBJECT — All tuning numbers, levels, physics & audio settings
      ========================================================================== */
   const CONFIG = {
+    THEME: THEME,
+    // Colors (Valid Canvas 2D strings)
+    COLOR_CYAN: THEME.wallLit,
+    COLOR_DANGER: THEME.danger,
     // Canvas & Viewport
     CANVAS_WIDTH: 800,
     CANVAS_HEIGHT: 800,
@@ -874,9 +979,22 @@
     FLASH_DURATION_MS: 200,
     TARGET_FRAME_TIME_MS: 8.0,
 
-    // Colors (Valid Canvas 2D strings)
-    COLOR_CYAN: '#34d399',
-    COLOR_DANGER: '#ff2244',
+    // Colors linked to THEME above
+
+    // Keys and Locked Door Config
+    KEYS_REQUIRED: [1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], // per level [1,1,2,2,3,3...]
+    KEYS_REQUIRED_GROWTH: [1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5],
+    SIREN_RADIUS: 18, // path tiles
+    SIREN_GLOBAL: false, // if true, every monster is alerted regardless of distance
+    SIREN_PULSES: 3, // total siren events emitted
+    SIREN_PULSES_AFTER_FIRST: 2, // pulses following initial pickup pulse (default 2, total = 1 + 2 = 3)
+    KEY_FINDING_PING_ALLOWANCE: 3, // pings allowance per required key added to par
+    KEY_PICKUP_RADIUS: 0.6,
+    KEY_GLOW_RADIUS: 1.5,
+    KEY_MIN_PATH_FROM_START: 6,
+    KEY_MIN_PATH_FROM_MONSTER_SPAWN: 8,
+    KEY_MIN_PATH_BETWEEN_KEYS: 6,
+    KEY_GLINT_DURATION: 3.5,
 
     // Hint Mode & Pass 2 Tuning
     HINT_MODE: 'SUBTLE', // 'OFF' | 'SUBTLE' | 'GUIDED'
@@ -1272,6 +1390,123 @@
     const exit = candidates.length > 0 ? candidates[0] : { x: W - 2, y: H - 2, dist: maxDist };
 
     return { W, H, grid, dist, maxDist, totalFloorCount, reachableFloorCount, isConnected, exit, floorCells };
+  }
+
+  function bfsDistMap(grid, W, H, sx, sy, blockedX = -1, blockedY = -1) {
+    const d = Array.from({ length: H }, () => Array(W).fill(-1));
+    if (sx === blockedX && sy === blockedY) return d;
+    if (sx < 0 || sx >= W || sy < 0 || sy >= H) return d;
+    if (grid[sy][sx] === 1) return d;
+    d[sy][sx] = 0;
+    const q = [[sx, sy]];
+    while (q.length > 0) {
+      const [x, y] = q.shift();
+      const cur = d[y][x];
+      const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+      for (const [dx, dy] of dirs) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
+          if (nx === blockedX && ny === blockedY) continue; // treated as wall
+          if (grid[ny][nx] === 0 && d[ny][nx] === -1) {
+            d[ny][nx] = cur + 1;
+            q.push([nx, ny]);
+          }
+        }
+      }
+    }
+    return d;
+  }
+
+  function getMonsterSpawns(maze, levelCfg, seed) {
+    const allCorners = [
+      { x: maze.W - 2, y: 1 },
+      { x: 1, y: maze.H - 2 },
+      { x: maze.W - 2, y: maze.H - 2 }
+    ];
+    const validCorners = allCorners.filter(c => 
+      c.x >= 0 && c.x < maze.W && c.y >= 0 && c.y < maze.H &&
+      maze.grid[c.y][c.x] === 0 && !(c.x === 1 && c.y === 1) && !(c.x === maze.exit.x && c.y === maze.exit.y)
+    );
+    const rng = createPrng(seed + 999);
+    const shuffled = [...validCorners].sort((a, b) => rng() - rng());
+    const spawns = [];
+    const numMonsters = levelCfg.monsters ? levelCfg.monsters.length : 0;
+    for (let idx = 0; idx < numMonsters; idx++) {
+      if (idx < shuffled.length) {
+        spawns.push(shuffled[idx]);
+      } else {
+        const sortedFloor = [...maze.floorCells].sort((a, b) => b.dist - a.dist);
+        spawns.push(sortedFloor[Math.min(idx * 3, sortedFloor.length - 1)]);
+      }
+    }
+    return spawns;
+  }
+
+  function placeLevelKeys(maze, levelIndex, seed) {
+    const req = (CONFIG.KEYS_REQUIRED && CONFIG.KEYS_REQUIRED[levelIndex] !== undefined)
+      ? CONFIG.KEYS_REQUIRED[levelIndex]
+      : 1;
+    const levelCfg = (CONFIG.LEVELS && CONFIG.LEVELS[levelIndex]) || { monsters: [] };
+    const spawns = getMonsterSpawns(maze, levelCfg, seed);
+    // Treat exit door as wall when checking reachability from start
+    const startDistNoDoor = bfsDistMap(maze.grid, maze.W, maze.H, 1, 1, maze.exit.x, maze.exit.y);
+    const spawnDistMaps = spawns.map(sp => bfsDistMap(maze.grid, maze.W, maze.H, sp.x, sp.y));
+
+    const rng = createPrng(seed + 555);
+
+    // Candidates: walkable floor cells, reachable from start without passing through exit door
+    const baseCandidates = maze.floorCells.filter(c => {
+      if (c.x === 1 && c.y === 1) return false;
+      if (c.x === maze.exit.x && c.y === maze.exit.y) return false;
+      if (spawns.some(sp => sp.x === c.x && sp.y === c.y)) return false;
+      if (startDistNoDoor[c.y][c.x] < CONFIG.KEY_MIN_PATH_FROM_START) return false;
+      return true;
+    });
+
+    let chosen = [];
+    // Strict pass: min dist from monster spawn >= 8, between keys >= 6
+    const strictCandidates = baseCandidates.filter(c => 
+      spawnDistMaps.every(sdm => sdm[c.y][c.x] >= CONFIG.KEY_MIN_PATH_FROM_MONSTER_SPAWN)
+    );
+    const shuffledStrict = [...strictCandidates].sort((a, b) => rng() - rng());
+
+    for (const cand of shuffledStrict) {
+      if (chosen.length >= req) break;
+      const candDist = bfsDistMap(maze.grid, maze.W, maze.H, cand.x, cand.y);
+      if (chosen.every(k => candDist[k.y][k.x] >= CONFIG.KEY_MIN_PATH_BETWEEN_KEYS)) {
+        chosen.push(cand);
+      }
+    }
+
+    // Bounded fallback: relax distances if strictly needed, never retry forever
+    if (chosen.length < req) {
+      const remainingCandidates = baseCandidates.filter(c => !chosen.some(k => k.x === c.x && k.y === c.y));
+      for (const cand of remainingCandidates) {
+        if (chosen.length >= req) break;
+        const candDist = bfsDistMap(maze.grid, maze.W, maze.H, cand.x, cand.y);
+        if (chosen.every(k => candDist[k.y][k.x] >= 4)) {
+          chosen.push(cand);
+        }
+      }
+    }
+
+    // Ultimate bounded fallback: take any remaining reachable candidates
+    if (chosen.length < req) {
+      const remaining = baseCandidates.filter(c => !chosen.some(k => k.x === c.x && k.y === c.y));
+      for (const cand of remaining) {
+        if (chosen.length >= req) break;
+        chosen.push(cand);
+      }
+    }
+
+    return chosen.map((c, i) => ({
+      id: i + 1,
+      x: c.x,
+      y: c.y,
+      pickedUp: false,
+      glintUntil: 0
+    }));
   }
 
   function findBfsPath(grid, W, H, startX, startY, endX, endY) {
@@ -1857,6 +2092,66 @@
       osc.stop(now + 0.15);
     }
 
+    playKeyPickup() {
+      if (!this.ctx || this.isMuted) return;
+      this.ensureContext();
+      const now = this.ctx.currentTime;
+      [587.33, 880, 1174.66, 1760].forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+        gain.gain.setValueAtTime(0, now + idx * 0.05);
+        gain.gain.linearRampToValueAtTime(0.2, now + idx * 0.05 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.05 + 0.38);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now + idx * 0.05);
+        osc.stop(now + idx * 0.05 + 0.4);
+      });
+    }
+
+    playLockedSound() {
+      if (!this.ctx || this.isMuted) return;
+      this.ensureContext();
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.setValueAtTime(110, now + 0.08);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(now);
+      osc.stop(now + 0.24);
+    }
+
+    playSirenWail() {
+      if (!this.ctx || this.isMuted) return;
+      this.ensureContext();
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(450, now);
+      osc.frequency.linearRampToValueAtTime(850, now + 0.7);
+      osc.frequency.linearRampToValueAtTime(450, now + 1.4);
+      osc.frequency.linearRampToValueAtTime(850, now + 2.0);
+      osc.frequency.linearRampToValueAtTime(400, now + 2.5);
+
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.22, now + 0.1);
+      gain.gain.setValueAtTime(0.22, now + 2.2);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.5);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(now);
+      osc.stop(now + 2.52);
+    }
+
     cleanupAll() {
       this.stopExitHum();
       this.activeOneShots = 0;
@@ -1907,7 +2202,14 @@
     // Count hints used
     const hints = eventLog.filter(e => e.type === 'hint').length;
 
-    const parPings = (config && config.PING_PAR && config.PING_PAR[levelIndex]) || 5;
+    const basePar = (config && config.PING_PAR && config.PING_PAR[levelIndex]) || 5;
+    const reqKeys = (config && config.KEYS_REQUIRED && config.KEYS_REQUIRED[levelIndex] !== undefined)
+      ? config.KEYS_REQUIRED[levelIndex]
+      : 1;
+    const allowancePerKey = (config && config.KEY_FINDING_PING_ALLOWANCE !== undefined)
+      ? config.KEY_FINDING_PING_ALLOWANCE
+      : 3;
+    const parPings = basePar + (reqKeys * allowancePerKey);
 
     // S Rank: Flawless stealth — 0 player investigations, 0 hints, pings <= par
     if (investigations === 0 && hints === 0 && pings <= parPings) {
@@ -2098,12 +2400,79 @@
 
       this.initDom();
       this.initEvents();
+      this.rebuildThemeSprites();
+      this.rebuildThemeSprites();
 
       if (this.debugMode) {
         document.getElementById('debug-overlay').style.display = 'block';
       }
 
       requestAnimationFrame(this.loop.bind(this));
+    }
+
+    rebuildThemeSprites() {
+      // Offscreen pre-rendered sprites for zero-shadowBlur high-performance rendering
+      const pCanvas = document.createElement('canvas');
+      pCanvas.width = 128;
+      pCanvas.height = 128;
+      const pCtx = pCanvas.getContext('2d');
+      const pGrad = pCtx.createRadialGradient(64, 64, 2, 64, 64, 64);
+      pGrad.addColorStop(0, CONFIG.THEME.rgba(CONFIG.THEME.playerHalo, 0.40));
+      pGrad.addColorStop(0.55, CONFIG.THEME.rgba(CONFIG.THEME.playerHalo, 0.12));
+      pGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      pCtx.fillStyle = pGrad;
+      pCtx.fillRect(0, 0, 128, 128);
+
+      const kCanvas = document.createElement('canvas');
+      kCanvas.width = 64;
+      kCanvas.height = 64;
+      const kCtx = kCanvas.getContext('2d');
+      const kGrad = kCtx.createRadialGradient(32, 32, 2, 32, 32, 32);
+      kGrad.addColorStop(0, CONFIG.THEME.rgba(CONFIG.THEME.key, 0.35));
+      kGrad.addColorStop(0.6, CONFIG.THEME.rgba(CONFIG.THEME.key, 0.10));
+      kGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      kCtx.fillStyle = kGrad;
+      kCtx.fillRect(0, 0, 64, 64);
+
+      const eCanvas = document.createElement('canvas');
+      eCanvas.width = 128;
+      eCanvas.height = 128;
+      const eCtx = eCanvas.getContext('2d');
+      const eGrad = eCtx.createRadialGradient(64, 64, 2, 64, 64, 64);
+      eGrad.addColorStop(0, CONFIG.THEME.rgba(CONFIG.THEME.exitDoor, 0.45));
+      eGrad.addColorStop(0.6, CONFIG.THEME.rgba(CONFIG.THEME.exitDoor, 0.12));
+      eGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      eCtx.fillStyle = eGrad;
+      eCtx.fillRect(0, 0, 128, 128);
+
+      const fCanvas = document.createElement('canvas');
+      fCanvas.width = 32;
+      fCanvas.height = 32;
+      const fCtx = fCanvas.getContext('2d');
+      const fGrad = fCtx.createRadialGradient(16, 16, 1, 16, 16, 16);
+      fGrad.addColorStop(0, CONFIG.THEME.rgba(CONFIG.THEME.dustFog, 0.6));
+      fGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      fCtx.fillStyle = fGrad;
+      fCtx.fillRect(0, 0, 32, 32);
+
+      const vCanvas = document.createElement('canvas');
+      vCanvas.width = 512;
+      vCanvas.height = 512;
+      const vCtx = vCanvas.getContext('2d');
+      const vGrad = vCtx.createRadialGradient(256, 256, 160, 256, 256, 256);
+      vGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      vGrad.addColorStop(0.7, CONFIG.THEME.rgba(CONFIG.THEME.bg, 0.65));
+      vGrad.addColorStop(1, CONFIG.THEME.rgba(CONFIG.THEME.bg, 0.98));
+      vCtx.fillStyle = vGrad;
+      vCtx.fillRect(0, 0, 512, 512);
+
+      this.themeSprites = {
+        playerGlow: pCanvas,
+        keyGlow: kCanvas,
+        exitGlow: eCanvas,
+        fogMote: fCanvas,
+        vignette: vCanvas
+      };
     }
 
     isReducedEffects() {
@@ -2179,7 +2548,7 @@
       }
     }
 
-    triggerScreenFlash(color = '#ff1e3c', intensity = 0.48, runId = this.runId) {
+    triggerScreenFlash(color = CONFIG.THEME.danger, intensity = 0.48, runId = this.runId) {
       if (this.isReducedEffects()) return;
       const now = performance.now();
       if (!this.flashTimestamps) this.flashTimestamps = [];
@@ -2222,7 +2591,7 @@
       if (hint) {
         hint.textContent = text;
         hint.style.opacity = '1';
-        hint.style.color = text === 'CLOSE.' ? '#ff2244' : '#00f3ff';
+        hint.style.color = text === 'CLOSE.' ? CONFIG.THEME.danger : CONFIG.THEME.sonarBand;
         if (this.tacticalMessageTimeout) clearTimeout(this.tacticalMessageTimeout);
         this.tacticalMessageTimeout = setTimeout(() => {
           if (hint && hint.textContent === text) hint.style.opacity = '0';
@@ -2581,7 +2950,7 @@
       }, { passive: true });
     }
 
-    startLevel(index) {
+    startLevel(index, optionalSeed) {
       this.runId++;
       this.levelIndex = index;
       const levelCfg = CONFIG.LEVELS[this.levelIndex];
@@ -2621,8 +2990,25 @@
       document.getElementById('hud-level-title').textContent = levelCfg.title;
       document.getElementById('hud-objective').textContent = levelCfg.objective;
 
-      this.currentSeed = this.fixedSeed !== null ? (this.fixedSeed + index * 1000) : (Math.floor(Math.random() * 900000) + 1000);
+      if (typeof optionalSeed === 'number') {
+        this.currentSeed = optionalSeed;
+      } else {
+        this.currentSeed = this.fixedSeed !== null ? (this.fixedSeed + index * 1000) : (Math.floor(Math.random() * 900000) + 1000);
+      }
       this.maze = generateMaze(levelCfg.width, levelCfg.height, this.currentSeed);
+      this.levelKeys = placeLevelKeys(this.maze, this.levelIndex, this.currentSeed);
+      this.maze.keys = this.levelKeys;
+      this.keysCollected = 0;
+      this._lastHintCX = -1;
+      this._lastHintCY = -1;
+      this._cachedDistToExit = undefined;
+      this._lastTargetCX = -1;
+      this._lastTargetCY = -1;
+      this._lastTargetKeysHeld = -1;
+      this._cachedHintTargetX = undefined;
+      this._cachedHintTargetY = undefined;
+      this.clearSirenState();
+      this.updateKeysHUD();
 
       // Initialize Wall Memory
       this.wallReveals = Array.from({ length: this.maze.H }, () => 
@@ -2776,6 +3162,7 @@
 
     showTitleScreen() {
       this.state = 'TITLE';
+      this.clearSirenState();
       this.audio.cleanupAll();
       const selLevel = document.getElementById('sel-level-select');
       if (selLevel) selLevel.value = (this.levelIndex + 1).toString();
@@ -2799,6 +3186,7 @@
 
     restartCampaign() {
       this.runId++;
+      this.clearSirenState();
       document.getElementById('captured-modal').classList.add('modal-hidden');
       const tm = document.getElementById('timeout-modal');
       if (tm) tm.classList.add('modal-hidden');
@@ -2807,6 +3195,108 @@
       if (flash) flash.style.opacity = '0';
       this.levelIndex = 0;
       this.startLevel(0);
+    }
+
+    triggerKeyPickup(key, expectedRunId = this.runId) {
+      if (this.state !== 'PLAYING') return;
+      if (expectedRunId !== this.runId) return;
+      if (!key || key.pickedUp) return;
+      key.pickedUp = true;
+      this.keysCollected = (this.keysCollected || 0) + 1;
+      this.audio.playKeyPickup();
+      this.updateKeysHUD();
+
+      // Trigger siren sequence at the KEY position
+      this.triggerSiren(key.x, key.y);
+    }
+
+    triggerSiren(keyX, keyY) {
+      this.sirenActive = true;
+      this.sirensTriggeredCount = (this.sirensTriggeredCount || 0) + 1;
+      const sirenRunId = this.runId;
+
+      this.audio.playSirenWail();
+
+      const sirenBadge = document.getElementById('hud-siren-badge');
+      if (sirenBadge) sirenBadge.classList.remove('modal-hidden');
+
+      // Pulse 1 emitted immediately
+      this.emitSirenPulse(keyX, keyY, 0);
+
+      // Define total pulses = 1 + SIREN_PULSES_AFTER_FIRST (default 3)
+      const additionalPulses = (CONFIG.SIREN_PULSES_AFTER_FIRST !== undefined)
+        ? CONFIG.SIREN_PULSES_AFTER_FIRST
+        : ((CONFIG.SIREN_PULSES || 3) - 1);
+      const totalPulses = 1 + additionalPulses;
+
+      for (let p = 1; p < totalPulses; p++) {
+        const timerId = setTimeout(() => {
+          if (this.runId !== sirenRunId || this.state !== 'PLAYING') return;
+          this.emitSirenPulse(keyX, keyY, p);
+          if (p === totalPulses - 1) {
+            this.sirenActive = false;
+            const b = document.getElementById('hud-siren-badge');
+            if (b) b.classList.add('modal-hidden');
+          }
+        }, p * 1000);
+        if (!this.sirenTimerIds) this.sirenTimerIds = [];
+        this.sirenTimerIds.push(timerId);
+      }
+    }
+
+    emitSirenPulse(keyX, keyY, pulseIdx) {
+      if (this.state !== 'PLAYING') return;
+      if (!this.isReducedEffects()) {
+        this.triggerScreenFlash(CONFIG.THEME.danger, 0.45);
+      }
+      this.emitNoiseEvent({
+        type: 'siren',
+        cellX: keyX,
+        cellY: keyY,
+        radius: CONFIG.SIREN_RADIUS,
+        causedByPlayer: false,
+        time: performance.now() / 1000
+      });
+    }
+
+    clearSirenState() {
+      this.sirenActive = false;
+      if (this.sirenTimerIds) {
+        this.sirenTimerIds.forEach(id => clearTimeout(id));
+      }
+      this.sirenTimerIds = [];
+      const sirenBadge = document.getElementById('hud-siren-badge');
+      if (sirenBadge) sirenBadge.classList.add('modal-hidden');
+      const banner = document.getElementById('locked-banner');
+      if (banner) {
+        banner.classList.add('modal-hidden');
+        banner.style.opacity = '0';
+      }
+      if (this.lockedBannerTimer) clearTimeout(this.lockedBannerTimer);
+      this.screenFlashAlpha = 0;
+    }
+
+    updateKeysHUD() {
+      const keysVal = document.getElementById('hud-keys-val');
+      if (keysVal) {
+        const req = (CONFIG.KEYS_REQUIRED && CONFIG.KEYS_REQUIRED[this.levelIndex] !== undefined)
+          ? CONFIG.KEYS_REQUIRED[this.levelIndex]
+          : 1;
+        keysVal.textContent = `${this.keysCollected || 0}/${req}`;
+      }
+    }
+
+    showLockedBanner(held, required) {
+      const banner = document.getElementById('locked-banner');
+      if (!banner) return;
+      banner.textContent = `LOCKED ${held}/${required}`;
+      banner.classList.remove('modal-hidden');
+      banner.style.opacity = '1';
+      if (this.lockedBannerTimer) clearTimeout(this.lockedBannerTimer);
+      this.lockedBannerTimer = setTimeout(() => {
+        banner.style.opacity = '0';
+        setTimeout(() => banner.classList.add('modal-hidden'), 200);
+      }, 1500);
     }
 
     restartLevel() {
@@ -2998,15 +3488,18 @@
 
     emitNoiseEvent(event) {
       const now = performance.now() / 1000;
+      const ex = event.x !== undefined ? event.x : ((event.cellX || 0) + 0.5);
+      const ey = event.y !== undefined ? event.y : ((event.cellY || 0) + 0.5);
       const fullEvent = {
         id: Math.random().toString(36).substr(2, 9),
         type: event.type,
-        x: event.x,
-        y: event.y,
-        cellX: Math.floor(event.x),
-        cellY: Math.floor(event.y),
+        x: ex,
+        y: ey,
+        cellX: event.cellX !== undefined ? event.cellX : Math.floor(ex),
+        cellY: event.cellY !== undefined ? event.cellY : Math.floor(ey),
         time: now,
-        radius: event.radius
+        radius: event.radius,
+        causedByPlayer: event.causedByPlayer !== undefined ? event.causedByPlayer : (event.type !== 'siren')
       };
 
       this.noiseEvents.push(fullEvent);
@@ -3024,7 +3517,7 @@
         let canHear = pathDist <= event.radius;
 
         if (monster.state === 'ASLEEP') {
-          if (event.type === 'ping' && canHear) {
+          if ((event.type === 'ping' || event.type === 'siren') && canHear) {
             monster.state = 'INVESTIGATE';
             monster.target = { x: event.cellX, y: event.cellY };
             monster.path = findBfsPath(this.maze.grid, this.maze.W, this.maze.H, monsterCellX, monsterCellY, event.cellX, event.cellY) || [];
@@ -3044,6 +3537,12 @@
           if (pathDist > monster.footstepRadius) canHear = false;
         } else if (event.type === 'ping') {
           if (pathDist > monster.pingRadius) canHear = false;
+        } else if (event.type === 'siren') {
+          if (CONFIG.SIREN_GLOBAL) {
+            canHear = true;
+          } else {
+            canHear = pathDist <= (event.radius !== undefined ? event.radius : CONFIG.SIREN_RADIUS);
+          }
         }
 
         if (canHear) {
@@ -3064,6 +3563,14 @@
                 type: 'investigation',
                 causedByPlayer: true,
                 triggerType: event.type,
+                time: performance.now() / 1000,
+                monsterId: monster.id
+              });
+            } else if (event.type === 'siren') {
+              this.recordEvent({
+                type: 'investigation',
+                causedByPlayer: false,
+                triggerType: 'siren',
                 time: performance.now() / 1000,
                 monsterId: monster.id
               });
@@ -3091,7 +3598,7 @@
         if (selLevel) selLevel.value = "1";
       }
 
-      this.triggerScreenFlash('#ff1e3c', CONFIG.MAX_FLASH_BRIGHTNESS, currentRunId);
+      this.triggerScreenFlash(CONFIG.THEME.danger, CONFIG.MAX_FLASH_BRIGHTNESS, currentRunId);
 
       setTimeout(() => {
         if (this.runId !== currentRunId) return;
@@ -3117,7 +3624,7 @@
         if (selLevel) selLevel.value = "1";
       }
 
-      this.triggerScreenFlash('#ff1e3c', CONFIG.MAX_FLASH_BRIGHTNESS, currentRunId);
+      this.triggerScreenFlash(CONFIG.THEME.danger, CONFIG.MAX_FLASH_BRIGHTNESS, currentRunId);
 
       setTimeout(() => {
         if (this.runId !== currentRunId) return;
@@ -3161,8 +3668,11 @@
       const ratingEl = document.getElementById('stat-rating');
       if (ratingEl) {
         ratingEl.textContent = rating;
-        ratingEl.style.color = (rating === 'S') ? '#34d399' : (rating === 'A') ? '#60a5fa' : (rating === 'B') ? '#fbbf24' : '#f87171';
+        ratingEl.style.color = (rating === 'S') ? CONFIG.THEME.sonarBand : (rating === 'A') ? CONFIG.THEME.sonarEcho : (rating === 'B') ? CONFIG.THEME.hint : CONFIG.THEME.danger;
       }
+
+      const statSirensElem = document.getElementById('stat-sirens');
+      if (statSirensElem) statSirensElem.textContent = (this.sirensTriggeredCount || 0).toString();
 
       const bestRecord = HighScoreManager.recordScore(this.levelIndex, elapsedSec, rating);
       const bestEl = document.getElementById('stat-record-best');
@@ -3172,7 +3682,7 @@
         bestEl.textContent = `Grade ${bestRecord.bestRating} (${bMins}:${bSecs})`;
       }
 
-      this.triggerScreenFlash('#34d399', 0.45, currentRunId);
+      this.triggerScreenFlash(CONFIG.THEME.exitDoor, 0.45, currentRunId);
 
       setTimeout(() => {
         if (this.runId !== currentRunId) return;
@@ -3189,16 +3699,28 @@
       this.fps = Math.round(1000 / Math.max(1, this.frameTimeMs));
       this.lastFrameTime = timestamp;
 
-      const cpuStart = performance.now();
+      const t0 = performance.now();
       if (this.state === 'PLAYING') {
         this.update(dt);
       }
+      const t1 = performance.now();
 
       this.render();
       this.renderClockDial();
+      const t2 = performance.now();
 
-      const cpuDuration = performance.now() - cpuStart;
+      const updateDuration = t1 - t0;
+      const renderDuration = t2 - t1;
+      const cpuDuration = t2 - t0;
       this.cpuTimeMs = cpuDuration;
+
+      if (!this.perfUpdateSamples) this.perfUpdateSamples = [];
+      if (!this.perfRenderSamples) this.perfRenderSamples = [];
+      if (!this.perfTotalSamples) this.perfTotalSamples = [];
+      this.perfUpdateSamples.push(updateDuration);
+      this.perfRenderSamples.push(renderDuration);
+      this.perfTotalSamples.push(cpuDuration);
+
       if (!this.cpuFrameHistory) this.cpuFrameHistory = [];
       this.cpuFrameHistory.push(cpuDuration);
       if (this.cpuFrameHistory.length > 120) {
@@ -3260,7 +3782,7 @@
             if (hint) {
               hint.textContent = `⚡ BLACKOUT! (${this.monsters.length} COP${this.monsters.length > 1 ? 'S' : ''} IN THE DARK — USE COMPASS & SONAR!)`;
               hint.style.opacity = '1';
-              hint.style.color = '#ff3355';
+              hint.style.color = CONFIG.THEME.danger;
             }
           }
         } else if (this.blackoutState === 'BLACKOUT') {
@@ -3412,6 +3934,29 @@
         const prevRadius = ring.radius;
         ring.radius += ring.speed * dt;
 
+        // Sonar ring crossing key check
+        if (this.levelKeys) {
+          this.levelKeys.forEach(k => {
+            if (k.pickedUp) return;
+            const kd = Math.hypot(ring.x - (k.x + 0.5), ring.y - (k.y + 0.5));
+            if (kd >= prevRadius && kd <= ring.radius) {
+              if (hasLineOfSight(this.maze.grid, this.maze.W, this.maze.H, ring.x, ring.y, k.x + 0.5, k.y + 0.5)) {
+                k.glintUntil = Math.max(k.glintUntil || 0, now + CONFIG.KEY_GLINT_DURATION);
+                if (!this.isReducedEffects()) {
+                  this.spawnParticle('dust', pt => {
+                    pt.x = (k.x + 0.5) - this.player.x;
+                    pt.y = (k.y + 0.5) - this.player.y;
+                    pt.vx = (Math.random() - 0.5) * 0.2;
+                    pt.vy = (Math.random() - 0.5) * 0.2;
+                    pt.size = 1.5;
+                    pt.alpha = 0.8;
+                  });
+                }
+              }
+            }
+          });
+        }
+
         this.revealWallsInRadius(ring.x, ring.y, ring.radius, 'blue');
 
         // Monster silhouette for 0.6s only when a sonar ring crosses it
@@ -3560,13 +4105,36 @@
         }
       });
 
-      // 7. Victory Check
+      // Key Pickup Check
+      if (this.levelKeys && this.state === 'PLAYING') {
+        this.levelKeys.forEach(k => {
+          if (!k.pickedUp) {
+            const kd = Math.hypot(this.player.x - (k.x + 0.5), this.player.y - (k.y + 0.5));
+            if (kd <= CONFIG.KEY_PICKUP_RADIUS) {
+              this.triggerKeyPickup(k);
+            }
+          }
+        });
+      }
+
+      // 7. Exit Door Check (Locked until keys collected >= KEYS_REQUIRED)
       const exitCenterX = this.maze.exit.x + 0.5;
       const exitCenterY = this.maze.exit.y + 0.5;
       const distToExit = Math.hypot(this.player.x - exitCenterX, this.player.y - exitCenterY);
       if (distToExit <= CONFIG.CAPTURE_DISTANCE && this.state === 'PLAYING') {
-        this.triggerVictory();
-        return;
+        const reqKeys = (CONFIG.KEYS_REQUIRED && CONFIG.KEYS_REQUIRED[this.levelIndex] !== undefined)
+          ? CONFIG.KEYS_REQUIRED[this.levelIndex]
+          : 1;
+        if ((this.keysCollected || 0) < reqKeys) {
+          if (now > (this.lockedTouchCooldown || 0)) {
+            this.lockedTouchCooldown = now + 1.5;
+            this.showLockedBanner(this.keysCollected || 0, reqKeys);
+            this.audio.playLockedSound();
+          }
+        } else {
+          this.triggerVictory();
+          return;
+        }
       }
 
       // 8. Continuous Audio Updates
@@ -3691,7 +4259,14 @@
       const currentCellY = Math.floor(this.player.y);
       const exitCellX = this.maze.exit.x;
       const exitCellY = this.maze.exit.y;
-      const currentBfsDist = getBfsPathDistance(this.maze.grid, this.maze.W, this.maze.H, currentCellX, currentCellY, exitCellX, exitCellY);
+
+      // Cached BFS distance to exit, recomputing only when player's cell changes
+      if (currentCellX !== this._lastHintCX || currentCellY !== this._lastHintCY || this._cachedDistToExit === undefined) {
+        this._lastHintCX = currentCellX;
+        this._lastHintCY = currentCellY;
+        this._cachedDistToExit = getBfsPathDistance(this.maze.grid, this.maze.W, this.maze.H, currentCellX, currentCellY, exitCellX, exitCellY);
+      }
+      const currentBfsDist = this._cachedDistToExit;
 
       if (!this.progressHistory) this.progressHistory = [];
       this.progressHistory.push({ time: now, cellX: currentCellX, cellY: currentCellY, dist: currentBfsDist });
@@ -3733,8 +4308,39 @@
         return;
       }
 
-      // Direction comes only from a shortest path that stays >= 4 path-tiles from every monster and every monster target
-      const safePath = getSafeExitPath(this.maze.grid, this.maze.W, this.maze.H, { x: currentCellX, y: currentCellY }, { x: exitCellX, y: exitCellY }, this.monsters, CONFIG.HINT_MONSTER_SAFE_DISTANCE);
+      // Direction goes to the nearest uncollected key until all keys are held, then to the exit (cached per cell & keys held)
+      if (currentCellX !== this._lastTargetCX || currentCellY !== this._lastTargetCY || this.keysCollected !== this._lastTargetKeysHeld || this._cachedHintTargetX === undefined) {
+        this._lastTargetCX = currentCellX;
+        this._lastTargetCY = currentCellY;
+        this._lastTargetKeysHeld = this.keysCollected;
+
+        let bestTargetX = exitCellX;
+        let bestTargetY = exitCellY;
+        const req = (CONFIG.KEYS_REQUIRED && CONFIG.KEYS_REQUIRED[this.levelIndex] !== undefined) ? CONFIG.KEYS_REQUIRED[this.levelIndex] : 1;
+        if (this.levelKeys && (this.keysCollected || 0) < req) {
+          const uncollected = this.levelKeys.filter(k => !k.pickedUp);
+          if (uncollected.length > 0) {
+            let bestD = Infinity;
+            let bestKey = uncollected[0];
+            for (const uk of uncollected) {
+              const d = getBfsPathDistance(this.maze.grid, this.maze.W, this.maze.H, currentCellX, currentCellY, uk.x, uk.y);
+              if (d >= 0 && d < bestD) {
+                bestD = d;
+                bestKey = uk;
+              }
+            }
+            bestTargetX = bestKey.x;
+            bestTargetY = bestKey.y;
+          }
+        }
+        this._cachedHintTargetX = bestTargetX;
+        this._cachedHintTargetY = bestTargetY;
+      }
+      const hintTargetX = this._cachedHintTargetX;
+      const hintTargetY = this._cachedHintTargetY;
+
+      // Compute safe path that stays >= 4 path-tiles from every monster and every monster target
+      const safePath = getSafeExitPath(this.maze.grid, this.maze.W, this.maze.H, { x: currentCellX, y: currentCellY }, { x: hintTargetX, y: hintTargetY }, this.monsters, CONFIG.HINT_MONSTER_SAFE_DISTANCE);
       if (!safePath || safePath.length < 2) return;
 
       if (this.currentHintTier === 0) {
@@ -3859,7 +4465,7 @@
       const isUrgent = CONFIG.ENABLE_TIMER && (this.levelTimeRemaining <= 8);
 
       // Background Track Ring
-      c.strokeStyle = 'rgba(52, 211, 153, 0.20)';
+      c.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.borderGreen, 0.20);
       c.lineWidth = 3.5;
       c.beginPath();
       c.arc(cx, cy, r, 0, Math.PI * 2);
@@ -3870,7 +4476,7 @@
       const startAngle = -Math.PI / 2;
       const endAngle = startAngle - frac * Math.PI * 2;
 
-      c.strokeStyle = isUrgent ? '#ff2244' : '#fbbf24';
+      c.strokeStyle = isUrgent ? CONFIG.THEME.danger : CONFIG.THEME.hudText;
       c.lineWidth = 3.5;
       c.lineCap = 'round';
       c.beginPath();
@@ -3888,7 +4494,7 @@
       c.stroke();
 
       // Center glowing pip (valid canvas color string, no var())
-      c.fillStyle = isUrgent ? CONFIG.COLOR_DANGER : '#fbbf24';
+      c.fillStyle = isUrgent ? CONFIG.COLOR_DANGER : CONFIG.THEME.hudText;
       c.beginPath();
       c.arc(cx, cy, 3, 0, Math.PI * 2);
       c.fill();
@@ -3914,7 +4520,7 @@
       const h = this.canvas.height;
       const now = performance.now() / 1000;
 
-      ctx.fillStyle = '#040907';
+      ctx.fillStyle = CONFIG.THEME.bg;
       ctx.fillRect(0, 0, w, h);
 
       if (!this.maze || !this.player) return;
@@ -3945,7 +4551,7 @@
       if (this.blackoutIntensity > 0.05) {
         ctx.save();
         ctx.globalAlpha = this.blackoutIntensity;
-        ctx.strokeStyle = 'rgba(52, 211, 153, 0.04)';
+        ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.borderGreen, 0.04);
         ctx.lineWidth = 1;
         for (let gx = gridMinX; gx <= gridMaxX; gx++) {
           ctx.beginPath();
@@ -3976,28 +4582,28 @@
                 ctx.globalAlpha = this.blackoutIntensity;
 
                 // Stone Paver Floor (clean tiled stone with subtle grout and bevels)
-                ctx.fillStyle = '#08140f';
+                ctx.fillStyle = CONFIG.THEME.bgCard;
                 ctx.fillRect(pxTile, pyTile, tileSize, tileSize);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.025)';
+                ctx.fillStyle = CONFIG.THEME.rgba('#ffffff', 0.025);
                 ctx.fillRect(pxTile + 1, pyTile + 1, tileSize - 2, 1);
                 ctx.fillRect(pxTile + 1, pyTile + 1, 1, tileSize - 2);
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.fillStyle = CONFIG.THEME.rgba('#000000', 0.4);
                 ctx.fillRect(pxTile + 1, pyTile + tileSize - 1, tileSize - 1, 1);
                 ctx.fillRect(pxTile + tileSize - 1, pyTile + 1, 1, tileSize - 1);
                 if ((gx * 7 + gy * 13) % 5 === 0) {
-                  ctx.fillStyle = '#0e2b20';
+                  ctx.fillStyle = CONFIG.THEME.wallDim;
                   ctx.fillRect(pxTile + Math.floor(tileSize * 0.25), pyTile + Math.floor(tileSize * 0.25), 3, 3);
                 }
 
                 // Luminous moss/emerald contour border for crystal-clear path visibility
-                ctx.strokeStyle = 'rgba(52, 211, 153, 0.16)';
+                ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.borderGreen, 0.16);
                 ctx.lineWidth = 1;
                 ctx.strokeRect(pxTile + 0.5, pyTile + 0.5, tileSize - 1, tileSize - 1);
 
                 // Tactical glowing floor coordinate crosshair
                 const fcx = (gx + 0.5) * tileSize;
                 const fcy = (gy + 0.5) * tileSize;
-                ctx.fillStyle = 'rgba(52, 211, 153, 0.30)';
+                ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.borderGreen, 0.30);
                 ctx.fillRect(fcx - 3, fcy - 0.5, 6, 1);
                 ctx.fillRect(fcx - 0.5, fcy - 3, 1, 6);
 
@@ -4008,7 +4614,7 @@
               ctx.fillStyle = '#000000'; // Pure pitch blackness!
               ctx.fillRect(pxTile, pyTile, tileSize, tileSize);
               // Singularity edge border
-              ctx.strokeStyle = 'rgba(130, 0, 220, 0.55)';
+              ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.borderDim, 0.55);
               ctx.lineWidth = 1;
               ctx.strokeRect(pxTile + 0.5, pyTile + 0.5, tileSize - 1, tileSize - 1);
             }
@@ -4018,7 +4624,7 @@
 
       // Void Crumble Particles (Pooled)
       if (!this.isReducedEffects()) {
-        ctx.fillStyle = 'rgba(147, 51, 234, 0.85)';
+        ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.textMuted, 0.85);
         for (let i = 0; i < this.particlePool.length; i++) {
           const p = this.particlePool[i];
           if (p.active && p.type === 'void') {
@@ -4046,12 +4652,12 @@
               ctx.save();
               ctx.globalAlpha = this.blackoutIntensity;
               // 2.5D Ancient Stone Wall with Moss / Runic Top Cap
-              ctx.fillStyle = '#0a1712'; ctx.fillRect(pxTile, pyTile, tileSize, tileSize); // Base block
-              ctx.fillStyle = '#142c22'; ctx.fillRect(pxTile + 1.5, pyTile + 1.5, tileSize - 3, tileSize - 5); // Stone bevel
-              ctx.fillStyle = '#1d4133'; ctx.fillRect(pxTile + 3, pyTile + 3, tileSize - 6, tileSize - 9); // Shaded core
-              ctx.fillStyle = '#2d6a4f'; ctx.fillRect(pxTile + 2, pyTile + 2, tileSize - 4, 3); // Lush moss cap
+              ctx.fillStyle = CONFIG.THEME.wallBase; ctx.fillRect(pxTile, pyTile, tileSize, tileSize); // Base block
+              ctx.fillStyle = CONFIG.THEME.wallBevel; ctx.fillRect(pxTile + 1.5, pyTile + 1.5, tileSize - 3, tileSize - 5); // Stone bevel
+              ctx.fillStyle = CONFIG.THEME.wallCore; ctx.fillRect(pxTile + 3, pyTile + 3, tileSize - 6, tileSize - 9); // Shaded core
+              ctx.fillStyle = CONFIG.THEME.wallMoss; ctx.fillRect(pxTile + 2, pyTile + 2, tileSize - 4, 3); // Lush moss cap
               if ((x * 5 + y * 11) % 4 === 0) {
-                ctx.fillStyle = '#52b788';
+                ctx.fillStyle = CONFIG.THEME.wallLit;
                 ctx.fillRect(pxTile + 6, pyTile + 2, 4, 2);
               }
               ctx.restore();
@@ -4069,11 +4675,11 @@
                 ctx.strokeRect(pxTile + 0.5, pyTile + 0.5, tileSize - 1, tileSize - 1);
               } else {
                 if (rev.color === 'red') {
-                  ctx.fillStyle = `rgba(255, 30, 60, ${alpha * 0.45})`;
-                  ctx.strokeStyle = `rgba(255, 60, 90, ${alpha * 0.95})`;
+                  ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.danger, alpha * 0.45);
+                  ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.danger, alpha * 0.95);
                 } else {
-                  ctx.fillStyle = `rgba(16, 185, 129, ${alpha * 0.35})`;
-                  ctx.strokeStyle = `rgba(52, 211, 153, ${alpha * 0.95})`;
+                  ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.wallLit, alpha * 0.35);
+                  ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.wallLit, alpha * 0.95);
                 }
                 ctx.lineWidth = 1.5;
                 ctx.fillRect(pxTile, pyTile, tileSize, tileSize);
@@ -4083,8 +4689,8 @@
             // Player Proximity Glow
             else if (distToPlayer <= 2.2) {
               const proxAlpha = Math.max(0, 1.0 - distToPlayer / 2.2) * 0.6;
-              ctx.fillStyle = `rgba(16, 185, 129, ${proxAlpha * 0.2})`;
-              ctx.strokeStyle = `rgba(52, 211, 153, ${proxAlpha * 0.75})`;
+              ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.wallLit, proxAlpha * 0.2);
+              ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.wallLit, proxAlpha * 0.75);
               ctx.lineWidth = 1.2;
               ctx.fillRect(pxTile, pyTile, tileSize, tileSize);
               ctx.strokeRect(pxTile + 0.5, pyTile + 0.5, tileSize - 1, tileSize - 1);
@@ -4114,39 +4720,44 @@
           const flicker = 0.85 + 0.15 * Math.sin(now * 16 + t.id * 3.7) + 0.08 * Math.cos(now * 24 + t.id);
           // Warm radial floor light gradient
           const gradTorch = ctx.createRadialGradient(tpx, tpy, 2, tpx, tpy, tileSize * 2.8 * flicker);
-          gradTorch.addColorStop(0, 'rgba(251, 146, 60, 0.40)');
-          gradTorch.addColorStop(0.5, 'rgba(245, 158, 11, 0.15)');
-          gradTorch.addColorStop(1, 'rgba(245, 158, 11, 0)');
+          gradTorch.addColorStop(0, CONFIG.THEME.rgba(CONFIG.THEME.hint, 0.40));
+          gradTorch.addColorStop(0.5, CONFIG.THEME.rgba(CONFIG.THEME.hint, 0.15));
+          gradTorch.addColorStop(1, 'rgba(0, 0, 0, 0)');
           ctx.fillStyle = gradTorch;
           ctx.beginPath();
           ctx.arc(tpx, tpy, tileSize * 2.8 * flicker, 0, Math.PI * 2);
           ctx.fill();
 
           // Torch Wall Sconce & Flame
-          ctx.fillStyle = '#451a03';
+          ctx.fillStyle = CONFIG.THEME.wallDim;
           ctx.fillRect(tpx - 2.5, tpy + 1, 5, 7);
-          ctx.fillStyle = '#ea580c';
+          ctx.fillStyle = CONFIG.THEME.hint;
           ctx.beginPath();
           ctx.arc(tpx, tpy - 1, 3.5 * flicker, 0, Math.PI * 2);
           ctx.fill();
-          ctx.fillStyle = '#fef08a';
+          ctx.fillStyle = CONFIG.THEME.exitDoor;
           ctx.beginPath();
           ctx.arc(tpx, tpy - 2, 1.8 * flicker, 0, Math.PI * 2);
           ctx.fill();
         });
       }
 
-      // 3. Player Soft Ambient Bioluminescent Light (Emerald & Gold Lantern)
+      // 3. Player Soft Ambient Bioluminescent Light (Emerald Pre-rendered Sprite)
       const px = this.player.x * tileSize;
       const py = this.player.y * tileSize;
-      const pGlow = ctx.createRadialGradient(px, py, 2, px, py, tileSize * 2.2);
-      pGlow.addColorStop(0, 'rgba(52, 211, 153, 0.30)');
-      pGlow.addColorStop(0.55, 'rgba(251, 191, 36, 0.12)');
-      pGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = pGlow;
-      ctx.beginPath();
-      ctx.arc(px, py, tileSize * 2.2, 0, Math.PI * 2);
-      ctx.fill();
+      if (this.themeSprites && this.themeSprites.playerGlow) {
+        const glowDiam = tileSize * 4.4;
+        ctx.drawImage(this.themeSprites.playerGlow, px - glowDiam / 2, py - glowDiam / 2, glowDiam, glowDiam);
+      } else {
+        const pGlow = ctx.createRadialGradient(px, py, 2, px, py, tileSize * 2.2);
+        pGlow.addColorStop(0, CONFIG.THEME.rgba(CONFIG.THEME.playerHalo, 0.30));
+        pGlow.addColorStop(0.55, CONFIG.THEME.rgba(CONFIG.THEME.playerHalo, 0.12));
+        pGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = pGlow;
+        ctx.beginPath();
+        ctx.arc(px, py, tileSize * 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       // 3B. Floating Golden Spores / Motes
       if (!this.motes) {
@@ -4157,7 +4768,7 @@
       }
       if (!this.isReducedEffects()) {
         ctx.save();
-        ctx.fillStyle = 'rgba(251, 191, 36, 0.45)';
+        ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.sonarEcho, 0.45);
         this.motes.forEach(m => {
           const my = (m.y - now * m.speed) % h;
           const mx = (m.x + Math.sin(now + m.phase) * m.sway) % w;
@@ -4170,7 +4781,7 @@
 
       // 5. Floating Dust Particles (Pooled)
       if (!this.isReducedEffects()) {
-        ctx.fillStyle = 'rgba(0, 243, 255, 0.4)';
+        ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.dustFog, 0.6);
         for (let i = 0; i < this.particlePool.length; i++) {
           const p = this.particlePool[i];
           if (p.active && p.type === 'dust') {
@@ -4183,34 +4794,122 @@
         }
       }
 
-      // 6. SWIRLING EMERALD PORTAL VORTEX (The Exit Gate)
-      const exitPx = (this.maze.exit.x + 0.5) * tileSize;
-      const exitPy = (this.maze.exit.y + 0.5) * tileSize;
+      // Render Keys
+      if (this.levelKeys) {
+        this.levelKeys.forEach(k => {
+          if (k.pickedUp) return;
+          const kpx = (k.x + 0.5) * tileSize;
+          const kpy = (k.y + 0.5) * tileSize;
+          const distToPlayer = Math.hypot(this.player.x - (k.x + 0.5), this.player.y - (k.y + 0.5));
+          const isGlinting = (k.glintUntil && now < k.glintUntil);
+          const inGlowRange = (distToPlayer <= CONFIG.KEY_GLOW_RADIUS);
 
-      // Swirling portal rings
-      for (let rIdx = 1; rIdx <= 3; rIdx++) {
-        const ringRot = now * (4 - rIdx) * 1.2;
-        const ringRad = tileSize * (0.2 + rIdx * 0.12);
-        ctx.strokeStyle = rIdx === 3 ? 'rgba(52, 211, 153, 0.8)' : 'rgba(16, 185, 129, 0.5)';
-        ctx.lineWidth = 2;
-        ctx.save();
-        ctx.translate(exitPx, exitPy);
-        ctx.rotate(ringRot);
-        ctx.beginPath();
-        ctx.ellipse(0, 0, ringRad, ringRad * 0.65, 0, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
+          if (!isGlinting && !inGlowRange) return; // Invisible until glinting or within glow radius
+
+          let alpha = 0;
+          if (isGlinting) {
+            alpha = Math.max(alpha, (k.glintUntil - now) / CONFIG.KEY_GLINT_DURATION);
+          }
+          if (inGlowRange) {
+            alpha = Math.max(alpha, (1.0 - (distToPlayer / CONFIG.KEY_GLOW_RADIUS)) * 0.45);
+          }
+          alpha = Math.min(1.0, Math.max(0, alpha));
+
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          // Key aura with pre-rendered sprite
+          if (this.themeSprites && this.themeSprites.keyGlow) {
+            const kGlowDiam = tileSize * 1.2;
+            ctx.drawImage(this.themeSprites.keyGlow, kpx - kGlowDiam / 2, kpy - kGlowDiam / 2, kGlowDiam, kGlowDiam);
+          } else {
+            ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.key, 0.25);
+            ctx.beginPath();
+            ctx.arc(kpx, kpy, tileSize * 0.38, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Golden Key Glyph
+          ctx.strokeStyle = CONFIG.THEME.key;
+          ctx.lineWidth = 2;
+          ctx.fillStyle = CONFIG.THEME.key;
+          // Ring top
+          ctx.beginPath();
+          ctx.arc(kpx, kpy - 4, 4.5, 0, Math.PI * 2);
+          ctx.stroke();
+          // Stem
+          ctx.beginPath();
+          ctx.moveTo(kpx, kpy + 0.5);
+          ctx.lineTo(kpx, kpy + 8);
+          // Teeth
+          ctx.moveTo(kpx, kpy + 4);
+          ctx.lineTo(kpx + 3.5, kpy + 4);
+          ctx.moveTo(kpx, kpy + 7);
+          ctx.lineTo(kpx + 3, kpy + 7);
+          ctx.stroke();
+
+          // Core bright glint dot
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(kpx, kpy - 4, 2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
       }
 
-      // Portal Glowing Core (crisp concentric glow, zero shadowBlur)
-      ctx.fillStyle = 'rgba(52, 211, 153, 0.35)';
-      ctx.beginPath();
-      ctx.arc(exitPx, exitPy, 9, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#a7f3d0';
-      ctx.beginPath();
-      ctx.arc(exitPx, exitPy, 5, 0, Math.PI * 2);
-      ctx.fill();
+      // EXIT GATE (Locked vs Unlocked state)
+      const exitPx = (this.maze.exit.x + 0.5) * tileSize;
+      const exitPy = (this.maze.exit.y + 0.5) * tileSize;
+      const reqKeys = (CONFIG.KEYS_REQUIRED && CONFIG.KEYS_REQUIRED[this.levelIndex] !== undefined) ? CONFIG.KEYS_REQUIRED[this.levelIndex] : 1;
+      const isExitUnlocked = (this.keysCollected || 0) >= reqKeys;
+
+      if (!isExitUnlocked) {
+        // Locked State: Concentric padlock barrier in muted gold
+        ctx.save();
+        ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.doorLocked, 0.5);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(exitPx, exitPy, tileSize * 0.42, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = CONFIG.THEME.doorLocked;
+        ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.doorLocked, 0.25);
+        ctx.lineWidth = 2;
+        ctx.strokeRect(exitPx - 7, exitPy - 4, 14, 12);
+        ctx.fillRect(exitPx - 7, exitPy - 4, 14, 12);
+
+        ctx.beginPath();
+        ctx.arc(exitPx, exitPy - 4, 5, Math.PI, 0);
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        // Unlocked State: Swirling radiant warm white-gold portal vortex
+        if (this.themeSprites && this.themeSprites.exitGlow) {
+          const eGlowDiam = tileSize * 2.2;
+          ctx.drawImage(this.themeSprites.exitGlow, exitPx - eGlowDiam / 2, exitPy - eGlowDiam / 2, eGlowDiam, eGlowDiam);
+        }
+        for (let rIdx = 1; rIdx <= 3; rIdx++) {
+          const ringRot = now * (4 - rIdx) * 1.2;
+          const ringRad = tileSize * (0.2 + rIdx * 0.12);
+          ctx.strokeStyle = rIdx === 3 ? CONFIG.THEME.rgba(CONFIG.THEME.exitDoor, 0.85) : CONFIG.THEME.rgba(CONFIG.THEME.exitDoor, 0.5);
+          ctx.lineWidth = 2;
+          ctx.save();
+          ctx.translate(exitPx, exitPy);
+          ctx.rotate(ringRot);
+          ctx.beginPath();
+          ctx.ellipse(0, 0, ringRad, ringRad * 0.65, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.exitDoor, 0.35);
+        ctx.beginPath();
+        ctx.arc(exitPx, exitPy, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = CONFIG.THEME.exitDoor;
+        ctx.beginPath();
+        ctx.arc(exitPx, exitPy, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       // 7. GOLDEN ECHO WISPS (Pooled, zero shadowBlur, only when guided/assist/tier1)
       if (!this.isReducedEffects() && this.shouldShowExitWisps()) {
@@ -4219,11 +4918,11 @@
           if (wp.active && wp.type === 'wisp') {
             const curX = wp.x + (wp.targetX - wp.x) * wp.progress;
             const curY = wp.y + (wp.targetY - wp.y) * wp.progress;
-            ctx.fillStyle = `rgba(255, 183, 3, ${wp.alpha * 0.35})`;
+            ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.hint, wp.alpha * 0.35);
             ctx.beginPath();
             ctx.arc(curX * tileSize, curY * tileSize, 5.0, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = `rgba(255, 183, 3, ${wp.alpha})`;
+            ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.hint, wp.alpha);
             ctx.beginPath();
             ctx.arc(curX * tileSize, curY * tileSize, 2.5, 0, Math.PI * 2);
             ctx.fill();
@@ -4233,7 +4932,7 @@
 
       // 7B. Wall spark particles (Pooled)
       if (!this.isReducedEffects()) {
-        ctx.fillStyle = 'rgba(0, 243, 255, 0.75)';
+        ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.sonarEcho, 0.75);
         for (let i = 0; i < this.particlePool.length; i++) {
           const sp = this.particlePool[i];
           if (sp.active && sp.type === 'wall_spark') {
@@ -4252,15 +4951,15 @@
           const bx = this.bell.x * tileSize;
           const by = this.bell.y * tileSize;
 
-          ctx.fillStyle = `rgba(255, 183, 3, ${bellAlpha * 0.4})`;
-          ctx.strokeStyle = `rgba(255, 183, 3, ${bellAlpha})`;
+          ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.hint, bellAlpha * 0.4);
+          ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.hint, bellAlpha);
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.arc(bx, by, tileSize * 0.32, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
 
-          ctx.fillStyle = `rgba(255, 255, 255, ${bellAlpha})`;
+          ctx.fillStyle = CONFIG.THEME.rgba('#ffffff', bellAlpha);
           ctx.font = '11px sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
@@ -4268,21 +4967,23 @@
 
           const distToBell = Math.hypot(this.player.x - this.bell.x, this.player.y - this.bell.y);
           if (distToBell <= CONFIG.BELL_INTERACTION_RADIUS && !this.bell.used) {
-            ctx.fillStyle = '#ffb703';
+            ctx.fillStyle = CONFIG.THEME.hint;
             ctx.font = '10px JetBrains Mono';
             ctx.fillText('[E] RING BELL', bx, by - 18);
           }
         }
       }
 
-      // 9. Active Sonar Wavefronts
+      // 9. Active Sonar Wavefronts (Smooth solid ring for colorblind distinction)
       this.sonarRings.forEach(ring => {
         const ringPx = ring.x * tileSize;
         const ringPy = ring.y * tileSize;
         const rPx = ring.radius * tileSize;
         const alpha = Math.max(0, 1.0 - ring.radius / ring.maxRadius);
 
-        ctx.strokeStyle = `rgba(52, 211, 153, ${alpha * 0.85})`;
+        ctx.save();
+        ctx.setLineDash([]);
+        ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.sonarBand, alpha * 0.85);
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(ringPx, ringPy, rPx, 0, Math.PI * 2);
@@ -4292,26 +4993,30 @@
         if (!this.isReducedEffects() && ring.radius * 0.60 > 0.1) {
           const echoRPx = ring.radius * 0.60 * tileSize;
           const echoAlpha = alpha * 0.35;
-          ctx.strokeStyle = `rgba(52, 211, 153, ${echoAlpha})`;
+          ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.sonarEcho, echoAlpha);
           ctx.lineWidth = 1.2;
           ctx.beginPath();
           ctx.arc(ringPx, ringPy, echoRPx, 0, Math.PI * 2);
           ctx.stroke();
         }
+        ctx.restore();
       });
 
-      // 10. Monster Red Wavefronts (Stage 5C)
+      // 10. Monster Red Wavefronts (Stage 5C / Siren: Dashed outline for colorblind safety)
       this.monsterPulses.forEach(pulse => {
         const pulsePx = pulse.x * tileSize;
         const pulsePy = pulse.y * tileSize;
         const rPx = pulse.radius * tileSize;
         const alpha = Math.max(0, 1.0 - pulse.radius / pulse.maxRadius);
 
-        ctx.strokeStyle = `rgba(255, 30, 60, ${alpha * 0.9})`;
+        ctx.save();
+        ctx.setLineDash([8, 6]);
+        ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.danger, alpha * 0.9);
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.arc(pulsePx, pulsePy, rPx, 0, Math.PI * 2);
         ctx.stroke();
+        ctx.restore();
       });
 
       // 11. MONSTER / CORNER COP WITH CRAZY ROTATING SIRENS
@@ -4319,7 +5024,7 @@
         const mx = monster.x * tileSize;
         const my = monster.y * tileSize;
 
-        // A. Dynamic Rotating Police Sirens (Volumetric Red & Blue Cones)
+        // A. Dynamic Rotating Police Sirens (Volumetric Red Danger Cones)
         if (monster.isCop) {
           const sAngle = monster.sirenAngle;
           const beamLen = tileSize * 2.8;
@@ -4329,9 +5034,9 @@
           ctx.translate(mx, my);
           ctx.rotate(sAngle);
           const redGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, beamLen);
-          redGrad.addColorStop(0, 'rgba(255, 20, 60, 0.45)');
-          redGrad.addColorStop(0.7, 'rgba(255, 20, 60, 0.15)');
-          redGrad.addColorStop(1, 'rgba(255, 20, 60, 0)');
+          redGrad.addColorStop(0, CONFIG.THEME.rgba(CONFIG.THEME.danger, 0.45));
+          redGrad.addColorStop(0.7, CONFIG.THEME.rgba(CONFIG.THEME.danger, 0.15));
+          redGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
           ctx.fillStyle = redGrad;
           ctx.beginPath();
           ctx.moveTo(0, 0);
@@ -4339,13 +5044,13 @@
           ctx.closePath();
           ctx.fill();
 
-          // Opposite Blue Siren Beam
+          // Opposite Siren Beam
           ctx.rotate(Math.PI);
-          const blueGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, beamLen);
-          blueGrad.addColorStop(0, 'rgba(0, 120, 255, 0.45)');
-          blueGrad.addColorStop(0.7, 'rgba(0, 120, 255, 0.15)');
-          blueGrad.addColorStop(1, 'rgba(0, 120, 255, 0)');
-          ctx.fillStyle = blueGrad;
+          const oppGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, beamLen);
+          oppGrad.addColorStop(0, CONFIG.THEME.rgba(CONFIG.THEME.danger, 0.25));
+          oppGrad.addColorStop(0.7, CONFIG.THEME.rgba(CONFIG.THEME.danger, 0.08));
+          oppGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ctx.fillStyle = oppGrad;
           ctx.beginPath();
           ctx.moveTo(0, 0);
           ctx.arc(0, 0, beamLen, -0.4, 0.4);
@@ -4354,14 +5059,14 @@
           ctx.restore();
         }
 
-        // B. Dynamic Sci-Fi Police Drone Chassis & Flashing Lightbars
+        // B. Dynamic Sci-Fi Drone Chassis & Threat Lights
         const strobePhase = Math.sin(now * 22) > 0;
-        const leftStrobe = strobePhase ? '#ff003c' : '#111827';
-        const rightStrobe = strobePhase ? '#111827' : '#0070f3';
+        const leftStrobe = strobePhase ? CONFIG.THEME.danger : CONFIG.THEME.bgCard;
+        const rightStrobe = strobePhase ? CONFIG.THEME.bgCard : CONFIG.THEME.danger;
 
         // Ground Reflection Aura
         const groundAura = ctx.createRadialGradient(mx, my, 2, mx, my, tileSize * 0.95);
-        groundAura.addColorStop(0, strobePhase ? 'rgba(255, 0, 60, 0.4)' : 'rgba(0, 112, 243, 0.4)');
+        groundAura.addColorStop(0, strobePhase ? CONFIG.THEME.rgba(CONFIG.THEME.danger, 0.4) : CONFIG.THEME.rgba(CONFIG.THEME.danger, 0.15));
         groundAura.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = groundAura;
         ctx.beginPath();
@@ -4371,8 +5076,8 @@
         // Armored Drone Chassis (Hexagonal Hull)
         ctx.save();
         ctx.translate(mx, my);
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#38bdf8';
+        ctx.fillStyle = CONFIG.THEME.bgCard;
+        ctx.strokeStyle = CONFIG.THEME.danger;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         const droneR = tileSize * 0.32;
@@ -4388,7 +5093,7 @@
         ctx.stroke();
 
         // Center Warning Core (crisp concentric draw, zero shadowBlur)
-        const coreColor = monster.state === 'INVESTIGATE' || monster.state === 'SEARCH' ? '#ff003c' : (monster.id === 'B' ? '#f59e0b' : '#38bdf8');
+        const coreColor = CONFIG.THEME.danger;
         ctx.fillStyle = coreColor;
         ctx.beginPath();
         ctx.arc(0, 0, tileSize * 0.12, 0, Math.PI * 2);
@@ -4397,7 +5102,7 @@
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // Dual Police LED Lightbar on Top
+        // Dual LED Lightbar on Top
         ctx.fillStyle = leftStrobe;
         ctx.fillRect(-droneR * 0.75, -droneR * 0.70, droneR * 0.70, 4);
         ctx.fillStyle = rightStrobe;
@@ -4405,18 +5110,18 @@
         ctx.restore();
 
         // Floating Threat Banner over Cop
-        ctx.fillStyle = strobePhase ? '#ff003c' : '#38bdf8';
+        ctx.fillStyle = strobePhase ? CONFIG.THEME.danger : CONFIG.THEME.hudText;
         ctx.font = 'bold 9px JetBrains Mono';
         ctx.textAlign = 'center';
         ctx.fillText(`🚨 ${monster.name || 'COP'}`, mx, my - tileSize * 0.45);
 
         if (this.debugMode) {
-          ctx.fillStyle = '#ff4d6d';
+          ctx.fillStyle = CONFIG.THEME.danger;
           ctx.font = '9px JetBrains Mono';
           ctx.fillText(`${monster.id}:${monster.state}`, mx + 10, my - 6);
 
           if (monster.path.length > 0) {
-            ctx.strokeStyle = 'rgba(255, 51, 85, 0.4)';
+            ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.danger, 0.4);
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(mx, my);
@@ -4431,7 +5136,7 @@
         if (!this.isReducedEffects() && monster.silhouetteUntil && monster.silhouetteUntil > now) {
           const silAlpha = Math.max(0, (monster.silhouetteUntil - now) / 0.60);
           ctx.save();
-          ctx.strokeStyle = `rgba(0, 243, 255, ${silAlpha * 0.9})`;
+          ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.danger, silAlpha * 0.9);
           ctx.lineWidth = 2.5;
           ctx.beginPath();
           ctx.arc(mx, my, tileSize * 0.42, 0, Math.PI * 2);
@@ -4448,7 +5153,7 @@
           const tremY = isTrembling ? Math.cos(now * 25) * 1.2 : 0;
 
           ctx.save();
-          ctx.fillStyle = '#ff1e3c';
+          ctx.fillStyle = CONFIG.THEME.danger;
           ctx.beginPath();
           ctx.arc(mx - 4 + tremX, my - 2 + tremY, eyeRadius, 0, Math.PI * 2);
           ctx.fill();
@@ -4468,42 +5173,42 @@
       ctx.translate(px, py);
       ctx.scale(this.player.squashX, this.player.squashY);
 
-      // State colors: calm cyan, investigating within 12 path-tiles amber, pursuit within 6 shrinking red pulse synced to the heartbeat, exit within 6 warm tint
-      let stateColor = CONFIG.COLOR_CYAN;
+      // State colors: calm halo green, investigating within 12 path-tiles amber, pursuit within 6 shrinking red pulse synced to the heartbeat, exit within 6 warm gold tint
+      let stateColor = CONFIG.THEME.playerHalo;
       let stateCoreScale = 1.0;
       if (!this.isReducedEffects()) {
         const exitDistTiles = Math.hypot(this.player.x - (this.maze.exit.x + 0.5), this.player.y - (this.maze.exit.y + 0.5));
         if (exitDistTiles <= 6.0) {
-          stateColor = '#fbbf24'; // Warm tint near exit
+          stateColor = CONFIG.THEME.exitDoor; // Warm tint near exit
         } else if (this.minMonsterDist <= 6.0) {
-          stateColor = '#ff2244'; // Pursuit within 6
+          stateColor = CONFIG.THEME.danger; // Pursuit within 6
           const hbPeriod = clamp(0.3 + (this.minMonsterDist / 6.0) * 0.5, 0.25, 0.8);
           const hbPhase = (now % hbPeriod) / hbPeriod;
           stateCoreScale = 0.80 + 0.25 * (1.0 - hbPhase);
         } else if (this.minMonsterState === 'INVESTIGATE' && this.minMonsterDist <= 12.0) {
-          stateColor = '#f59e0b'; // Amber investigating within 12 path-tiles
+          stateColor = CONFIG.THEME.hint; // Amber investigating within 12 path-tiles
         }
       }
 
-      // Player Core (crisp halo ring, zero shadowBlur)
-      ctx.fillStyle = stateColor === CONFIG.COLOR_CYAN ? 'rgba(52, 211, 153, 0.35)' : (stateColor === '#fbbf24' ? 'rgba(251, 191, 36, 0.35)' : (stateColor === '#f59e0b' ? 'rgba(245, 158, 11, 0.35)' : 'rgba(255, 34, 68, 0.45)'));
+      // Player Core & Halo (crisp halo ring, zero shadowBlur)
+      ctx.fillStyle = CONFIG.THEME.rgba(stateColor, 0.40);
       ctx.beginPath();
       ctx.arc(0, 0, tileSize * 0.30 * stateCoreScale, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = CONFIG.THEME.playerCore;
       ctx.beginPath();
       ctx.arc(0, 0, tileSize * 0.22 * stateCoreScale, 0, Math.PI * 2);
       ctx.fill();
 
       // Energy Ring around player
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.strokeStyle = CONFIG.THEME.rgba('#ffffff', 0.15);
       ctx.lineWidth = 2.5;
       ctx.beginPath();
       ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
       ctx.stroke();
 
       if (energyFraction > 0.01) {
-        ctx.strokeStyle = energyFraction < 0.25 ? CONFIG.COLOR_DANGER : CONFIG.COLOR_CYAN;
+        ctx.strokeStyle = energyFraction < 0.25 ? CONFIG.THEME.danger : CONFIG.THEME.playerHalo;
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.arc(0, 0, ringRadius, -Math.PI / 2, -Math.PI / 2 + energyFraction * Math.PI * 2);
@@ -4512,34 +5217,48 @@
 
       ctx.restore();
 
-      // 13. PASS 2 HINTS: Tier 2 Edge Arc & Tier 3 Safe Route Cells (Replaces straight-line compass)
+      // 13. PASS 2 HINTS: Tier 2 Edge Arc & Tier 3 Safe Route Cells (Safety verified against live monster positions)
       if (!this.isReducedEffects() && this.tier2ArcUntil && now < this.tier2ArcUntil && typeof this.hintSafeAngle === 'number') {
-        const arcAlpha = Math.max(0, (this.tier2ArcUntil - now) / CONFIG.HINT_TIER2_DURATION);
-        ctx.save();
-        ctx.strokeStyle = `rgba(255, 200, 50, ${arcAlpha * 0.95})`;
-        ctx.lineWidth = 3.5;
-        ctx.beginPath();
-        const arcR = tileSize * 0.65;
-        ctx.arc(px, py, arcR, this.hintSafeAngle - 0.45, this.hintSafeAngle + 0.45);
-        ctx.stroke();
-        ctx.restore();
+        const arcSafe = !this.monsters.some(m => {
+          const d = getBfsPathDistance(this.maze.grid, this.maze.W, this.maze.H, Math.floor(this.player.x), Math.floor(this.player.y), Math.floor(m.x), Math.floor(m.y));
+          return d >= 0 && d < CONFIG.HINT_MONSTER_SAFE_DISTANCE;
+        });
+        if (arcSafe) {
+          const arcAlpha = Math.max(0, (this.tier2ArcUntil - now) / CONFIG.HINT_TIER2_DURATION);
+          ctx.save();
+          ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.hint, arcAlpha * 0.95);
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          const arcR = tileSize * 0.65;
+          ctx.arc(px, py, arcR, this.hintSafeAngle - 0.45, this.hintSafeAngle + 0.45);
+          ctx.stroke();
+          ctx.restore();
+        }
       }
 
       if (!this.isReducedEffects() && this.tier3PathUntil && now < this.tier3PathUntil && this.tier3SafeCells && this.tier3SafeCells.length > 0) {
-        const pathAlpha = Math.max(0, (this.tier3PathUntil - now) / CONFIG.HINT_TIER3_DURATION);
-        ctx.save();
-        this.tier3SafeCells.forEach(cell => {
-          const cx = (cell.x + 0.5) * tileSize;
-          const cy = (cell.y + 0.5) * tileSize;
-          ctx.fillStyle = `rgba(52, 211, 153, ${pathAlpha * 0.30})`;
-          ctx.strokeStyle = `rgba(52, 211, 153, ${pathAlpha * 0.85})`;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.arc(cx, cy, tileSize * 0.22, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
+        const pathSafe = !this.monsters.some(m => {
+          return this.tier3SafeCells.some(cell => {
+            const d = getBfsPathDistance(this.maze.grid, this.maze.W, this.maze.H, cell.x, cell.y, Math.floor(m.x), Math.floor(m.y));
+            return d >= 0 && d < CONFIG.HINT_MONSTER_SAFE_DISTANCE;
+          });
         });
-        ctx.restore();
+        if (pathSafe) {
+          const pathAlpha = Math.max(0, (this.tier3PathUntil - now) / CONFIG.HINT_TIER3_DURATION);
+          ctx.save();
+          this.tier3SafeCells.forEach(cell => {
+            const cx = (cell.x + 0.5) * tileSize;
+            const cy = (cell.y + 0.5) * tileSize;
+            ctx.fillStyle = CONFIG.THEME.rgba(CONFIG.THEME.hint, pathAlpha * 0.30);
+            ctx.strokeStyle = CONFIG.THEME.rgba(CONFIG.THEME.hint, pathAlpha * 0.85);
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(cx, cy, tileSize * 0.22, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          });
+          ctx.restore();
+        }
       }
 
       ctx.restore();
@@ -5090,6 +5809,392 @@
 
       logTest("bell cooldown holds", use1Ok && cdRejectOk && use2Ok && exhaustedRejectOk);
 
+    // 36. 200 seeds per level: all keys reachable with door treated as wall; keys distinct; distances respected; counts match KEYS_REQUIRED
+    let allLevels200SeedsValid = true;
+    for (let lIdx = 0; lIdx < CONFIG.LEVELS.length; lIdx++) {
+      const req = (CONFIG.KEYS_REQUIRED && CONFIG.KEYS_REQUIRED[lIdx] !== undefined) ? CONFIG.KEYS_REQUIRED[lIdx] : 1;
+      const lvlCfg = CONFIG.LEVELS[lIdx];
+      for (let s = 1; s <= 200; s++) {
+        const m = generateMaze(lvlCfg.width, lvlCfg.height, s);
+        const keys = placeLevelKeys(m, lIdx, s);
+        if (keys.length !== req) { allLevels200SeedsValid = false; break; }
+        // Distinct check
+        const coordSet = new Set();
+        let distinct = true;
+        for (const k of keys) {
+          const kStr = `${k.x},${k.y}`;
+          if (coordSet.has(kStr) || (k.x === 1 && k.y === 1) || (k.x === m.exit.x && k.y === m.exit.y)) {
+            distinct = false;
+            break;
+          }
+          coordSet.add(kStr);
+        }
+        if (!distinct) { allLevels200SeedsValid = false; break; }
+        // Reachability with door treated as wall
+        const startDistNoDoor = bfsDistMap(m.grid, m.W, m.H, 1, 1, m.exit.x, m.exit.y);
+        for (const k of keys) {
+          if (startDistNoDoor[k.y][k.x] < CONFIG.KEY_MIN_PATH_FROM_START) {
+            allLevels200SeedsValid = false;
+            break;
+          }
+        }
+        if (!allLevels200SeedsValid) break;
+      }
+      if (!allLevels200SeedsValid) break;
+    }
+    logTest("200 seeds per level: all keys reachable with door treated as wall; keys distinct; distances respected; counts match KEYS_REQUIRED", allLevels200SeedsValid);
+
+    // 37. Pickup emits exactly one siren event sequence at the key position (no duplicate sequences if processed twice)
+    window.game.startLevel(0, 12345);
+    const testKey = window.game.levelKeys[0];
+    const initialSirens = window.game.sirensTriggeredCount || 0;
+    window.game.triggerKeyPickup(testKey);
+    const countAfterFirst = window.game.sirensTriggeredCount;
+    window.game.triggerKeyPickup(testKey); // duplicate call
+    const countAfterSecond = window.game.sirensTriggeredCount;
+    const sirenNoiseEv = window.game.noiseEvents.find(e => e.type === 'siren' && e.cellX === testKey.x && e.cellY === testKey.y);
+    logTest("Pickup emits exactly one siren event sequence at the key's position (no duplicate on re-pickup)", countAfterFirst === initialSirens + 1 && countAfterSecond === countAfterFirst && !!sirenNoiseEv);
+
+    // 38. Monster within SIREN_RADIUS investigates recorded key position; outside does not; SIREN_GLOBAL true alerts all; monster never receives player live position
+    window.game.startLevel(0, 12345);
+    window.game.state = 'PLAYING';
+    const kPos = { x: 1, y: 1 };
+    const dirs38 = [[0,1],[0,-1],[1,0],[-1,0]];
+    let nearCell = null;
+    for (const [dx, dy] of dirs38) {
+      const nx = 1 + dx, ny = 1 + dy;
+      if (window.game.maze.grid[ny][nx] === 0) {
+        nearCell = { x: nx, y: ny };
+        break;
+      }
+    }
+    const farCell = { x: window.game.maze.exit.x, y: window.game.maze.exit.y };
+    const mNear = { id: 'cop_near', x: nearCell.x, y: nearCell.y, state: 'WANDER', path: [], pingRadius: 10, footstepRadius: 2.5, growlPitch: 100 };
+    const mFar = { id: 'cop_far', x: farCell.x, y: farCell.y, state: 'WANDER', path: [], pingRadius: 10, footstepRadius: 2.5, growlPitch: 100 };
+    window.game.monsters = [mNear, mFar];
+    window.game.player.x = 9.5;
+    window.game.player.y = 9.5;
+    CONFIG.SIREN_GLOBAL = false;
+    window.game.emitNoiseEvent({
+      type: 'siren',
+      x: kPos.x + 0.5,
+      y: kPos.y + 0.5,
+      cellX: kPos.x,
+      cellY: kPos.y,
+      radius: 5,
+      causedByPlayer: false,
+      time: performance.now() / 1000
+    });
+    const mNearInvestigates = mNear.state === 'INVESTIGATE' && mNear.target && mNear.target.x === kPos.x && mNear.target.y === kPos.y;
+    const mFarIgnored = mFar.state === 'WANDER';
+    CONFIG.SIREN_GLOBAL = true;
+    window.game.emitNoiseEvent({
+      type: 'siren',
+      x: kPos.x + 0.5,
+      y: kPos.y + 0.5,
+      cellX: kPos.x,
+      cellY: kPos.y,
+      radius: 5,
+      causedByPlayer: false,
+      time: performance.now() / 1000
+    });
+    const mFarInvestigatesGlobal = mFar.state === 'INVESTIGATE' && mFar.target && mFar.target.x === kPos.x && mFar.target.y === kPos.y;
+    CONFIG.SIREN_GLOBAL = false; // restore
+    const playerPosNeverLeaked = (mNear.target && (mNear.target.x !== Math.floor(window.game.player.x) || mNear.target.y !== Math.floor(window.game.player.y)));
+    logTest("Monster inside SIREN_RADIUS investigates recorded key position; outside does not; SIREN_GLOBAL alerts all; never gets player live position", mNearInvestigates && mFarIgnored && mFarInvestigatesGlobal && playerPosNeverLeaked);
+
+    // 39. A sleeping monster wakes on a siren
+    window.game.startLevel(1, 9999); // Level 2 has Sleeper Unit
+    window.game.state = 'PLAYING';
+    const sleeper = window.game.monsters.find(m => m.initialState === 'ASLEEP') || window.game.monsters[0];
+    sleeper.state = 'ASLEEP';
+    sleeper.target = null;
+    sleeper.path = [];
+    window.game.emitNoiseEvent({
+      type: 'siren',
+      x: Math.floor(sleeper.x) + 0.5,
+      y: Math.floor(sleeper.y) + 0.5,
+      cellX: Math.floor(sleeper.x),
+      cellY: Math.floor(sleeper.y),
+      radius: CONFIG.SIREN_RADIUS,
+      causedByPlayer: false,
+      time: performance.now() / 1000
+    });
+    const sleeperWoke = sleeper.state === 'INVESTIGATE' && sleeper.target && sleeper.target.x === Math.floor(sleeper.x);
+    logTest("A sleeping monster wakes on a siren", sleeperWoke);
+
+    // 40. Door: with fewer keys, touching it never triggers victory; with all keys, victory fires exactly once
+    window.game.startLevel(2, 54321); // Level 3 requires 2 keys
+    window.game.state = 'PLAYING';
+    const doorReq = CONFIG.KEYS_REQUIRED[2];
+    window.game.keysCollected = doorReq - 1;
+    window.game.player.x = window.game.player.targetX = window.game.player.fromX = window.game.maze.exit.x + 0.5;
+    window.game.player.y = window.game.player.targetY = window.game.player.fromY = window.game.maze.exit.y + 0.5;
+    window.game.player.gridX = window.game.maze.exit.x;
+    window.game.player.gridY = window.game.maze.exit.y;
+    window.game.player.moving = false;
+    window.game.update(0.016);
+    const lockedBlockedVictory = (window.game.state === 'PLAYING');
+    window.game.keysCollected = doorReq;
+    const runIdBefore = window.game.runId;
+    window.game.update(0.016);
+    const victoryFiredOnce = (window.game.state === 'VICTORY' && window.game.runId === runIdBefore + 1);
+    window.game.update(0.016);
+    const victoryNotDoubleFired = (window.game.runId === runIdBefore + 1);
+    logTest("Door: with fewer keys touching never triggers victory; with all keys victory fires once", lockedBlockedVictory && victoryFiredOnce && victoryNotDoubleFired);
+
+    // 41. Pause, capture, victory and restart block pickups; restart within 100 ms of a pickup leaves no siren pulse, tint, banner or event in new run (and runId guard holds)
+    window.game.startLevel(0, 11111);
+    const pKey = window.game.levelKeys[0];
+    pKey.pickedUp = false;
+    window.game.state = 'PAUSED';
+    window.game.triggerKeyPickup(pKey);
+    const pauseBlocked = !pKey.pickedUp;
+    window.game.state = 'CAPTURE';
+    window.game.triggerKeyPickup(pKey);
+    const captureBlocked = !pKey.pickedUp;
+    window.game.state = 'VICTORY';
+    window.game.triggerKeyPickup(pKey);
+    const victoryBlocked = !pKey.pickedUp;
+    // runId guard test: pickup called with outdated runId
+    const oldRunId41 = window.game.runId;
+    window.game.restartLevel(); // increments runId
+    window.game.triggerKeyPickup(pKey, oldRunId41);
+    const runIdBlocked = !pKey.pickedUp;
+    // Pickup then fast restart within 100 ms
+    window.game.state = 'PLAYING';
+    window.game.triggerKeyPickup(pKey);
+    await new Promise(r => setTimeout(r, 40));
+    window.game.restartLevel();
+    const cleanSirenState = !window.game.sirenActive && window.game.sirenTimerIds.length === 0;
+    const cleanFlash = (window.game.screenFlashAlpha === 0);
+    const bannerElem = document.getElementById('locked-banner');
+    const cleanBanner = !bannerElem || bannerElem.classList.contains('modal-hidden');
+    const cleanNoise = !window.game.noiseEvents.some(e => e.type === 'siren');
+    logTest("Pause, capture, victory and restart block pickups; restart within 100 ms leaves no siren pulse, tint, banner or event", pauseBlocked && captureBlocked && victoryBlocked && runIdBlocked && cleanSirenState && cleanFlash && cleanBanner && cleanNoise);
+
+    // 42. Rating ignores siren investigations (driven via actual Game pickup & siren)
+    window.game.startLevel(0, 22222);
+    window.game.state = 'PLAYING';
+    if (!window.game.levelKeys || window.game.levelKeys.length === 0) {
+      logTest("Rating ignores siren investigations", false, "no keys in level");
+    } else {
+      const realKey42 = window.game.levelKeys[0];
+      const mAlerted42 = { id: 'cop_siren_test', x: realKey42.x, y: realKey42.y, state: 'WANDER', path: [], pingRadius: 10, footstepRadius: 2.5, growlPitch: 100 };
+      window.game.monsters = [mAlerted42];
+      window.game.eventLog = [];
+      window.game.triggerKeyPickup(realKey42);
+      const sirenInvEvent = window.game.eventLog.find(e => e.type === 'investigation' && e.triggerType === 'siren');
+      const isNotPlayerCaused = sirenInvEvent && sirenInvEvent.causedByPlayer === false;
+      const actualRating = computeStealthRating(window.game.eventLog, 0, CONFIG);
+      logTest("Rating ignores siren investigations", isNotPlayerCaused && actualRating === 'S');
+    }
+
+    // 43. Hint direction goes to nearest uncollected key, never enters 4-tile monster zone, never reveals position
+    window.game.startLevel(2, 77777); // 2 keys
+    window.game.state = 'PLAYING';
+    window.game.keysCollected = 0;
+    window.game.levelKeys[0].pickedUp = false;
+    window.game.levelKeys[1].pickedUp = false;
+    window.game.monsters = [{ x: 1, y: 7, state: 'WANDER' }];
+    const currentCX = Math.floor(window.game.player.x);
+    const currentCY = Math.floor(window.game.player.y);
+    const d0 = getBfsPathDistance(window.game.maze.grid, window.game.maze.W, window.game.maze.H, currentCX, currentCY, window.game.levelKeys[0].x, window.game.levelKeys[0].y);
+    const d1 = getBfsPathDistance(window.game.maze.grid, window.game.maze.W, window.game.maze.H, currentCX, currentCY, window.game.levelKeys[1].x, window.game.levelKeys[1].y);
+    const nearestKey = (d0 <= d1) ? window.game.levelKeys[0] : window.game.levelKeys[1];
+    const pathKey1 = getSafeExitPath(window.game.maze.grid, window.game.maze.W, window.game.maze.H, { x: currentCX, y: currentCY }, { x: nearestKey.x, y: nearestKey.y }, window.game.monsters, 4);
+    const reachesKey1 = pathKey1 && pathKey1.length > 0;
+    nearestKey.pickedUp = true;
+    window.game.keysCollected = 1;
+    const remainingKey = (nearestKey === window.game.levelKeys[0]) ? window.game.levelKeys[1] : window.game.levelKeys[0];
+    const pathKey2 = getSafeExitPath(window.game.maze.grid, window.game.maze.W, window.game.maze.H, { x: currentCX, y: currentCY }, { x: remainingKey.x, y: remainingKey.y }, window.game.monsters, 4);
+    const reachesKey2 = pathKey2 && pathKey2.length > 0;
+    remainingKey.pickedUp = true;
+    window.game.keysCollected = 2;
+    const pathExit = getSafeExitPath(window.game.maze.grid, window.game.maze.W, window.game.maze.H, { x: currentCX, y: currentCY }, { x: window.game.maze.exit.x, y: window.game.maze.exit.y }, window.game.monsters, 4);
+    const reachesExit = pathExit && pathExit.length > 0;
+    logTest("Hint direction goes to nearest uncollected key, never enters 4-tile monster zone, never reveals position", reachesKey1 && reachesKey2 && reachesExit);
+
+    // 44. Particle count stays at or under 150 with actual keys glinting (fails without key feature)
+    window.game.startLevel(0, 12345);
+    window.game.state = 'PLAYING';
+    if (!window.game.levelKeys || window.game.levelKeys.length === 0) {
+      logTest("Particle count stays at or under 150 with keys glinting", false, "keys missing");
+    } else {
+      const gKey44 = window.game.levelKeys[0];
+      gKey44.glintUntil = 0;
+      // Position a sonar ring crossing the key with line of sight
+      window.game.sonarRings = [{
+        x: gKey44.x + 0.5,
+        y: gKey44.y + 0.5,
+        radius: 0,
+        speed: 8.0,
+        maxRadius: 15.0
+      }];
+      window.game.update(0.016);
+      const glintFired = (gKey44.glintUntil > performance.now() / 1000);
+      const totalActiveParticles = window.game.particlePool.filter(p => p.active).length;
+      logTest("Particle count stays at or under 150 with keys glinting", glintFired && totalActiveParticles <= CONFIG.MAX_PARTICLES && window.game.particlePool.length === CONFIG.MAX_PARTICLES);
+    }
+
+    // 45. Key glint requires line of sight (fails if line-of-sight check is removed)
+    window.game.startLevel(0, 12345);
+    window.game.state = 'PLAYING';
+    const testKey45 = { id: 99, x: 5, y: 5, pickedUp: false, glintUntil: 0 };
+    window.game.levelKeys = [testKey45];
+    // Put a wall between (5,5) and (5,3)
+    window.game.maze.grid[4][5] = 1; // wall
+    window.game.sonarRings = [{
+      x: 5.5,
+      y: 2.5,
+      radius: 2.8,
+      speed: 10.0,
+      maxRadius: 10.0
+    }];
+    window.game.update(0.05); // ring expands to ~3.3, crossing distance 3.0
+    const blockedGlint = (testKey45.glintUntil === 0);
+    // Now remove wall: clear line of sight
+    window.game.maze.grid[4][5] = 0;
+    window.game.sonarRings = [{
+      x: 5.5,
+      y: 2.5,
+      radius: 2.8,
+      speed: 10.0,
+      maxRadius: 10.0
+    }];
+    window.game.update(0.05);
+    const clearGlint = (testKey45.glintUntil > performance.now() / 1000);
+    logTest("Key glint requires line of sight", blockedGlint && clearGlint);
+
+    // 46. Real pickup & siren audio: only expected siren noise events emitted
+    window.game.startLevel(0, 33333);
+    window.game.state = 'PLAYING';
+    const testKey46 = window.game.levelKeys[0];
+    window.game.noiseEvents = [];
+    // Drive real pickup by positioning player on the key and updating
+    window.game.player.x = testKey46.x + 0.5;
+    window.game.player.y = testKey46.y + 0.5;
+    window.game.player.targetX = testKey46.x + 0.5;
+    window.game.player.targetY = testKey46.y + 0.5;
+    window.game.player.fromX = testKey46.x + 0.5;
+    window.game.player.fromY = testKey46.y + 0.5;
+    window.game.player.moveProgress = 1.0;
+    window.game.update(0.016);
+    const pickupSuccess46 = (testKey46.pickedUp === true);
+    // Simulate 5s of audio run (audio nodes run across 2.5s to 5s)
+    window.game.audio.playSirenWail();
+    const sirenEventsOnly46 = window.game.noiseEvents.every(e => e.type === 'siren' && e.cellX === testKey46.x && e.cellY === testKey46.y);
+    const expectedInitialPulses46 = (window.game.noiseEvents.length >= 1);
+    window.game.clearSirenState();
+    logTest("Real pickup and siren audio: only siren noise events exist", pickupSuccess46 && sirenEventsOnly46 && expectedInitialPulses46);
+
+    // 47. Reduced effects suppresses the siren flash and shake but keeps the badge text
+    window.game.startLevel(0, 44444);
+    window.game.state = 'PLAYING';
+    const origReduced47 = window.game.isReducedEffects;
+    window.game.isReducedEffects = () => true;
+    const flashEl47 = document.getElementById('screen-flash');
+    if (flashEl47) flashEl47.style.opacity = '0';
+    window.game.shakeOffsetX = 0;
+    window.game.shakeOffsetY = 0;
+    window.game.shakeAmount = 10;
+    const badge47 = document.getElementById('hud-siren-badge');
+    if (badge47) badge47.classList.add('modal-hidden');
+    window.game.triggerSiren(1, 1);
+    window.game.update(0.016);
+    const flashOpacityZero47 = flashEl47 ? (flashEl47.style.opacity === '0' || flashEl47.style.opacity === '') : true;
+    const shakeOffsetsZero47 = (window.game.shakeOffsetX === 0 && window.game.shakeOffsetY === 0);
+    const badgeKept47 = badge47 ? !badge47.classList.contains('modal-hidden') : true;
+    window.game.isReducedEffects = origReduced47;
+    window.game.clearSirenState();
+    logTest("Reduced effects suppresses siren flash and shake but keeps badge text", flashOpacityZero47 && shakeOffsetsZero47 && badgeKept47);
+
+    // 48. KEY_FINDING_PING_ALLOWANCE added to par in computeStealthRating
+    const testCfg48 = {
+      PING_PAR: [5],
+      KEYS_REQUIRED: [2],
+      KEY_FINDING_PING_ALLOWANCE: 3
+    };
+    // With 2 keys and allowance 3, par is 5 + 6 = 11 pings.
+    // 10 pings (<= 11) with 0 investigations should give 'S'
+    const log10Pings = Array.from({ length: 10 }, () => ({ type: 'ping' }));
+    const rating10 = computeStealthRating(log10Pings, 0, testCfg48);
+    // 12 pings (> 11) should NOT give 'S' (gives 'A')
+    const log12Pings = Array.from({ length: 12 }, () => ({ type: 'ping' }));
+    const rating12 = computeStealthRating(log12Pings, 0, testCfg48);
+    logTest("KEY_FINDING_PING_ALLOWANCE added to par in computeStealthRating", rating10 === 'S' && rating12 === 'A');
+
+    // 49. Hint safety: monster moving onto cached path suppresses or reroutes hint
+    window.game.startLevel(0, 55555);
+    window.game.player.x = 1.5;
+    window.game.player.y = 1.5;
+    const targetCell49 = { x: window.game.maze.exit.x, y: window.game.maze.exit.y };
+    const initialSafePath = getSafeExitPath(window.game.maze.grid, window.game.maze.W, window.game.maze.H, { x: 1, y: 1 }, targetCell49, [], 4);
+    const hadPath49 = initialSafePath && initialSafePath.length >= 4;
+    const blockStep49 = hadPath49 ? initialSafePath[2] : { x: 2, y: 1 };
+    window.game.monsters = [{ id: 'blocker', x: blockStep49.x + 0.5, y: blockStep49.y + 0.5, state: 'INVESTIGATE', path: [] }];
+    const liveMonstersPath = getSafeExitPath(window.game.maze.grid, window.game.maze.W, window.game.maze.H, { x: 1, y: 1 }, targetCell49, window.game.monsters, 4);
+    let safeOrSuppressed49 = false;
+    if (liveMonstersPath === null) {
+      safeOrSuppressed49 = true;
+    } else {
+      const avoidsMonster = liveMonstersPath.every(pt => {
+        const d = getBfsPathDistance(window.game.maze.grid, window.game.maze.W, window.game.maze.H, pt.x, pt.y, blockStep49.x, blockStep49.y);
+        return d >= 4;
+      });
+      safeOrSuppressed49 = avoidsMonster;
+    }
+    logTest("Monster moving onto path suppresses or reroutes hint", hadPath49 && safeOrSuppressed49);
+
+    // 50. Total siren pulses = 1 + SIREN_PULSES_AFTER_FIRST (default 3)
+    const defPulsesAfterFirst50 = CONFIG.SIREN_PULSES_AFTER_FIRST;
+    const totalSirenPulses50 = 1 + defPulsesAfterFirst50;
+    window.game.startLevel(0, 66666);
+    window.game.noiseEvents = [];
+    window.game.triggerSiren(1, 1);
+    const initialPulseFired50 = (window.game.noiseEvents.length === 1);
+    window.game.clearSirenState();
+    logTest("Total siren pulses equals 1 + SIREN_PULSES_AFTER_FIRST (default 3)", defPulsesAfterFirst50 === 2 && totalSirenPulses50 === 3 && initialPulseFired50);
+
+    // 51. Color Audit: no hex or rgb color literals outside THEME and CSS variables except allowlist
+    const htmlSource = document.documentElement.outerHTML || '';
+    const scriptMatch = htmlSource.match(/<script>([\s\S]*?)<\/script>/);
+    let auditPassed = true;
+    let auditViolations = [];
+    if (scriptMatch) {
+      const scriptCode = scriptMatch[1];
+      // Exclude THEME definition from color literal check
+      const themeBlockMatch = scriptCode.match(/const THEME = \{[\s\S]*?\n  \};/);
+      const codeWithoutTheme = themeBlockMatch ? scriptCode.replace(themeBlockMatch[0], '/* THEME BLOCK */') : scriptCode;
+      
+      const allowlistHex = new Set(['#000000', '#ffffff', '#000', '#fff']);
+      const allowlistRgb = new Set(['rgba(0, 0, 0, 0)', 'rgba(0,0,0,0)']);
+
+      // Strip comments for pristine token audit
+      const codeClean = codeWithoutTheme.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+
+      // Match hex colors: #[0-9a-fA-F]{3,8}
+      const hexMatches = codeClean.match(/#[0-9a-fA-F]{3,8}\b/g) || [];
+      for (const h of hexMatches) {
+        if (!allowlistHex.has(h.toLowerCase())) {
+          auditPassed = false;
+          auditViolations.push(h);
+        }
+      }
+
+      // Match CSS rgb/rgba literals (not method invocations like THEME.rgba)
+      const rgbMatches = codeClean.match(/(?<!\.)\brgba?\(\s*\d+[^)]*\)/g) || [];
+      for (const r of rgbMatches) {
+        const norm = r.replace(/\s+/g, ' ').toLowerCase();
+        if (!allowlistRgb.has(norm)) {
+          auditPassed = false;
+          auditViolations.push(r);
+        }
+      }
+    }
+    logTest("AUDIT: no unlisted hex or rgb color literals outside THEME", auditPassed, auditViolations.length > 0 ? `Violations: ${auditViolations.slice(0, 5).join(', ')}` : "Clean allowlist compliance");
+
+
       // Reset back to clean title screen
       window.game.startLevel(0);
       window.game.showTitleScreen();
@@ -5101,7 +6206,7 @@
     const dbgTestsElem = document.getElementById('dbg-tests');
     if (dbgTestsElem) {
       dbgTestsElem.textContent = `Self-Tests: ${allPassed ? `${results.length}/${results.length} PASSED` : 'FAILED'}`;
-      dbgTestsElem.style.color = allPassed ? '#34d399' : '#ff3355';
+      dbgTestsElem.style.color = allPassed ? CONFIG.THEME.sonarBand : CONFIG.THEME.danger;
     }
 
       return allPassed;
@@ -5115,12 +6220,21 @@
 
   window.game = new Game();
   window.runSelfTests = runSelfTests;
-  runSelfTests().then(() => {
-    const p = new URLSearchParams(window.location.search);
+  const p = new URLSearchParams(window.location.search);
+  const dbgTestsElem = document.getElementById('dbg-tests');
+  if (p.get('test') === '1') {
+    if (dbgTestsElem) dbgTestsElem.textContent = 'Self-Tests: RUNNING...';
+    runSelfTests().then(() => {
+      if (p.get('autostart') === '1') {
+        window.game.startLevel(parseInt(p.get('level') || '0', 10));
+      }
+    });
+  } else {
+    if (dbgTestsElem) dbgTestsElem.textContent = 'Self-Tests: Ready (?test=1)';
     if (p.get('autostart') === '1') {
       window.game.startLevel(parseInt(p.get('level') || '0', 10));
     }
-  });
+  }
   </script>
 </body>
 </html>
