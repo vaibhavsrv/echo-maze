@@ -4,6 +4,12 @@
   "exportedAt": "2026-11-06T04:15:51.360Z",
   "conversation": {
     "schema": 1,
+    "chatId": "a77d18ae-9291-48d6-a283-8524bd49fbf3",
+    "requestId": null,
+    "inFlight": false,
+    "interrupted": false,
+    "draft": "",
+    "draftImages": [],
     "messages": [
       {
         "role": "user",
@@ -501,15 +507,11 @@
         "status": "done"
       }
     ],
-    "draft": "",
+    "contextStart": 0,
+    "compactionRequestId": null,
     "preview": null,
     "workspaceOpen": false,
-    "inFlight": false,
-    "interrupted": false,
-    "requestId": null,
-    "contextStart": 0,
-    "chatId": "a77d18ae-9291-48d6-a283-8524bd49fbf3",
-    "updatedAt": 1793938551360,
+    "updatedAt": 1793938540000,
     "persistenceVersion": 2,
     "persistenceRevision": "23d9a63679dd373456e138fafa5bc4bd"
   }

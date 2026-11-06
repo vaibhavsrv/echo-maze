@@ -27,35 +27,43 @@ Every prompt sent to **ODS Portal** while engineering ECHO MAZE, in order, with 
 
 Unlike static grid projects that dictate pre-written arrays to an LLM, **ECHO MAZE** evolved through an authentic human-agent co-design loop. Rather than micro-managing code strings, the human acted as **Lead Designer & Playtester**, catching mechanical flaws and steering the agent toward production quality:
 
-1. **Steering Point 1: Wall-Sliding Physics & Delta-Time Decoupling (Phase 1, Turn 5 & 8)**  
-   *The Flaw:* Initial diagonal movement caused corner-sticking jitter when sliding along walls.  
+1. **Steering Point 1: Wall-Sliding Physics & Delta-Time Decoupling (Phase 1, Turn 5 & 8)**
+   *The Flaw:* Initial diagonal movement caused corner-sticking jitter when sliding along walls.
    *The Steering:* Directed Portal to decouple the velocity vector into independent $(X, Y)$ axis sweeps and apply delta-time wall-sliding physics so the player smoothly skates along corridors.
-2. **Steering Point 2: Acoustic Noise Bus & Falloff Attenuation (Phase 2, Turn 8 & 14)**  
-   *The Flaw:* Monster AI oscillated erratically when multiple sound events triggered simultaneously.  
+2. **Steering Point 2: Acoustic Noise Bus & Falloff Attenuation (Phase 2, Turn 8 & 14)**
+   *The Flaw:* Monster AI oscillated erratically when multiple sound events triggered simultaneously.
    *The Steering:* Instructed Portal to implement a centralized acoustic event bus with timestamped decay, distance attenuation, and priority replacement so enemies only commit to the loudest/freshest sound.
-3. **Steering Point 3: Overcoming "Screen Boredom" & The Blackout Cycle (Phase 5, Turn 39 & 41)**  
-   *The Flaw:* Permanent pitch-black corridors created cognitive fatigue and visual stagnation.  
+3. **Steering Point 3: Overcoming "Screen Boredom" & The Blackout Cycle (Phase 5, Turn 39 & 41)**
+   *The Flaw:* Permanent pitch-black corridors created cognitive fatigue and visual stagnation.
    *The Steering:* Pushed the agent to invent the signature *Dynamic Blackout Thriller Cycle*: alternating periods of ambient facility illumination with high-voltage power-cut blackouts, audio hum surges, and sweeping police siren lightbars.
-4. **Steering Point 4: Symmetrical Canvas Centering Across Grid Expansions (Phase 6, Turn 50 & 51)**  
-   *The Flaw:* When the campaign tiers expanded from $11 \times 11$ to $33 \times 33$, the maze anchored to $(0,0)$ and clipped outside the viewport on mobile screens.  
+4. **Steering Point 4: Symmetrical Canvas Centering Across Grid Expansions (Phase 6, Turn 50 & 51)**
+   *The Flaw:* When the campaign tiers expanded from $11 \times 11$ to $33 \times 33$, the maze anchored to $(0,0)$ and clipped outside the viewport on mobile screens.
    *The Steering:* Prompted Portal to anchor the maze grid strictly to the canvas center (`W/2`, `H/2`) with responsive camera auto-scaling.
 
 ---
 
-## 📋 Executive Phase Summary
+## 📋 14 Logical Engineering Stages Summary
 
-1. **Phase 1: Deterministic Engine & Mathematical Foundations (Prompts 1–10)**: Seeded Mulberry32 PRNG, BFS reachability validation across all floor cells, delta-time wall-sliding physics, raycasted expanding sonar wavefronts, and distance-accumulating footstep noise emission.
-2. **Phase 2: Autonomous Listener AI & Acoustics (Prompts 11–20)**: Autonomous "Listener" monster AI driven by explicit FSMs (`WANDER`, `INVESTIGATE`, `SEARCH`, `RETURN`), graph BFS hearing distance, and acoustic target replacement.
-3. **Phase 3: Decoys, Multi-Monster Mechanics & Swarms (Prompts 21–30)**: Brass decoy bell (`E`), counter-sonar red pulse scanners, and zero-asset procedural Web Audio synthesis (sonar chirps, biological heartbeats).
-4. **Phase 4: Audio Lifecycle, Polish & HUD (Prompts 31–38)**: Audio voice limits, cyber canvas title screen, anti-clockwise countdown dial, developer overlay (`?debug=1`), and virtual touch D-Pad.
-5. **Phase 5: Organic Playtest Evolution & Thriller Cycles (Prompts 39–44)**: Human playtesting steering the agent away from "screen boredom" into the signature *Dynamic Blackout Thriller Cycle*, discrete 1-block tactical hop movement, and 15-level escalating cop swarm ladder.
-6. **Phase 6: Hardening, Keys, Decoys & Invariant Verification (Prompts 45–55)**: 150-particle recycling pool, progressive acoustic hints, pebble acoustic decoys (`F`), keys and locked exit doors, and `runSelfTests()` validating 52 mathematical invariants.
+The 55 co-design turns correspond chronologically to 14 distinct engineering and architectural stages:
 
----
+1. **Stage 1: Initial Concept & Architecture (Prompt 1):** Zero-dependency single-file HTML5/Canvas/Web Audio architecture specification.
+2. **Stage 2: Core Game Engine & Tuning Configuration (Prompts 2, 41):** Centralized immutable `CONFIG` object and Dynamic Blackout Thriller cycle.
+3. **Stage 3: Procedural Maze Generation (Prompts 3–4):** Seeded Mulberry32 PRNG and BFS full reachability validation (\ge 60% exit distance).
+4. **Stage 4: Player Movement & Collision (Prompts 5, 40, 44):** Delta-time wall sliding, 1-block discrete hopping physics, and dedicated WASD input buffering.
+5. **Stage 5: Sonar & Acoustic Systems (Prompts 6–9, 25–26):** Raycasted expanding sonar rings, energy budgets, decoupled acoustic noise bus, footstep noise, and counter-sonar detection.
+6. **Stage 6: Monster AI & Pathfinding (Prompts 11–16, 23–24, 49):** Listener autonomous FSM (`WANDER`, `INVESTIGATE`, `SEARCH`, `CAPTURE`), BFS corridor hearing, closer-sound target replacement, and multi-monster state isolation.
+7. **Stage 7: Campaign & Level Progression (Prompts 10, 17–20, 42–43):** State lifecycle transitions, clean level resets, 15 escalating campaign tiers, and Roguelike Ironman failure reset.
+8. **Stage 8: Audio Architecture (Prompts 27–31):** 100% procedural Web Audio synthesis (sonar chirps, footsteps, growls, spatial exit hum, biological heartbeat, voice limits & leak cleanup).
+9. **Stage 9: UI & Visual Design (Prompts 32–34, 38–39, 47, 50–51, 54):** Cyber title screen, in-game HUD, mobile virtual touch D-pad, luminous cyan borders, near-miss notices, centered canvas layout, and fantasy green theme.
+10. **Stage 10: Accessibility (Prompts 35, 48):** Assist mode toggles, colorblind-safe palettes, WCAG 14:1 contrast, and 3-tier progressive acoustic hints.
+11. **Stage 11: Performance & Lifecycle Hardening (Prompts 45–46):** 150-particle recycling pool, cached `prefers-reduced-motion`, monotonic `runId` counters, and rolling CPU frame time tracking (< 8 ms).
+12. **Stage 12: Keys, Doors & Decoys (Prompts 21–22, 52):** Tactical brass decoy bell (`E`), pebble decoy (`F`), and keys/locked door objective pipeline.
+13. **Stage 13: Testing & Mutation Checks (Prompts 36–37, 53):** Live `?debug=1` telemetry overlay, initial 19 invariant tests, and mutation tests catching security/logic bypasses.
+14. **Stage 14: Final Verification & Engine Hardening (Prompt 55):** Engine speed reconciliation, 60 FPS rAF validation, explorer bot simulation, pause-aware sirens, 4 Hz hint throttling, and 52 passed invariants.
 
 ## Complete Prompt & Build Log
 
-## Prompt 1 `[Phase 1: Deterministic Engine & Mathematical Foundations]`
+## Prompt 1 `[Stage 1: Initial Concept & Architecture]`
 
 ```text
 I want to build a browser game called ECHO MAZE for the ODS Weekly Dev Jam. The tagline is "Light costs noise." The concept is a tactical acoustic-stealth thriller where the player navigates dark mazes, uses sonar to understand the environment, manages limited energy, and avoids sound-sensitive enemies. Build this in a single index.html file using vanilla HTML5, CSS, Canvas and Web Audio API. Zero external engines or audio files.
@@ -69,7 +77,7 @@ Understood. Initializing ECHO MAZE project architecture as a single vanilla `ind
 
 </details>
 
-## Prompt 2 `[Phase 1: Deterministic Engine & Mathematical Foundations]`
+## Prompt 2 `[Stage 2: Core Game Engine & Tuning Configuration]`
 
 ```text
 Put all gameplay tuning numbers in a single CONFIG object at the top of the JavaScript: tile sizes, movement speeds, sonar ranges, wall reveal duration, energy costs, monster speeds, hearing radii, capture distances, and audio limits. Use a separate LEVELS table for level-specific properties. No scattered magic numbers.
@@ -83,7 +91,7 @@ Defined central `CONFIG` object with all constants: tile sizing, speeds, sonar d
 
 </details>
 
-## Prompt 3 `[Phase 1: Deterministic Engine & Mathematical Foundations]`
+## Prompt 3 `[Stage 3: Procedural Maze Generation]`
 
 ```text
 Implement deterministic procedural maze generation using a seeded random algorithm (Mulberry32 PRNG) so identical seeds always produce identical mazes. Support ?seed=N in the URL for repeatable runs.
@@ -97,7 +105,7 @@ Implemented Mulberry32 deterministic PRNG with seed support. Configured URL para
 
 </details>
 
-## Prompt 4 `[Phase 1: Deterministic Engine & Mathematical Foundations]`
+## Prompt 4 `[Stage 3: Procedural Maze Generation]`
 
 ```text
 Use Breadth-First Search (BFS) to validate that every floor cell in the maze is reachable from the start (1, 1). Ensure the exit portal is placed on a reachable cell at least 60% of the maximum BFS distance from the start.
@@ -111,7 +119,7 @@ Implemented Breadth-First Search (BFS) reachability validation from starting pos
 
 </details>
 
-## Prompt 5 `[Phase 1: Deterministic Engine & Mathematical Foundations]`
+## Prompt 5 `[Stage 4: Player Movement & Collision]`
 
 ```text
 Implement player movement driven by delta time with wall sliding and reliable bounding-box collision detection so movement speed is silky smooth and frame-rate independent across 60Hz, 120Hz, and mobile displays.
@@ -125,7 +133,7 @@ Implemented delta-time driven player movement with wall sliding and reliable axi
 
 </details>
 
-## Prompt 6 `[Phase 1: Deterministic Engine & Mathematical Foundations]`
+## Prompt 6 `[Stage 5: Sonar & Acoustic Systems]`
 
 ```text
 When the player presses Space, emit expanding sonar rings from their center. Walls within the pulse radius should be revealed only if there is an unblocked line of sight from the player. Revealed walls must fade smoothly over 3.5 seconds without permanently unveiling the maze.
@@ -139,7 +147,7 @@ Implemented expanding line-of-sight sonar rings on Space keypress. Added raycast
 
 </details>
 
-## Prompt 7 `[Phase 1: Deterministic Engine & Mathematical Foundations]`
+## Prompt 7 `[Stage 5: Sonar & Acoustic Systems]`
 
 ```text
 Add an energy meter (max 100). Each accepted sonar ping costs 25 energy, regenerating at 12 energy/sec. Energy must never fall below zero. Render an energy arc ring around the player with a clear depleted indicator when energy is insufficient. Level 1 must have unlimited energy.
@@ -153,7 +161,7 @@ Added energy meter (capacity 100) with 25 energy cost per accepted sonar ping an
 
 </details>
 
-## Prompt 8 `[Phase 1: Deterministic Engine & Mathematical Foundations]`
+## Prompt 8 `[Stage 5: Sonar & Acoustic Systems]`
 
 ```text
 Implement a central noise-event bus where each event contains { id, type, x, y, time, radius }. Accepted pings emit exactly one event with radius 10. Process each event once and expire it after 0.1 seconds. Visual effects and UI must never generate accidental noise events.
@@ -167,7 +175,7 @@ Implemented central noise-event bus ({ id, type, x, y, time, radius }). Accepted
 
 </details>
 
-## Prompt 9 `[Phase 1: Deterministic Engine & Mathematical Foundations]`
+## Prompt 9 `[Stage 5: Sonar & Acoustic Systems]`
 
 ```text
 Footstep noise events must be generated strictly from actual movement distance (one event per 0.8 tiles traversed), never per animation frame. When the player holds Shift (Creep mode) or is stationary, zero footsteps must be emitted.
@@ -181,7 +189,7 @@ Implemented distance-accumulating footstep noise emission (one event per 0.8 til
 
 </details>
 
-## Prompt 10 `[Phase 1: Deterministic Engine & Mathematical Foundations]`
+## Prompt 10 `[Stage 7: Campaign & Level Progression]`
 
 ```text
 Wire game lifecycle states: Escape toggles pause/resume (freezing delta-time and timers), R restarts the run, and stepping onto the exit cell triggers the victory state with a celebratory visual flash.
@@ -195,7 +203,7 @@ Wired game lifecycle states: Escape key toggles pause/resume (freezing simulatio
 
 </details>
 
-## Prompt 11 `[Phase 2: Autonomous Listener AI & Acoustics]`
+## Prompt 11 `[Stage 6: Monster AI & Pathfinding]`
 
 ```text
 Create the Listener monster AI driven by an explicit finite-state machine: WANDER, INVESTIGATE, SEARCH, and CAPTURE. The monster must move along grid corridors using delta time and search for 3 seconds before resuming wandering.
@@ -209,7 +217,7 @@ Created the Listener monster AI with an explicit finite-state machine: WANDER, I
 
 </details>
 
-## Prompt 12 `[Phase 2: Autonomous Listener AI & Acoustics]`
+## Prompt 12 `[Stage 6: Monster AI & Pathfinding]`
 
 ```text
 The monster must hear a noise event only when the BFS path distance through the maze is less than or equal to its configured hearing radius. Straight-line euclidean distance through walls must never be used.
@@ -223,7 +231,7 @@ Implemented BFS maze path-distance hearing check. Monsters hear noise events onl
 
 </details>
 
-## Prompt 13 `[Phase 2: Autonomous Listener AI & Acoustics]`
+## Prompt 13 `[Stage 6: Monster AI & Pathfinding]`
 
 ```text
 When a monster hears a sound, it must record the exact grid cell of the noise event and investigate that static location. It must NEVER track the player's live position or cheat through the dark.
@@ -237,7 +245,7 @@ Configured monster acoustic targeting to record the static grid cell of the nois
 
 </details>
 
-## Prompt 14 `[Phase 2: Autonomous Listener AI & Acoustics]`
+## Prompt 14 `[Stage 6: Monster AI & Pathfinding]`
 
 ```text
 If the monster is already investigating a sound and hears a new valid event, replace its target only if the new sound is closer by remaining BFS path distance. Recalculate BFS paths only when the target changes, never on every frame.
@@ -251,7 +259,7 @@ Implemented closer-sound target replacement: a new noise event replaces an activ
 
 </details>
 
-## Prompt 15 `[Phase 2: Autonomous Listener AI & Acoustics]`
+## Prompt 15 `[Stage 6: Monster AI & Pathfinding]`
 
 ```text
 If an acoustic event occurs in an unreachable cell, route the monster to the closest reachable cell and search there. The monster must never teleport, clip into walls, or pass through impassable tiles.
@@ -265,7 +273,7 @@ Handled unreachable noise events by routing the monster to the nearest reachable
 
 </details>
 
-## Prompt 16 `[Phase 2: Autonomous Listener AI & Acoustics]`
+## Prompt 16 `[Stage 6: Monster AI & Pathfinding]`
 
 ```text
 Capture occurs when player and monster centers are within 0.45 tiles. On capture, freeze simulation, trigger screen shake and red flash, display HEARD. with a Retry button. Ensure Capture and Victory are mutually exclusive—the first event wins.
@@ -279,7 +287,7 @@ Implemented capture condition when player and monster centers are within 0.45 ti
 
 </details>
 
-## Prompt 17 `[Phase 2: Autonomous Listener AI & Acoustics]`
+## Prompt 17 `[Stage 7: Campaign & Level Progression]`
 
 ```text
 Configure campaign progression. Level transitions must cleanly flush active sonar rings, wall reveals, noise events, monster paths, targets, and audio nodes. Use a unique run ID so lingering callbacks from old levels are ignored.
@@ -293,7 +301,7 @@ Architected campaign progression system. Level transitions flush active sonar ri
 
 </details>
 
-## Prompt 18 `[Phase 2: Autonomous Listener AI & Acoustics]`
+## Prompt 18 `[Stage 7: Campaign & Level Progression]`
 
 ```text
 Configure Level 1: 9x9 maze, zero monsters, unlimited sonar energy. Serves as the introductory stealth tutorial.
@@ -307,7 +315,7 @@ Configured Level 1: 9x9 maze, zero monsters, unlimited sonar energy. Acts as int
 
 </details>
 
-## Prompt 19 `[Phase 2: Autonomous Listener AI & Acoustics]`
+## Prompt 19 `[Stage 7: Campaign & Level Progression]`
 
 ```text
 Configure Level 2: 13x13 maze with one sleeping Listener in the center. The sleeper stays dormant during wandering and wakes up only when an expanding sonar ping reaches its hearing threshold.
@@ -321,7 +329,7 @@ Configured Level 2: 13x13 maze with one sleeping Listener in the center. Remains
 
 </details>
 
-## Prompt 20 `[Phase 2: Autonomous Listener AI & Acoustics]`
+## Prompt 20 `[Stage 7: Campaign & Level Progression]`
 
 ```text
 Configure Level 3: 17x17 maze with an active wandering Listener, limited energy, and audible footsteps. Players must utilize the Shift creep key to navigate undetected.
@@ -335,7 +343,7 @@ Configured Level 3: 17x17 maze with active wandering Listener, limited energy, a
 
 </details>
 
-## Prompt 21 `[Phase 3: Decoys, Multi-Monster Mechanics & Swarms]`
+## Prompt 21 `[Stage 12: Keys, Doors & Decoys]`
 
 ```text
 Configure Level 4: 19x19 maze featuring a brass decoy bell placed on a reachable cell away from the starting route. The bell remains invisible until revealed by a sonar ping.
@@ -349,7 +357,7 @@ Configured Level 4: 19x19 maze featuring a brass decoy bell placed on a reachabl
 
 </details>
 
-## Prompt 22 `[Phase 3: Decoys, Multi-Monster Mechanics & Swarms]`
+## Prompt 22 `[Stage 12: Keys, Doors & Decoys]`
 
 ```text
 When within 0.6 tiles of the revealed bell, pressing E rings it. It emits a loud noise event (radius 12) at the bell's coordinates to lure the monster away. The bell is single-use per run and works via normal monster hearing rules.
@@ -363,7 +371,7 @@ Implemented bell interaction: pressing E within 0.6 tiles rings it, emitting an 
 
 </details>
 
-## Prompt 23 `[Phase 3: Decoys, Multi-Monster Mechanics & Swarms]`
+## Prompt 23 `[Stage 6: Monster AI & Pathfinding]`
 
 ```text
 Configure Level 5: 23x23 maze featuring two simultaneous Listeners (Listener A and Listener B) with completely independent state machines, targets, search timers, and paths. Neither may share mutable state.
@@ -377,7 +385,7 @@ Configured Level 5: 23x23 maze featuring two simultaneous Listeners (Listener A 
 
 </details>
 
-## Prompt 24 `[Phase 3: Decoys, Multi-Monster Mechanics & Swarms]`
+## Prompt 24 `[Stage 6: Monster AI & Pathfinding]`
 
 ```text
 Give Listener A a footstep radius of 2.0 tiles, ping radius of 10, and low growl pitch. Give Listener B a footstep radius of 3.5 tiles, ping radius of 7, and higher pitch. If one is blocked, the other must continue hunting normally.
@@ -391,7 +399,7 @@ Configured asymmetric hearing profiles: Listener A has footstep radius 2.0, ping
 
 </details>
 
-## Prompt 25 `[Phase 3: Decoys, Multi-Monster Mechanics & Swarms]`
+## Prompt 25 `[Stage 5: Sonar & Acoustic Systems]`
 
 ```text
 Configure the Finale: 25x25 maze with an Apex Listener that emits an active red sonar pulse (radius 7, 0.8s) whenever it arrives at an investigation target and enters SEARCH.
@@ -405,7 +413,7 @@ Configured Level 6 Finale: 25x25 maze with an Apex Listener emitting an active r
 
 </details>
 
-## Prompt 26 `[Phase 3: Decoys, Multi-Monster Mechanics & Swarms]`
+## Prompt 26 `[Stage 5: Sonar & Acoustic Systems]`
 
 ```text
 When the enemy red pulse fires, reveal nearby walls in red. If the player is within the 7-tile pulse radius AND has line of sight to the monster, generate a noise event at the player's location so the monster immediately hunts them.
@@ -419,7 +427,7 @@ Implemented counter-radar detection: enemy pulse reveals nearby walls in red. If
 
 </details>
 
-## Prompt 27 `[Phase 3: Decoys, Multi-Monster Mechanics & Swarms]`
+## Prompt 27 `[Stage 8: Audio Architecture]`
 
 ```text
 Build a procedural Web Audio API sound synthesizer that initializes on first user click or keypress. If AudioContext fails or is blocked, the game must fail gracefully and run silently without throwing errors.
@@ -433,7 +441,7 @@ Built procedural Web Audio API sound synthesizer initializing on first user inte
 
 </details>
 
-## Prompt 28 `[Phase 3: Decoys, Multi-Monster Mechanics & Swarms]`
+## Prompt 28 `[Stage 8: Audio Architecture]`
 
 ```text
 Synthesize: 1) Sonar Ping with dual-frequency sine sweep and exponential echo decay; 2) Footsteps using filtered white noise bursts; 3) Monster growls using low-frequency sawtooth waves modulated by biquad bandpass filters.
@@ -447,7 +455,7 @@ Synthesized procedural audio voices: dual-frequency sine sweep sonar ping with e
 
 </details>
 
-## Prompt 29 `[Phase 3: Decoys, Multi-Monster Mechanics & Swarms]`
+## Prompt 29 `[Stage 8: Audio Architecture]`
 
 ```text
 Create a continuous resonant portal hum that gets louder as the player nears the exit. Apply stereo panning using clamp(dx / 6 tiles, -1, 1) relative to player position so the player can navigate by acoustic stereo cues alone.
@@ -461,7 +469,7 @@ Synthesized exit beacon hum with dynamic proximity gain and stereo panning `clam
 
 </details>
 
-## Prompt 30 `[Phase 3: Decoys, Multi-Monster Mechanics & Swarms]`
+## Prompt 30 `[Stage 8: Audio Architecture]`
 
 ```text
 Synthesize a biological double-thump heartbeat (sub-bass sine wave). Dynamically scale tempo and volume based on the closest monster's BFS path distance (accelerating from 12 tiles down to 2 tiles), relaxing smoothly when danger recedes.
@@ -475,7 +483,7 @@ Synthesized biological double-thump sub-bass heartbeat. Dynamically scales tempo
 
 </details>
 
-## Prompt 31 `[Phase 4: Audio Lifecycle, Polish & HUD]`
+## Prompt 31 `[Stage 8: Audio Architecture]`
 
 ```text
 Cap simultaneous one-shot audio voices to 8. On pause, fade continuous audio nodes smoothly. On restart or level transition, immediately stop and disconnect all continuous hums and heartbeat oscillators to eliminate memory leaks.
@@ -489,7 +497,7 @@ Implemented audio voice management: capped simultaneous one-shots at 8 voices, a
 
 </details>
 
-## Prompt 32 `[Phase 4: Audio Lifecycle, Polish & HUD]`
+## Prompt 32 `[Stage 9: UI & Visual Design]`
 
 ```text
 Build a sci-fi cyber title screen with ECHO MAZE typography, "Light costs noise" tagline, start button, volume slider, and controls overview. Add a subtle canvas vignette. Respect CSS prefers-reduced-motion to disable screen shake for sensitive players.
@@ -503,7 +511,7 @@ Built sci-fi title screen with ECHO MAZE typography, 'Light costs noise' tagline
 
 </details>
 
-## Prompt 33 `[Phase 4: Audio Lifecycle, Polish & HUD]`
+## Prompt 33 `[Stage 9: UI & Visual Design]`
 
 ```text
 Design the HUD: level badge, objective line, sound toggle, pause button, and dynamic energy arc around the player. Display contextual hints during the first 5 seconds explaining movement, Space for sonar, and danger attraction.
@@ -517,7 +525,7 @@ Designed in-game HUD: level badge, objective line, sound toggle, pause button, d
 
 </details>
 
-## Prompt 34 `[Phase 4: Audio Lifecycle, Polish & HUD]`
+## Prompt 34 `[Stage 9: UI & Visual Design]`
 
 ```text
 On capture: red flash, screen shake, HEARD. title, and restart button. On victory: green resonance flash, level stats card displaying real elapsed time and total sonar pings used, with a button to advance to the next level.
@@ -531,7 +539,7 @@ Created cinematic end states: red flash, screen shake, 'HEARD.' title, and resta
 
 </details>
 
-## Prompt 35 `[Phase 4: Audio Lifecycle, Polish & HUD]`
+## Prompt 35 `[Stage 10: Accessibility]`
 
 ```text
 Implement an Assist Mode toggle (wider hearing margins, reduced monster speed). Persist volume, mute, and assist settings in localStorage wrapped in try/catch blocks with fallback defaults for sandboxed iframes.
@@ -545,7 +553,7 @@ Implemented Assist Mode toggle (wider hearing margins, slower monster speed). Pe
 
 </details>
 
-## Prompt 36 `[Phase 4: Audio Lifecycle, Polish & HUD]`
+## Prompt 36 `[Stage 13: Testing & Mutation Checks]`
 
 ```text
 When ?debug=1 is in the URL, render a live developer overlay displaying PRNG seed, FPS, frame time, player grid coordinates, monster FSM states, active paths, and noise event logs.
@@ -559,7 +567,7 @@ Built developer telemetry overlay under `?debug=1` showing seed, FPS, frame time
 
 </details>
 
-## Prompt 37 `[Phase 4: Audio Lifecycle, Polish & HUD]`
+## Prompt 37 `[Stage 13: Testing & Mutation Checks]`
 
 ```text
 Add runSelfTests() testing 19 engine invariants: 200 seeded mazes connected; exit >= 60% distance; deterministic PRNG; energy bounds; monster never enters walls across 500s; BFS hearing accuracy; bell single-use; and red pulse line-of-sight. Output PASS/FAIL to console.
@@ -573,7 +581,7 @@ Created automated regression suite `runSelfTests()` verifying 19 engine invarian
 
 </details>
 
-## Prompt 38 `[Phase 4: Audio Lifecycle, Polish & HUD]`
+## Prompt 38 `[Stage 9: UI & Visual Design]`
 
 ```text
 Add responsive on-screen touch controls for mobile and tablet players: virtual tactile D-Pad (Up/Down/Left/Right), dedicated PING and BELL touch buttons, and canvas swipe gesture support with preventDefault to block accidental page scrolling.
@@ -587,7 +595,7 @@ Added mobile on-screen touch controls: virtual tactile D-Pad (Up/Down/Left/Right
 
 </details>
 
-## Prompt 39 `[Phase 5: Organic Playtest Evolution & Thriller Cycles]`
+## Prompt 39 `[Stage 9: UI & Visual Design]`
 
 ```text
 i think the screen should not be totally black, it shows boredom
@@ -605,7 +613,7 @@ Upgraded visuals: eliminated plain black screen, replaced with luminous cybernet
 
 </details>
 
-## Prompt 40 `[Phase 5: Organic Playtest Evolution & Thriller Cycles]`
+## Prompt 40 `[Stage 4: Player Movement & Collision]`
 
 ```text
 now the path is totally visible, i think we should add a monster/cop starts from any top corner(left,right, left bottom,right bottom) and we have some time ticking anti-clockwise and we need to go the gate with in the span of time, and wherever i started moving the path will be black, there should be a small clue for the gate,
@@ -627,7 +635,7 @@ Implemented 1-block discrete tactical hop movement with squash-and-stretch bounc
 
 </details>
 
-## Prompt 41 `[Phase 5: Organic Playtest Evolution & Thriller Cycles]`
+## Prompt 41 `[Stage 2: Core Game Engine & Thriller Mechanics]`
 
 ```text
 look, we are gonna a suspension we can black out the path for some seconds and then again visible paths, then again after few seconds(random) black out
@@ -648,7 +656,7 @@ Implemented the Dynamic Blackout Thriller Cycle: high-voltage periodic electrica
 
 </details>
 
-## Prompt 42 `[Phase 5: Organic Playtest Evolution & Thriller Cycles]`
+## Prompt 42 `[Stage 7: Campaign & Level Progression]`
 
 ```text
 as we will moving to the higher level the cops should also increase in numbers, also add some more difficult and unique levels last 15 levels and as the level increases the thriller also increase and the dificulty too(add some unique levels)
@@ -669,7 +677,7 @@ Engineered 15 distinct handcrafted levels scaling from 11x11 to 33x33 with scali
 
 </details>
 
-## Prompt 43 `[Phase 5: Organic Playtest Evolution & Thriller Cycles]`
+## Prompt 43 `[Stage 7: Campaign & Level Progression]`
 
 ```text
 the level should be cross at the sequence like 1->2->3->4 if someone fails at 4 he needs to restart from 1
@@ -688,7 +696,7 @@ Enforced strict sequential Roguelike Ironman progression: levels progress 1 -> 2
 
 </details>
 
-## Prompt 44 `[Phase 5: Organic Playtest Evolution & Thriller Cycles]`
+## Prompt 44 `[Stage 4: Player Movement & Collision]`
 
 ```text
 w - upside movement, s - downward movement, a- left movement and d - right movement this should be the movement
@@ -708,7 +716,7 @@ Implemented input buffering queue and arrival-order key tracking to eliminate dr
 
 </details>
 
-## Prompt 45 `[Phase 6: Hardening, Keys, Decoys & Invariant Verification]`
+## Prompt 45 `[Stage 11: Performance & Lifecycle Hardening]`
 
 ```text
 V1.1 Performance and Memory Budgets:
@@ -730,7 +738,7 @@ Engineered V1.1 Performance and Memory Budgets:
 
 </details>
 
-## Prompt 46 `[Phase 6: Hardening, Keys, Decoys & Invariant Verification]`
+## Prompt 46 `[Stage 11: Performance & Lifecycle Hardening]`
 
 ```text
 STEP 0 (Stability and Invariant Fixes):
@@ -755,7 +763,7 @@ Completed Step 0 Hardening:
 
 </details>
 
-## Prompt 47 `[Phase 6: Hardening, Keys, Decoys & Invariant Verification]`
+## Prompt 47 `[Stage 9: UI & Visual Design]`
 
 ```text
 PASS 1 (Acoustic Visual Polish - no rule changes):
@@ -784,7 +792,7 @@ Implemented Pass 1 Acoustic Visual Polish:
 
 </details>
 
-## Prompt 48 `[Phase 6: Hardening, Keys, Decoys & Invariant Verification]`
+## Prompt 48 `[Stage 10: Accessibility & Progressive Hints]`
 
 ```text
 PASS 2 (Progressive Acoustic Hints):
@@ -815,7 +823,7 @@ Implemented Pass 2 Progressive Acoustic Hints:
 
 </details>
 
-## Prompt 49 `[Phase 6: Hardening, Keys, Decoys & Invariant Verification]`
+## Prompt 49 `[Stage 6: Monster AI & Stealth Depth]`
 
 ```text
 PASS 3 (Stealth Depth):
@@ -844,7 +852,7 @@ Implemented Pass 3 Stealth Depth:
 
 </details>
 
-## Prompt 50 `[Phase 6: Hardening, Keys, Decoys & Invariant Verification]`
+## Prompt 50 `[Stage 9: UI & Centered Layout]`
 
 ```text
 i need this grid to be centric all the time, even if the grid sixe increases, it should increase equally in each side
@@ -858,7 +866,7 @@ I have updated the layout and canvas rendering math to anchor the maze grid to t
 
 </details>
 
-## Prompt 51 `[Phase 6: Hardening, Keys, Decoys & Invariant Verification]`
+## Prompt 51 `[Stage 9: UI & Centered Layout]`
 
 ```text
 proceed
@@ -872,7 +880,7 @@ Centered grid geometry verified. All discrete hops, particle coordinates, wall r
 
 </details>
 
-## Prompt 52 `[Phase 6: Hardening, Keys, Decoys & Invariant Verification]`
+## Prompt 52 `[Stage 12: Keys, Doors & Decoys]`
 
 ```text
 FEATURE: KEYS AND LOCKED DOOR in index.html. Do not change the theme, visuals style, or any existing rule except where stated. Back up first (index.html.keys.bak). Do NOT deploy, commit, or start any other pass. Return only changed/new functions with locations, then run runSelfTests() and a 60 s headless session (label 'headless, not my M1').
@@ -899,7 +907,7 @@ Implemented the Keys and Locked Door system in `index.html`:
 
 </details>
 
-## Prompt 53 `[Phase 6: Hardening, Keys, Decoys & Invariant Verification]`
+## Prompt 53 `[Stage 13: Testing & Mutation Checks]`
 
 ```text
 Fix round on index.html (keys feature). Back up first (index.html.keys2.bak). Do NOT deploy, commit, or start any new feature. Return only changed functions, run runSelfTests() and a 60 s headless session (label 'headless, not my M1').
@@ -921,7 +929,7 @@ Hardened the keys and siren implementation:
 
 </details>
 
-## Prompt 54 `[Phase 6: Hardening, Keys, Decoys & Invariant Verification]`
+## Prompt 54 `[Stage 9: UI & Bioluminescent Theme]`
 
 ```text
 use this green theme on older black one, no need to change the flow, cops, nothing just replicate the green theme
@@ -947,7 +955,7 @@ Replicated the green bioluminescent fantasy theme across `index.html`:
 
 </details>
 
-## Prompt 55 `[Phase 6: Hardening, Keys, Decoys & Invariant Verification]`
+## Prompt 55 `[Stage 14: Final Verification & Engine Hardening]`
 
 ```text
 Fix round on index.html. Back up first (index.html.keys4.bak). No deploy, no commit, no new features. Return only changed functions; run runSelfTests() with ?test=1 and a 60 s headless session on LEVEL 12 (label 'headless, not my M1').

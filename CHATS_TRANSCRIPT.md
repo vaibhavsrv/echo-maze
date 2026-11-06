@@ -1,7 +1,10 @@
 # ECHO MAZE: Complete ODS Portal Chat Transcript
 
-> Verbatim record of all 55 prompt-reply turns between Human Lead Designer and ODS Portal.  
-> Machine-readable native Portal export: [`ods-portal-a77d18ae-9291-48d6-a283-8524bd49fbf3.json`](ods-portal-a77d18ae-9291-48d6-a283-8524bd49fbf3.json) (re-importable in any ODS Portal instance).
+> **Verbatim Record:** All 55 prompt-reply turns between Human Lead Designer & Playtester and ODS Portal.
+> **Machine-Readable Portal Export:** [`ods-portal-a77d18ae-9291-48d6-a283-8524bd49fbf3.json`](ods-portal-a77d18ae-9291-48d6-a283-8524bd49fbf3.json) (conforming to ODS Portal schema v1, re-importable in any ODS Portal instance via `parseConversationImport`).
+>
+> **Notice on Provenance & Execution Records:**
+> This transcript records the verbatim conversation text (55 user design prompts and 55 assistant engineering replies). The accompanying JSON export is a normalized conversation transcript conforming to ODS Portal schema version 1. It does not contain ephemeral preview daemon tokens (`siteId`), background process identifiers, or raw daemon task execution logs (`task` objects), which are discarded upon conversation export/import by Portal design.
 
 ---
 
